@@ -18,7 +18,9 @@ gulp.task('clean', function (done) {
 
 gulp.task('copy', function() {
   return gulp.src([
-    'test/index.html'
+    'test/index.html',
+    'node_modules/mocha/mocha.css',
+    'node_modules/mocha/mocha.js'
   ]).pipe(gulp.dest('dist/test'))
     .pipe(reload({stream: true}));
 });

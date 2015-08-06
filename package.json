@@ -19,6 +19,7 @@
     "gulp-sourcemaps": "^1.5.2",
     "gulp-util": "^3.0.6",
     "merge-stream": "^0.1.8",
+    "mocha": "^2.2.5",
     "run-sequence": "^1.1.2",
     "uglifyify": "^3.0.1",
     "vinyl-buffer": "^1.0.0",
