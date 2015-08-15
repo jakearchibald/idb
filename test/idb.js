@@ -1,5 +1,8 @@
 import "babelify/node_modules/babel-core/node_modules/regenerator/runtime";
 import assert from "assert";
+import {Promise} from "es6-promise";
+
+self.Promise = Promise;
 
 describe('IDB interface', () => {
   before(done => IDB.delete('tmp-db').then(done));
@@ -16,40 +19,26 @@ describe('IDB interface', () => {
   it('stuff', async () => {
     // Open the database
     let db = await IDB.open('tmp-db', 1, upgradeDb => {
+      upgradeDb.transaction.complete.then(_ => console.log('complete'), _ => console.log('fail'));
       switch (upgradeDb.oldVersion) {
         case 0:
-          upgradeDb.createObjectStore("list-of-things", {
-            keyPath: ''
-          });
+        case 9223372036854776000: // safari
           upgradeDb.createObjectStore('key-val');
+          upgradeDb.transaction.objectStore('key-val').put('world', 'hello');
+          console.log('done');
       }
     });
 
     // Add some things to the list
-    let tx = db.transaction('list-of-things', 'readwrite');
-    let store = tx.objectStore('list-of-things');
-    store.put('foo');
-    store.put('bar');
-    store.put('baz');
+    let tx = db.transaction('key-val', 'readwrite');
+    let store = tx.objectStore('key-val');
+    
+    store.put(await store.get('hello'), 'foo');
+    await tx.complete;
 
-    // Add a "hello":"world" to the key-val store
-    db.transaction('key-val', 'readwrite')
-      .objectStore('key-val')
-      .put('world', 'hello');
+    tx = db.transaction('key-val');
 
-    // Add the value of "hello" to the list
-    tx = db.transaction(['key-val', 'list-of-things'], 'readwrite');
-    tx.objectStore('list-of-things').put(
-      await tx.objectStore('key-val').get('hello')
-    );
-
-    // Itterate over the list
-    let cursor = await db.transaction('list-of-things')
-      .objectStore('list-of-things').openCursor();
-
-    while (cursor) {
-      console.log(cursor.value);
-      cursor = await cursor.continue();
-    }
+    assert.equal(await tx.objectStore('key-val').get('foo'), 'world');
+    console.log(await tx.objectStore('key-val').get('foo'));
   });
 });

@@ -13,6 +13,7 @@
     "browser-sync": "^2.8.2",
     "browserify": "^11.0.1",
     "del": "^1.2.0",
+    "es6-promise": "^3.0.2",
     "gulp": "^3.9.0",
     "gulp-load-plugins": "^0.10.0",
     "gulp-size": "^1.2.3",

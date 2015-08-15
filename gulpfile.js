@@ -13,7 +13,14 @@ var browserSync = require('browser-sync');
 var reload = browserSync.reload;
 
 gulp.task('clean', function (done) {
-  require('del')(['build'], done);
+  require('del')(['dist'], done);
+});
+
+gulp.task('copy-lib', function() {
+  return gulp.src([
+    'lib/idb.js'
+  ]).pipe(gulp.dest('dist'))
+    .pipe(reload({stream: true}));
 });
 
 gulp.task('copy', function() {
@@ -70,7 +77,6 @@ function bundle(bundler, outputPath) {
 }
 
 var bundlers = {
-  'idb.js': createBundler('./lib/index.js'),
   'test/idb.js': createBundler('./test/idb.js')
 };
 
@@ -93,6 +99,7 @@ gulp.task('browser-sync', function() {
 
 gulp.task('watch', function () {
   gulp.watch(['test/index.html'], ['copy']);
+  gulp.watch(['lib/idb.js'], ['copy-lib']);
 
   Object.keys(bundlers).forEach(function(key) {
     var watchifyBundler = watchify(bundlers[key]);
@@ -104,11 +111,11 @@ gulp.task('watch', function () {
 });
 
 gulp.task('build', function (done) {
-  runSequence('clean', ['copy', 'js'], done);
+  runSequence('clean', ['copy', 'js', 'copy-lib'], done);
 });
 
 gulp.task('default', ['build']);
 
 gulp.task('serve', function (done) {
-  runSequence('clean', ['copy', 'js'], ['browser-sync', 'watch'], done);
+  runSequence('clean', ['copy', 'js', 'copy-lib'], ['browser-sync', 'watch'], done);
 });
