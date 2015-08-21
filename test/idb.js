@@ -5,7 +5,7 @@ import {Promise} from "es6-promise";
 self.Promise = Promise;
 
 describe('IDB interface', () => {
-  before(done => IDB.delete('tmp-db').then(done));
+  beforeEach(done => IDB.delete('tmp-db').then(done));
 
   it('exists on window', () => {
     assert('IDB' in self);
@@ -16,16 +16,13 @@ describe('IDB interface', () => {
     assert('delete' in IDB);
   });
 
+  // yeah yeah, I know, I need to write better tests
   it('stuff', async () => {
     // Open the database
     let db = await IDB.open('tmp-db', 1, upgradeDb => {
-      upgradeDb.transaction.complete.then(_ => console.log('complete'), _ => console.log('fail'));
       switch (upgradeDb.oldVersion) {
         case 0:
-        case 9223372036854776000: // safari
-          upgradeDb.createObjectStore('key-val');
-          upgradeDb.transaction.objectStore('key-val').put('world', 'hello');
-          console.log('done');
+          upgradeDb.createObjectStore('key-val').put('world', 'hello');
       }
     });
 
@@ -39,6 +36,33 @@ describe('IDB interface', () => {
     tx = db.transaction('key-val');
 
     assert.equal(await tx.objectStore('key-val').get('foo'), 'world');
-    console.log(await tx.objectStore('key-val').get('foo'));
+    db.close();
+  });
+
+  it('lets me itterate over a cursor', async () => {
+    // Open the database
+    let db = await IDB.open('tmp-db', 1, upgradeDb => {
+      switch (upgradeDb.oldVersion) {
+        case 0:
+          const store = upgradeDb.createObjectStore('list', {keyPath: ''});
+          store.put("a");
+          store.put("b");
+          store.put("c");
+          store.put("d");
+          store.put("e");
+      }
+    });
+
+    const tx = db.transaction('list');
+    const values = [];
+
+    tx.objectStore('list').iterateCursor(cursor => {
+      if (!cursor) return;
+      values.push(cursor.value);
+      cursor.continue();
+    });
+
+    await tx.complete;
+    assert.equal(values.join(), 'a,b,c,d,e');
   });
 });
