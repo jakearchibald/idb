@@ -89,11 +89,11 @@ Properties:
 * `complete` - a promise. Resolves when transaction completes, rejects if transaction aborts or errors
 * `objectStoreNames` - as `idbTransaction.objectStoreNames`
 * `mode` - as `idbTransaction.mode`
-* `objectStore` - as `idbTransaction.objectStore`, but returns an `ObjectStore`
 
 Methods:
 
 * `abort` - as `idbTransaction.abort`
+* `objectStore` - as `idbTransaction.objectStore`, but returns an `ObjectStore`
 
 ```js
 idb.open('my-database', 1, upgradeDB => {
