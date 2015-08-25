@@ -2,7 +2,7 @@
   "name": "idb",
   "version": "1.0.0",
   "description": "IndexedDB but with promises",
-  "main": "index.js",
+  "main": "lib/idb.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
