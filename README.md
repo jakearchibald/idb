@@ -59,9 +59,10 @@ idb.delete('my-database').then(_ => console.log('done!'));
 
 Properties:
 
-* `name` - as `idbDatabase.name`
-* `version` - as `idbDatabase.version`
-* `objectStoreNames` - as `idbDatabase.objectStoreNames`
+* Same as equivalent properties on an instance of `IDBDatabase`:
+  * `name`
+  * `version`
+  * `objectStoreNames`
 
 Methods:
 
@@ -87,8 +88,9 @@ Methods:
 Properties:
 
 * `complete` - a promise. Resolves when transaction completes, rejects if transaction aborts or errors
-* `objectStoreNames` - as `idbTransaction.objectStoreNames`
-* `mode` - as `idbTransaction.mode`
+* Same as equivalent properties on an instance of `IDBTransaction`:
+  * `objectStoreNames`
+  * `mode`
 
 Methods:
 
@@ -112,26 +114,30 @@ idb.open('my-database', 1, upgradeDB => {
 
 Properties:
 
-* `name` - as `idbObjectStore.name`
-* `keyPath` - as `idbObjectStore.keyPath`
-* `indexNames` - as `idbObjectStore.indexNames`
-* `autoIncrement` - as `idbObjectStore.autoIncrement`
+* Same as equivalent properties on an instance of `IDBObjectStore`:
+  * `name`
+  * `keyPath`
+  * `indexNames`
+  * `autoIncrement`
 
 Methods:
 
-* `put` - as `idbObjectStore.put` but returns a promise that resolves/rejects based on operation success/failure
-* `add` - as `idbObjectStore.add` but returns a promise that resolves/rejects based on operation success/failure
-* `delete` - as `idbObjectStore.delete` but returns a promise that resolves/rejects based on operation success/failure
-* `clear` - as `idbObjectStore.clear` but returns a promise that resolves/rejects based on operation success/failure
-* `get` - as `idbObjectStore.get` but returns a promise that resolves/rejects based on operation success/failure
-* `getAll` - as `idbObjectStore.getAll` but returns a promise that resolves/rejects based on operation success/failure
-* `getAllKeys` - as `idbObjectStore.getAllKeys` but returns a promise that resolves/rejects based on operation success/failure
-* `count` - as `idbObjectStore.count` but returns a promise that resolves/rejects based on operation success/failure
-* `openCursor` - as `idbObjectStore.openCursor` but returns a promise that resolves with a `Cursor`
-* `openKeyCursor` - as `idbObjectStore.openKeyCursor` but returns a promise that resolves with a `Cursor`
+* Same as equivalent methods on an instance of `IDBObjectStore`, but returns a promise that resolves/rejects based on operation success/failure:
+  * `put`
+  * `add`
+  * `delete`
+  * `clear`
+  * `get`
+  * `getAll`
+  * `getAllKeys`
+  * `count`
+* Same as equivalent methods on an instance of `IDBObjectStore`, but returns a promise that resolves with a `Cursor`:
+  * `openCursor`
+  * `openKeyCursor`
 * `deleteIndex` - as `idbObjectStore.deleteIndex`
-* `createIndex` - as `idbObjectStore.createIndex` but returns an `Index`
-* `index` - as `idbObjectStore.index` but returns an `Index`
+* Same as equivalent methods on an instance of `IDBObjectStore`, but returns an `Index`: 
+  * `createIndex`
+  * `index`
 * `iterateCursor` - see below
 * `iterateKeyCursor` - see below
 
@@ -169,20 +175,23 @@ The intent is to remove `iterateCursor` and `iterateKeyCursor` from the library 
 
 Properties:
 
-* `name` - as `idbIndex.name`
-* `keyPath` - as `idbIndex.keyPath`
-* `multiEntry` - as `idbIndex.multiEntry`
-* `unique` - as `idbIndex.unique`
+* Same as equivalent properties on an instance of `IDBIndex`:
+  * `name`
+  * `keyPath`
+  * `multiEntry`
+  * `unique`
 
 Methods:
 
-* `get` - as `idbIndex.get`, but returns a promise that resolves/rejects based on operation success/failure
-* `getKey` - as `idbIndex.getKey`, but returns a promise that resolves/rejects based on operation success/failure
-* `getAll` - as `idbIndex.getAll`, but returns a promise that resolves/rejects based on operation success/failure
-* `getAllKeys` - as `idbIndex.getAllKeys`, but returns a promise that resolves/rejects based on operation success/failure
-* `count` - as `idbIndex.count`, but returns a promise that resolves/rejects based on operation success/failure
-* `openCursor` - as `idbIndex.openCursor` but returns a promise that resolves with a `Cursor`
-* `openKeyCursor` - as `idbIndex.openKeyCursor` but returns a promise that resolves with a `Cursor`
+* Same as equivalent methods on an instance of `IDBIndex`, but returns a promise that resolves/rejects based on operation success/failure:
+  * `get`
+  * `getKey`
+  * `getAll`
+  * `getAllKeys`
+  * `count`
+* Same as equivalent methods on an instance of `IDBIndex`, but returns a promise that resolves with a `Cursor`:
+  * `openCursor`
+  * `openKeyCursor`
 * `iterateCursor` - as `objectStore.iterateCursor` but over the index
 * `iterateKeyCursor` - as `objectStore.iterateKeyCursor` but over the index
 
@@ -190,15 +199,18 @@ Methods:
 
 Properties:
 
-* `direction` - as `idbCursor.direction`
-* `key` - as `idbCursor.key`
-* `primaryKey` - as `idbCursor.primaryKey`
-* `value` - as `idbCursor.value`
+* Same as equivalent properties on an instance of `IDBCursor`:
+  * `direction`
+  * `key`
+  * `primaryKey`
+  * `value`
 
 Methods:
 
-* `update` - as `idbCursor.update` but returns a promise that resolves/rejects based on operation success/failure
-* `delete` - as `idbCursor.delete` but returns a promise that resolves/rejects based on operation success/failure
-* `advance` - as `idbCursor.advance` but returns a promise that resolves to a `Cursor`
-* `continue` - as `idbCursor.continue` but returns a promise that resolves to a `Cursor`
-* `continuePrimaryKey` - as `idbCursor.continuePrimaryKey` but returns a promise that resolves to a `Cursor`
+* Same as equivalent methods on an instance of `IDBCursor`, but returns a promise that resolves/rejects based on operation success/failure:
+  * `update`
+  * `delete`
+* Same as equivalent methods on an instance of `IDBCursor`, but returns a promise that resolves with a `Cursor`:
+  * `advance`
+  * `continue`
+  * `continuePrimaryKey`
