@@ -104,7 +104,7 @@ idb.open('my-database', 1, upgradeDB => {
       upgradeDB.createObjectStore('key-val');
   }
 }).then(db => {
-  let tx = db.transaction('key-val');
+  let tx = db.transaction('key-val', 'readwrite');
   tx.objectStore('key-val').put('hello', 'world');
   return tx.complete;
 }).then(_ => console.log("Done!"));
