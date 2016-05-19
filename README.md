@@ -2,9 +2,110 @@
 
 This is a tiny library that mirrors IndexedDB, but replaces the weird `IDBRequest` objects with promises, plus a couple of other small changes.
 
-## Limitations
+# Examples
 
-### Transaction lifetime
+## Keyval Store
+
+This is very similar to `localStorage`, but async.
+
+```js
+const dbPromsie = idb.open('my-db', 1, upgradeDB => {
+  upgradeDB.createObjectStore('key-val');
+});
+
+const keyValStore = {
+  get(key) {
+    return dbPromise.then(db => {
+      return db.transaction('key-val')
+        .objectStore('key-val').get(key);
+    });
+  },
+  set(key, val) {
+    return dbPromise.then(db => {
+      const tx = db.transaction('key-val', 'readwrite');
+      tx.objectStore('key-val').put(val, key);
+      return tx.complete;
+    });
+  },
+  delete(key) {
+    return dbPromise.then(db => {
+      const tx = db.transaction('key-val', 'readwrite');
+      tx.objectStore('key-val').delete(key);
+      return tx.complete;
+    });
+  }
+};
+```
+
+### Usage
+
+```js
+keyValStore.set('foo', {hello: 'world'});
+
+// logs: {hello: 'world'}
+keyValStore.get('foo').then(val => console.log(val));
+```
+
+## Set of objects
+
+Imagine we had a set of objects like…
+
+```json
+{
+  "id": 123456,
+  "data": {"foo": "bar"}
+}
+```
+
+### Upgrading existing DB
+
+```js
+const dbPromise = idb.open('my-db', 2, upgradeDB => {
+  // Note: we don't use 'break' in this switch statement,
+  // the fall-through behaviour is what we want.
+  switch (upgradeDB.oldVersion) {
+    case 0:
+      upgradeDB.createObjectStore('key-val');
+    case 1:
+      upgradeDB.createObjectStore('objs', {keyPath: 'id'});
+  }
+});
+```
+
+### Adding
+
+```js
+dbPromise.then(db => {
+  const tx = db.transaction('objs', 'readwrite');
+  tx.objectStore('objs').put({
+    id: 123456,
+    data: {foo: "bar"}
+  });
+  return tx.complete;
+});
+```
+
+### Getting all
+
+```js
+dbPromise.then(db => {
+  return db.transaction('objs')
+    .objectStore('objs').getAll();
+}).then(allObjs => console.log(allObjs));
+```
+
+### Getting by ID
+
+```js
+dbPromise.then(db => {
+  return db.transaction('objs')
+    .objectStore('objs').get(123456);
+}).then(obj => console.log(obj));
+```
+
+# Limitations
+
+## Transaction lifetime
 
 At time of writing, all browsers aside from Chrome don't treat promise callbacks as microtasks, or call microtasks incorrectly. This means transactions end by the time promise callbacks are called. In practice, this means you cannot perform transactions that involve waiting for a value, then using it within the same transaction.
 
@@ -18,9 +119,11 @@ The above will fail in browsers other than Chrome, because the transaction has c
 
 You can work around this in Firefox by using a promise polyfill that correctly uses microtasks, such as [es6-promise](https://github.com/jakearchibald/es6-promise).
 
-### Safari
+## Safari
 
 This is a simple wrapper library, so you're exposed to bugs in the underlying implementation. Unfortunately [Safari has a lot of these](http://www.raymondcamden.com/2014/09/25/IndexedDB-on-iOS-8-Broken-Bad).
+
+# API
 
 ## `idb`
 
@@ -52,7 +155,7 @@ idb.open('my-database', 2, upgradeDB => {
 Behaves like `indexedDB.deleteDatabase`, but returns a promise.
 
 ```js
-idb.delete('my-database').then(_ => console.log('done!'));
+idb.delete('my-database').then(() => console.log('done!'));
 ```
 
 ## `DB`
@@ -107,7 +210,7 @@ idb.open('my-database', 1, upgradeDB => {
   let tx = db.transaction('key-val', 'readwrite');
   tx.objectStore('key-val').put('hello', 'world');
   return tx.complete;
-}).then(_ => console.log("Done!"));
+}).then(() => console.log("Done!"));
 ```
 
 ## `ObjectStore`
@@ -154,7 +257,7 @@ tx.objectStore('stuff').openCursor().then(function cursorIterate(cursor) {
   console.log(cursor.value);
   return cursor.continue().then(cursorIterate);
 });
-tx.complete.then(_ => console.log('done'));
+tx.complete.then(() => console.log('done'));
 ```
 
 So in the mean time, `iterateCursor` and `iterateKeyCursor` map to `openCursor` & `openKeyCursor`, take identical arguments, plus an additional callback that receives an `IDBCursor`, so the above example becomes:
@@ -166,7 +269,7 @@ tx.objectStore('stuff').iterateCursor(cursor => {
   console.log(cursor.value);
   cursor.continue();
 });
-tx.complete.then(_ => console.log('done'));
+tx.complete.then(() => console.log('done'));
 ```
 
 The intent is to remove `iterateCursor` and `iterateKeyCursor` from the library once browsers support promises and microtasks correctly.
