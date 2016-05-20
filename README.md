@@ -9,7 +9,7 @@ This is a tiny library that mirrors IndexedDB, but replaces the weird `IDBReques
 This is very similar to `localStorage`, but async.
 
 ```js
-const dbPromsie = idb.open('my-db', 1, upgradeDB => {
+const dbPromise = idb.open('my-db', 1, upgradeDB => {
   upgradeDB.createObjectStore('key-val');
 });
 
