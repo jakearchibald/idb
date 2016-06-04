@@ -111,7 +111,7 @@ At time of writing, all browsers aside from Chrome don't treat promise callbacks
 
 ```js
 let tx = db.transaction('store', 'readwrite');
-let store = db.objectStore('store');
+let store = tx.objectStore('store');
 store.get('hello').then(val => store.put(val, 'foo'));
 ```
 
