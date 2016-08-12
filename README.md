@@ -54,7 +54,7 @@ const idbKeyval = {
         keys.push(cursor.key);
         cursor.continue();
       });
-      
+
       return tx.complete.then(() => keys);
     });
   }
@@ -84,12 +84,12 @@ Imagine we had a set of objects like…
 ### Upgrading existing DB
 
 ```js
-const dbPromise = idb.open('my-db', 2, upgradeDB => {
+const dbPromise = idb.open('keyval-store', 2, upgradeDB => {
   // Note: we don't use 'break' in this switch statement,
   // the fall-through behaviour is what we want.
   switch (upgradeDB.oldVersion) {
     case 0:
-      upgradeDB.createObjectStore('key-val');
+      upgradeDB.createObjectStore('keyval');
     case 1:
       upgradeDB.createObjectStore('objs', {keyPath: 'id'});
   }
@@ -162,12 +162,12 @@ This method returns a promise that resolves to a `DB`.
 `upgradeCallback` is called if `version` is greater than the version last opened. It's similar to IDB's `onupgradeneeded`. The callback receives an instance of `UpgradeDB`.
 
 ```js
-idb.open('my-database', 2, upgradeDB => {
+idb.open('keyval-store', 2, upgradeDB => {
   // Note: we don't use 'break' in this switch statement,
   // the fall-through behaviour is what we want.
   switch (upgradeDB.oldVersion) {
     case 0:
-      upgradeDB.createObjectStore('key-val');
+      upgradeDB.createObjectStore('keyval');
     case 1:
       upgradeDB.createObjectStore('stuff', {keyPath: ''});
   }
@@ -179,7 +179,7 @@ idb.open('my-database', 2, upgradeDB => {
 Behaves like `indexedDB.deleteDatabase`, but returns a promise.
 
 ```js
-idb.delete('my-database').then(() => console.log('done!'));
+idb.delete('keyval-store').then(() => console.log('done!'));
 ```
 
 ## `DB`
@@ -225,14 +225,14 @@ Methods:
 * `objectStore` - as `idbTransaction.objectStore`, but returns an `ObjectStore`
 
 ```js
-idb.open('my-database', 1, upgradeDB => {
+idb.open('keyval-store', 1, upgradeDB => {
   switch (upgradeDB.oldVersion) {
     case 0:
-      upgradeDB.createObjectStore('key-val');
+      upgradeDB.createObjectStore('keyval');
   }
 }).then(db => {
-  const tx = db.transaction('key-val', 'readwrite');
-  tx.objectStore('key-val').put('hello', 'world');
+  const tx = db.transaction('keyval', 'readwrite');
+  tx.objectStore('keyval').put('hello', 'world');
   return tx.complete;
 }).then(() => console.log("Done!"));
 ```
