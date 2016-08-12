@@ -6,32 +6,56 @@ This is a tiny library that mirrors IndexedDB, but replaces the weird `IDBReques
 
 ## Keyval Store
 
-This is very similar to `localStorage`, but async.
+This is very similar to `localStorage`, but async. If this is *all* you need, you may be interested in [idb-keyval](https://www.npmjs.com/package/idb-keyval), you can always upgrade to this library later.
 
 ```js
-const dbPromise = idb.open('my-db', 1, upgradeDB => {
-  upgradeDB.createObjectStore('key-val');
+const dbPromise = idb.open('keyval-store', 1, upgradeDB => {
+  upgradeDB.createObjectStore('keyval');
 });
 
-const keyValStore = {
+const idbKeyval = {
   get(key) {
     return dbPromise.then(db => {
-      return db.transaction('key-val')
-        .objectStore('key-val').get(key);
+      return db.transaction('keyval')
+        .objectStore('keyval').get(key);
     });
   },
   set(key, val) {
     return dbPromise.then(db => {
-      const tx = db.transaction('key-val', 'readwrite');
-      tx.objectStore('key-val').put(val, key);
+      const tx = db.transaction('keyval', 'readwrite');
+      tx.objectStore('keyval').put(val, key);
       return tx.complete;
     });
   },
   delete(key) {
     return dbPromise.then(db => {
-      const tx = db.transaction('key-val', 'readwrite');
-      tx.objectStore('key-val').delete(key);
+      const tx = db.transaction('keyval', 'readwrite');
+      tx.objectStore('keyval').delete(key);
       return tx.complete;
+    });
+  },
+  clear() {
+    return dbPromise.then(db => {
+      const tx = db.transaction('keyval', 'readwrite');
+      tx.objectStore('keyval').clear(key);
+      return tx.complete;
+    });
+  },
+  keys() {
+    return dbPromise.then(db => {
+      const tx = db.transaction('keyval');
+      const keys = [];
+      const store = tx.objectStore('keyval');
+
+      // This would be store.getAllKeys(), but it isn't supported by Edge or Safari.
+      // openKeyCursor isn't supported by Safari, so we fall back
+      (store.iterateKeyCursor || store.iterateCursor).call(store, cursor => {
+        if (!cursor) return;
+        keys.push(cursor.key);
+        cursor.continue();
+      });
+      
+      return tx.complete.then(() => keys);
     });
   }
 };
@@ -110,8 +134,8 @@ dbPromise.then(db => {
 At time of writing, all browsers aside from Chrome don't treat promise callbacks as microtasks, or call microtasks incorrectly. This means transactions end by the time promise callbacks are called. In practice, this means you cannot perform transactions that involve waiting for a value, then using it within the same transaction.
 
 ```js
-let tx = db.transaction('store', 'readwrite');
-let store = tx.objectStore('store');
+const tx = db.transaction('store', 'readwrite');
+const store = tx.objectStore('store');
 store.get('hello').then(val => store.put(val, 'foo'));
 ```
 
@@ -207,7 +231,7 @@ idb.open('my-database', 1, upgradeDB => {
       upgradeDB.createObjectStore('key-val');
   }
 }).then(db => {
-  let tx = db.transaction('key-val', 'readwrite');
+  const tx = db.transaction('key-val', 'readwrite');
   tx.objectStore('key-val').put('hello', 'world');
   return tx.complete;
 }).then(() => console.log("Done!"));
@@ -247,11 +271,10 @@ Methods:
 
 ### `iterateCursor` & `iterateKeyCursor`
 
-Due to the microtask issues in most browsers, iterating over a cursor using promises doesn't really work:
+Due to the microtask issues in some browsers, iterating over a cursor using promises doesn't always work:
 
 ```js
-// Currently, this only works in Chrome:
-let tx = db.transaction('stuff');
+const tx = db.transaction('stuff');
 tx.objectStore('stuff').openCursor().then(function cursorIterate(cursor) {
   if (!cursor) return;
   console.log(cursor.value);
@@ -263,7 +286,7 @@ tx.complete.then(() => console.log('done'));
 So in the mean time, `iterateCursor` and `iterateKeyCursor` map to `openCursor` & `openKeyCursor`, take identical arguments, plus an additional callback that receives an `IDBCursor`, so the above example becomes:
 
 ```js
-let tx = db.transaction('stuff');
+const tx = db.transaction('stuff');
 tx.objectStore('stuff').iterateCursor(cursor => {
   if (!cursor) return;
   console.log(cursor.value);
