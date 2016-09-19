@@ -4,19 +4,16 @@ This is a tiny library that mirrors IndexedDB, but replaces the weird `IDBReques
 
 ## Usage
 
-You can find `indexeddb-promised` as `idb` in npm. With Browserify or Webpack and Babel:
+You can find `indexeddb-promised` as `idb` in npm:
 
 ```sh
 npm install --save idb
 ```
 
-Then you can import and use it.
+Then you can import (or require) and use it.
 
 ```js
 import idb from 'idb';
-
-const dbPromise = idb.open('my-store');
-...
 ```
 
 # Examples
