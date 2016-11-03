@@ -43,8 +43,8 @@ export interface ObjectStore {
   readonly indexNames: DOMStringList
   readonly autoIncrement: boolean
 
-  put(value: any, key?: IDBKeyRange | IDBValidKey): Promise<void>
-  add(value: any, key?: IDBKeyRange | IDBValidKey): Promise<void>
+  put(value: any, key?: IDBKeyRange | IDBValidKey): Promise<IDBValidKey>
+  add(value: any, key?: IDBKeyRange | IDBValidKey): Promise<IDBValidKey>
   delete(key: IDBKeyRange | IDBValidKey): Promise<void>
   clear(): Promise<void>
   get(key: any): Promise<any>
