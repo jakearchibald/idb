@@ -1,6 +1,9 @@
 /** This is your entry point to the API. It's exposed to the global scope unless you're using a module system such as browserify, in which case it's the exported object. */
 declare var idb: IDBStatic;
 export default idb;
+declare global {
+  var idb: IDBStatic;
+}
 
 /** This is a tiny library that mirrors IndexedDB, but replaces IDBRequest objects with promises.
  * This is your entry point to the API. It's exposed to the global scope unless you're using a module system such as browserify, in which case it's the exported object. */
