@@ -37,7 +37,7 @@ const idbKeyval = {
   clear() {
     return dbPromise.then(db => {
       const tx = db.transaction('keyval', 'readwrite');
-      tx.objectStore('keyval').clear(key);
+      tx.objectStore('keyval').clear();
       return tx.complete;
     });
   },
