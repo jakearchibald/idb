@@ -94,8 +94,8 @@ export interface Transaction {
 
 /** Wrapper of IDBObjectStore that presents the asynchronous operations as Promises. */
 export interface ObjectStore {
-    /** The name of this object store. */
-    readonly name: string;
+    /** The name of this object store. Settable only during upgrades. */
+    name: string;
 
     /** The key path of this object store. If this attribute is null, the application must provide a key for each modification operation. */
     readonly keyPath: string | string[];
@@ -142,6 +142,11 @@ export interface ObjectStore {
      * @param count Optional. Specifies the number of values to return if more than one is found. If it is lower than 0 or greater than 232-1 a TypeError exception will be thrown.
      * @returns A promise that resolves with the items when the underlying getAll IDBRequest is successful. */
     getAll(query?: IDBKeyRange | IDBValidKey, count?: number): Promise<any[]>;
+
+    /** Returns a Promise of an IDBRequest object that (in a separate thread) finds either the given key or the primary key, if key is an IDBKeyRange.
+     * @param key The key or key range that identifies the record to be retrieved.
+     * @returns A promise that resolves with the item when the underlying get IDBRequest is successful. */
+    getKey(key: IDBKeyRange | IDBValidKey): Promise<any>;
 
     /** Returns a Promise of an IDBRequest object that (in a separate thread) resolves with record keys for all the objects matching the specified parameter or all record keys in the store if no parameters are given.
      * @param query Optional. A key or IDBKeyRange to be queried. If nothing is passed, this will default to a key range that selects all the records in this object store.
