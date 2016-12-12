@@ -1,4 +1,4 @@
-import "babelify/node_modules/babel-core/node_modules/regenerator/runtime";
+import regeneratorRuntime from "regenerator/runtime";
 import assert from "assert";
 import {Promise} from "es6-promise";
 
