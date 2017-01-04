@@ -80,6 +80,9 @@ export interface Transaction {
     /** The mode for isolating access to data in the object stores that are in the scope of the transaction. For possible values, see the Constants section below. The default value is readonly. */
     readonly mode: 'readonly' | 'readwrite' | 'versionchange';
 
+    /** The database connection with which this transaction is associated. */
+    readonly db: DB;
+
     /** Rolls back all the changes to objects in the database associated with this transaction. If this transaction has been aborted or completed, then this method throws an error event. */
     abort(): void;
 
