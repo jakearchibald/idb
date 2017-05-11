@@ -92,8 +92,37 @@ export interface Transaction {
     objectStore(name: string): ObjectStore;
 }
 
+/** Common interface for ObjectStore and Index, since bothe provide these cursor methods */
+export interface HasCursor {
+    /** Returns a Promise of an IDBRequest object that (in a separate thread) resolves a new cursor object. 
+     * Used for iterating through an object store by primary key with a cursor.
+     * @param range Optional. A key or IDBKeyRange to be queried. If a single valid key is passed, this will default to a range containing only that key. If nothing is passed, this will default to a key range that selects all the records in this object store.
+     * @param direction Optional. An IDBCursorDirection telling the cursor what direction to travel. Defaults to "next".
+     * @returns A promise that resolves with the cursor once it has been opened. */
+    openCursor(range?: IDBKeyRange | IDBValidKey, direction?: 'next' | 'nextunique' | 'prev' | 'prevunique'): Promise<Cursor>;
+
+    /** Returns a Promise of an IDBRequest object that (in a separate thread) resolves a new cursor object. 
+     * Used for iterating through an object store with a key.
+     * @param range Optional. A key or IDBKeyRange to be queried. If a single valid key is passed, this will default to a range containing only that key. If nothing is passed, this will default to a key range that selects all the records in this object store.
+     * @param direction Optional. An IDBCursorDirection telling the cursor what direction to travel. Defaults to "next".
+     * @returns A promise that resolves with the cursor once it has been opened. */
+    openKeyCursor(range?: IDBKeyRange | IDBValidKey, direction?: 'next' | 'nextunique' | 'prev' | 'prevunique'): Promise<Cursor>;
+
+    /** Due to the microtask issues in some browsers, iterating over a cursor using promises doesn't always work.
+     * So in the mean time, iterateCursor maps to openCursor, takes identical arguments, plus an additional callback that receives an IDBCursor */
+    iterateCursor(callback: (c: Cursor) => void): void;
+    iterateCursor(range: IDBKeyRange | IDBValidKey, callback: (c: Cursor) => void): void;
+    iterateCursor(range: IDBKeyRange | IDBValidKey, direction: 'next' | 'nextunique' | 'prev' | 'prevunique', callback: (c: Cursor) => void): void;
+
+    /** Due to the microtask issues in some browsers, iterating over a cursor using promises doesn't always work.
+     * So in the mean time, iterateKeyCursor maps to openKeyCursor, takes identical arguments, plus an additional callback that receives an IDBCursor */
+    iterateKeyCursor(callback: (c: Cursor) => void): void;
+    iterateKeyCursor(range: IDBKeyRange | IDBValidKey, callback: (c: Cursor) => void): void;
+    iterateKeyCursor(range: IDBKeyRange | IDBValidKey, direction: 'next' | 'nextunique' | 'prev' | 'prevunique', callback: (c: Cursor) => void): void;
+}
+
 /** Wrapper of IDBObjectStore that presents the asynchronous operations as Promises. */
-export interface ObjectStore {
+export interface ObjectStore : HasCursor {
     /** The name of this object store. Settable only during upgrades. */
     name: string;
 
@@ -160,20 +189,6 @@ export interface ObjectStore {
      * @returns A promise that resolves with the total when the underlying count IDBRequest is successful. */
     count(key?: IDBKeyRange | IDBValidKey): Promise<number>;
 
-    /** Returns a Promise of an IDBRequest object that (in a separate thread) resolves a new cursor object. 
-     * Used for iterating through an object store by primary key with a cursor.
-     * @param range Optional. A key or IDBKeyRange to be queried. If a single valid key is passed, this will default to a range containing only that key. If nothing is passed, this will default to a key range that selects all the records in this object store.
-     * @param direction Optional. An IDBCursorDirection telling the cursor what direction to travel. Defaults to "next".
-     * @returns A promise that resolves with the cursor once it has been opened. */
-    openCursor(range?: IDBKeyRange | IDBValidKey, direction?: 'next' | 'nextunique' | 'prev' | 'prevunique'): Promise<Cursor>;
-
-    /** Returns a Promise of an IDBRequest object that (in a separate thread) resolves a new cursor object. 
-     * Used for iterating through an object store with a key.
-     * @param range Optional. A key or IDBKeyRange to be queried. If a single valid key is passed, this will default to a range containing only that key. If nothing is passed, this will default to a key range that selects all the records in this object store.
-     * @param direction Optional. An IDBCursorDirection telling the cursor what direction to travel. Defaults to "next".
-     * @returns A promise that resolves with the cursor once it has been opened. */
-    openKeyCursor(range?: IDBKeyRange | IDBValidKey, direction?: 'next' | 'nextunique' | 'prev' | 'prevunique'): Promise<Cursor>;
-
     /** Creates a new index during a version upgrade, returning a new Index object in the connected database.
      * @param name The name of the index to create. It is possible to create an index with an empty name.
      * @param keyPath The key path for the index to use. It is possible to create an index with an empty keyPath, and also to pass in an array as a keyPath.
@@ -189,18 +204,10 @@ export interface ObjectStore {
      * @param name The name of the existing index to get.
      * @returns The specified index. */
     index(name: string): Index;
-
-    /** Due to the microtask issues in some browsers, iterating over a cursor using promises doesn't always work.
-     * So in the mean time, iterateCursor maps to openCursor, takes identical arguments, plus an additional callback that receives an IDBCursor */
-    iterateCursor(callback: (c: Cursor) => void): void;
-
-    /** Due to the microtask issues in some browsers, iterating over a cursor using promises doesn't always work.
-     * So in the mean time, iterateKeyCursor maps to openKeyCursor, takes identical arguments, plus an additional callback that receives an IDBCursor */
-    iterateKeyCursor(callback: (c: Cursor) => void): void;
 }
 
 /** Wrapper of IDBIndex that presents the asynchronous operations as Promises. */
-export interface Index {
+export interface Index : HasCursor {
     /** The name of this index. */
     readonly name: string;
 
@@ -243,28 +250,6 @@ export interface Index {
      * @param count Optional. Specifies the number of values to return if more than one is found. If it is lower than 0 or greater than 232-1 a TypeError exception will be thrown.
      * @returns A promise that resolves with the record keys when the underlying getAllKeys IDBRequest is successful. */
     getAllKeys(query?: IDBKeyRange, count?: number): Promise<any[]>;
-
-    /** Returns a Promise of an IDBRequest object that (in a separate thread) resolves a new cursor object. 
-     * Used for iterating through an object store by primary key with a cursor.
-     * @param range Optional. A key or IDBKeyRange to be queried. If a single valid key is passed, this will default to a range containing only that key. If nothing is passed, this will default to a key range that selects all the records in this object store.
-     * @param direction Optional. An IDBCursorDirection telling the cursor what direction to travel. Defaults to "next".
-     * @returns A promise that resolves with the cursor once it has been opened. */
-    openCursor(range?: IDBKeyRange | IDBValidKey, direction?: 'next' | 'nextunique' | 'prev' | 'prevunique'): Promise<Cursor>;
-
-    /** Returns a Promise of an IDBRequest object that (in a separate thread) resolves a new cursor object. 
-     * Used for iterating through an object store with a key.
-     * @param range Optional. A key or IDBKeyRange to be queried. If a single valid key is passed, this will default to a range containing only that key. If nothing is passed, this will default to a key range that selects all the records in this object store.
-     * @param direction Optional. An IDBCursorDirection telling the cursor what direction to travel. Defaults to "next".
-     * @returns A promise that resolves with the cursor once it has been opened. */
-    openKeyCursor(range?: IDBKeyRange | IDBValidKey, direction?: 'next' | 'nextunique' | 'prev' | 'prevunique'): Promise<Cursor>;
-
-    /** Due to the microtask issues in some browsers, iterating over a cursor using promises doesn't always work.
-     * So in the mean time, iterateCursor maps to openCursor, takes identical arguments, plus an additional callback that receives an IDBCursor */
-    iterateCursor(callback: (c: Cursor) => void): void;
-
-    /** Due to the microtask issues in some browsers, iterating over a cursor using promises doesn't always work.
-     * So in the mean time, iterateKeyCursor maps to openKeyCursor, takes identical arguments, plus an additional callback that receives an IDBCursor */
-    iterateKeyCursor(callback: (c: Cursor) => void): void;
 }
 
 /** Wrapper of IDBCursor that presents the asynchronous operations as Promises. */
