@@ -122,7 +122,7 @@ export interface HasCursor {
 }
 
 /** Wrapper of IDBObjectStore that presents the asynchronous operations as Promises. */
-export interface ObjectStore : HasCursor {
+export interface ObjectStore extends HasCursor {
     /** The name of this object store. Settable only during upgrades. */
     name: string;
 
@@ -207,7 +207,7 @@ export interface ObjectStore : HasCursor {
 }
 
 /** Wrapper of IDBIndex that presents the asynchronous operations as Promises. */
-export interface Index : HasCursor {
+export interface Index extends HasCursor {
     /** The name of this index. */
     readonly name: string;
 
