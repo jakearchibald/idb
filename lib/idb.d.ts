@@ -99,26 +99,26 @@ export interface HasCursor {
      * @param range Optional. A key or IDBKeyRange to be queried. If a single valid key is passed, this will default to a range containing only that key. If nothing is passed, this will default to a key range that selects all the records in this object store.
      * @param direction Optional. An IDBCursorDirection telling the cursor what direction to travel. Defaults to "next".
      * @returns A promise that resolves with the cursor once it has been opened. */
-    openCursor(range?: IDBKeyRange | IDBValidKey, direction?: 'next' | 'nextunique' | 'prev' | 'prevunique'): Promise<Cursor>;
+    openCursor(range?: IDBKeyRange | IDBValidKey | null, direction?: 'next' | 'nextunique' | 'prev' | 'prevunique'): Promise<Cursor>;
 
     /** Returns a Promise of an IDBRequest object that (in a separate thread) resolves a new cursor object. 
      * Used for iterating through an object store with a key.
      * @param range Optional. A key or IDBKeyRange to be queried. If a single valid key is passed, this will default to a range containing only that key. If nothing is passed, this will default to a key range that selects all the records in this object store.
      * @param direction Optional. An IDBCursorDirection telling the cursor what direction to travel. Defaults to "next".
      * @returns A promise that resolves with the cursor once it has been opened. */
-    openKeyCursor(range?: IDBKeyRange | IDBValidKey, direction?: 'next' | 'nextunique' | 'prev' | 'prevunique'): Promise<Cursor>;
+    openKeyCursor(range?: IDBKeyRange | IDBValidKey | null, direction?: 'next' | 'nextunique' | 'prev' | 'prevunique'): Promise<Cursor>;
 
     /** Due to the microtask issues in some browsers, iterating over a cursor using promises doesn't always work.
      * So in the mean time, iterateCursor maps to openCursor, takes identical arguments, plus an additional callback that receives an IDBCursor */
     iterateCursor(callback: (c: Cursor) => void): void;
-    iterateCursor(range: IDBKeyRange | IDBValidKey, callback: (c: Cursor) => void): void;
-    iterateCursor(range: IDBKeyRange | IDBValidKey, direction: 'next' | 'nextunique' | 'prev' | 'prevunique', callback: (c: Cursor) => void): void;
+    iterateCursor(range: IDBKeyRange | IDBValidKey | null, callback: (c: Cursor) => void): void;
+    iterateCursor(range: IDBKeyRange | IDBValidKey | null, direction: 'next' | 'nextunique' | 'prev' | 'prevunique', callback: (c: Cursor) => void): void;
 
     /** Due to the microtask issues in some browsers, iterating over a cursor using promises doesn't always work.
      * So in the mean time, iterateKeyCursor maps to openKeyCursor, takes identical arguments, plus an additional callback that receives an IDBCursor */
     iterateKeyCursor(callback: (c: Cursor) => void): void;
-    iterateKeyCursor(range: IDBKeyRange | IDBValidKey, callback: (c: Cursor) => void): void;
-    iterateKeyCursor(range: IDBKeyRange | IDBValidKey, direction: 'next' | 'nextunique' | 'prev' | 'prevunique', callback: (c: Cursor) => void): void;
+    iterateKeyCursor(range: IDBKeyRange | IDBValidKey | null, callback: (c: Cursor) => void): void;
+    iterateKeyCursor(range: IDBKeyRange | IDBValidKey | null, direction: 'next' | 'nextunique' | 'prev' | 'prevunique', callback: (c: Cursor) => void): void;
 }
 
 /** Wrapper of IDBObjectStore that presents the asynchronous operations as Promises. */
