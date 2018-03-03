@@ -2,6 +2,16 @@
 
 This is a tiny library that mirrors IndexedDB, but replaces the weird `IDBRequest` objects with promises, plus a couple of other small changes.
 
+## Install
+
+Before installing, install the [Node.js](https://nodejs.org/en/).
+
+With installed `Node.js`, use the command:
+
+```JavaScript
+npm install idb
+```
+
 # Examples
 
 ## Keyval Store
@@ -262,7 +272,7 @@ Methods:
   * `openCursor`
   * `openKeyCursor`
 * `deleteIndex` - as `idbObjectStore.deleteIndex`
-* Same as equivalent methods on an instance of `IDBObjectStore`, but returns an `Index`: 
+* Same as equivalent methods on an instance of `IDBObjectStore`, but returns an `Index`:
   * `createIndex`
   * `index`
 * `iterateCursor` - see below
