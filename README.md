@@ -131,21 +131,51 @@ dbPromise.then(db => {
 
 ## Transaction lifetime
 
-At time of writing, all browsers aside from Chrome don't treat promise callbacks as microtasks, or call microtasks incorrectly. This means transactions end by the time promise callbacks are called. In practice, this means you cannot perform transactions that involve waiting for a value, then using it within the same transaction.
+An IDB transaction will auto-close if it doesn't have anything to do once microtasks have been processed. As a result, this works fine:
 
 ```js
-const tx = db.transaction('store', 'readwrite');
-const store = tx.objectStore('store');
-store.get('hello').then(val => store.put(val, 'foo'));
+dbPromise.then(async db => {
+  const tx = db.transaction('keyval', 'readwrite');
+  const store = tx.objectStore('keyval');
+  const val = await store.get('counter') || 0;
+  store.put(val + 1, 'counter');
+  return tx.complete;
+});
 ```
 
-The above will fail in browsers other than Chrome, because the transaction has closed by the time we get to the `.put`.
+But this doesn't:
 
-You can work around this in Firefox by using a promise polyfill that correctly uses microtasks, such as [es6-promise](https://github.com/jakearchibald/es6-promise).
+```js
+dbPromise.then(async db => {
+  const tx = db.transaction('keyval', 'readwrite');
+  const store = tx.objectStore('keyval');
+  const val = await store.get('counter') || 0;
+  // The transaction will auto-close while the fetch is in-progress
+  const newVal = await fetch('/increment?val=' + val)
+  store.put(newVal, 'counter');
+  return tx.complete;
+});
+```
 
-## Safari
+## Promise issues in older browsers
 
-This is a simple wrapper library, so you're exposed to bugs in the underlying implementation. Unfortunately [Safari has a lot of these](http://www.raymondcamden.com/2014/09/25/IndexedDB-on-iOS-8-Broken-Bad).
+Some older browsers don't handle promises properly, which causes issues if you do more than one thing in a transaction:
+
+```js
+dbPromise.then(async db => {
+  const tx = db.transaction('keyval', 'readwrite');
+  const store = tx.objectStore('keyval');
+  const val = await store.get('counter') || 0;
+  // In some older browsers, the transaction closes here.
+  // Meaning this next line fails:
+  store.put(val + 1, 'counter');
+  return tx.complete;
+});
+```
+
+All modern browsers have fixed this. [Test your browser](https://simple-idb-demo.glitch.me/microtask-issue.html).
+
+You can work around this in some versions of Firefox by using a promise polyfill that correctly uses microtasks, such as [es6-promise](https://github.com/jakearchibald/es6-promise).
 
 # API
 
@@ -262,7 +292,7 @@ Methods:
   * `openCursor`
   * `openKeyCursor`
 * `deleteIndex` - as `idbObjectStore.deleteIndex`
-* Same as equivalent methods on an instance of `IDBObjectStore`, but returns an `Index`: 
+* Same as equivalent methods on an instance of `IDBObjectStore`, but returns an `Index`:
   * `createIndex`
   * `index`
 * `iterateCursor` - see below
