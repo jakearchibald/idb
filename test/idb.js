@@ -56,7 +56,7 @@ describe('idb interface', () => {
     const tx = db.transaction('list');
     const values = [];
 
-    tx.objectStore('list').iterateCursor((function*() {
+    const cursordone = tx.objectStore('list').iterateCursor((function*() {
 			try {
 				while((let value = yield)) {
 					values.push(value);
@@ -67,7 +67,7 @@ describe('idb interface', () => {
 			}
     })());
 
-    await tx.complete;
+    await Promise.race([tx.complete, cursordone]);
     assert.equal(values.join(), 'a,b,c,d,e');
     db.close();
   });
