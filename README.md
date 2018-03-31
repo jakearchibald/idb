@@ -49,11 +49,8 @@ const idbKeyval = {
 
       // This would be store.getAllKeys(), but it isn't supported by Edge or Safari.
       // openKeyCursor isn't supported by Safari, so we fall back
-      (store.iterateKeyCursor || store.iterateCursor).call(store, cursor => {
-        if (!cursor) return;
-        keys.push(cursor.key);
-        cursor.continue();
-      });
+      (store.iterateKeyCursor || store.iterateCursor).call(store, 
+	    (value, key) => keys.push(key));
 
       return tx.complete.then(() => keys);
     });
@@ -301,31 +298,52 @@ Methods:
 
 ### `iterateCursor` & `iterateKeyCursor`
 
-Due to the microtask issues in some browsers, iterating over a cursor using promises doesn't always work:
+`iterateCursor` and `iterateKeyCursor` map to `openCursor` & `openKeyCursor`, take identical arguments, plus an additional iterator as the last argument, that receives an `IDBCursor` with each value. Typical usage might be:
 
 ```js
 const tx = db.transaction('stuff');
-tx.objectStore('stuff').openCursor().then(function cursorIterate(cursor) {
-  if (!cursor) return;
-  console.log(cursor.value);
-  return cursor.continue().then(cursorIterate);
-});
-tx.complete.then(() => console.log('done'));
+tx.objectStore('stuff').iterateCursor({
+  next: cursor => {
+    if(!cursor)
+	  return {value: 42, done: true}
+    console.log(cursor.value);
+	return {value: 23, done: false}
+  }
+}).then(() => console.log('done'));
 ```
 
-So in the mean time, `iterateCursor` and `iterateKeyCursor` map to `openCursor` & `openKeyCursor`, take identical arguments, plus an additional callback that receives an `IDBCursor`, so the above example becomes:
+or perhaps more clearly:
+```js
+const tx = db.transaction('stuff');
+tx.objectStore('stuff').iterateCursor((function*() {
+  while((let cursor = yield)) {
+    console.log(cursor.value);
+  }
+  return 42;
+})()).then(() => console.log('done'));
+```
+
+You can also pass a callback in the form of `(value, key) => ...` which will be auto-iterified.
 
 ```js
 const tx = db.transaction('stuff');
-tx.objectStore('stuff').iterateCursor(cursor => {
-  if (!cursor) return;
-  console.log(cursor.value);
-  cursor.continue();
-});
-tx.complete.then(() => console.log('done'));
+tx.objectStore('stuff').iterateCursor(
+     (value, key) => 
+       console.log(cursor.value)))
+  .then(() => console.log('done'));
 ```
 
-The intent is to remove `iterateCursor` and `iterateKeyCursor` from the library once browsers support promises and microtasks correctly.
+The result of iterateCursor and iterateKeyCursor is a promise, that completes when either the iterator finishes, the callback returns something that isn’t undefined, or the cursor runs out of results. This is almost the same time as the tx.complete promise, since IndexedDB completes transactions immediately as soon as the cursor stops continuing, but unlike tx.complete, the promise returned from iterateCursor can have a result, which the iterator (or callback) returned once it found what it was looking for.
+
+Basically:
+
+```js
+Promise.race([tx.complete, tx.objectStore(...).iterateCursor(...)])
+```
+
+will _probably_ return the second result, which could be meaningful depending on the callback/iterator, but the timing is close enough it could potentially return the first result, especially if the second result is itself a promise.
+
+Warning: if the iterator yields or returns a pending promise, the transaction _will_ complete, and the cursor _will_ be invalid once the promise is resolved. This is an internal limitation of IndexedDB itself. The intent is to remove `iterateCursor` and `iterateKeyCursor` from the library once browsers support promises and microtasks correctly in their IndexedDB implementations.
 
 ## `Index`
 
