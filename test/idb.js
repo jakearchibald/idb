@@ -56,11 +56,16 @@ describe('idb interface', () => {
     const tx = db.transaction('list');
     const values = [];
 
-    tx.objectStore('list').iterateCursor(cursor => {
-      if (!cursor) return;
-      values.push(cursor.value);
-      cursor.continue();
-    });
+    tx.objectStore('list').iterateCursor((function*() {
+			try {
+				while((let value = yield)) {
+					values.push(value);
+				}
+			} catch(e) {
+				values.push("aaaaaaaaa")
+				console.error("there was an error",e);
+			}
+    })());
 
     await tx.complete;
     assert.equal(values.join(), 'a,b,c,d,e');
