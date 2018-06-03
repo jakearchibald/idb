@@ -57,6 +57,22 @@ const idbKeyval = {
 
       return tx.complete.then(() => keys);
     });
+  },
+  index(indexName, indexValue) {
+    return dbPromise.then(db => {
+      const tx = db.transaction('keyval');
+      const store = tx.objectStore('keyval');
+      const index = store.index(indexName);
+      const indexes = [];
+
+      index.openCursor(indexValue).then(function showIndex(cursor) {
+        if (!cursor) return;
+        indexes.push(cursor.value);
+        cursor.continue().then(showIndex);
+      });
+
+      return tx.complete.then(() => indexes);
+    });
   }
 };
 ```
