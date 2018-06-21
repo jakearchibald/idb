@@ -2,6 +2,24 @@
 
 This is a tiny library that mirrors IndexedDB, but replaces the weird `IDBRequest` objects with promises, plus a couple of other small changes.
 
+# Installation
+
+If you're using Rollup/Webpack or similar:
+
+```sh
+npm install idb
+```
+
+Then in your JS:
+
+```js
+import idb from 'idb';
+
+await idb.open(…);
+```
+
+Or include [the script](https://github.com/jakearchibald/idb/blob/master/lib/idb.js) as it is, and `idb` will exist on the global scope.
+
 # Examples
 
 ## Keyval Store
