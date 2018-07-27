@@ -209,6 +209,8 @@ This method returns a promise that resolves to a `DB`.
 
 `upgradeCallback` is called if `version` is greater than the version last opened. It's similar to IDB's `onupgradeneeded`. The callback receives an instance of `UpgradeDB`.
 
+If the database is already in use (i.e. already open), the promise will reject with an error.
+
 ```js
 idb.open('keyval-store', 2, upgradeDB => {
   // Note: we don't use 'break' in this switch statement,
@@ -226,8 +228,15 @@ idb.open('keyval-store', 2, upgradeDB => {
 
 Behaves like `indexedDB.deleteDatabase`, but returns a promise.
 
+If the database is in use (i.e. still open), the promise will reject with an error. Once all related database connections are closed, IndexedDB will automatically delete the database.
+
 ```js
-idb.delete('keyval-store').then(() => console.log('done!'));
+idb.delete('keyval-store')
+  .then(() => console.log('done'))
+  .catch((err) => {
+    // Database is still in use; all connections to the database needs to close.
+    // Once the connections are closed, the database will be deleted automatically.
+  });
 ```
 
 ## `DB`
