@@ -82,10 +82,10 @@ const idbKeyval = {
 ### Usage
 
 ```js
-keyValStore.set('foo', {hello: 'world'});
+idbKeyval.set('foo', {hello: 'world'});
 
 // logs: {hello: 'world'}
-keyValStore.get('foo').then(val => console.log(val));
+idbKeyval.get('foo').then(val => console.log(val));
 ```
 
 ## Set of objects
