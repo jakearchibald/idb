@@ -28,6 +28,7 @@
     "gulp-util": "^3.0.6",
     "merge-stream": "^0.1.8",
     "mocha": "^2.2.5",
+    "rollup": "^1.0.2",
     "run-sequence": "^1.1.2",
     "uglifyify": "^3.0.1",
     "vinyl-buffer": "^1.0.0",
