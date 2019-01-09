@@ -16,9 +16,9 @@ gulp.task('clean', function (done) {
   require('del')(['dist'], done);
 });
 
-gulp.task('copy-lib', function() {
+gulp.task('copy-build', function() {
   return gulp.src([
-    'lib/idb.js'
+    'build/idb.js'
   ]).pipe(gulp.dest('dist'))
     .pipe(reload({stream: true}));
 });
@@ -99,7 +99,7 @@ gulp.task('browser-sync', function() {
 
 gulp.task('watch', function () {
   gulp.watch(['test/index.html'], ['copy']);
-  gulp.watch(['lib/idb.js'], ['copy-lib']);
+  gulp.watch(['build/idb.js'], ['copy-build']);
 
   Object.keys(bundlers).forEach(function(key) {
     var watchifyBundler = watchify(bundlers[key]);
@@ -111,11 +111,11 @@ gulp.task('watch', function () {
 });
 
 gulp.task('build', function (done) {
-  runSequence('clean', ['copy', 'js', 'copy-lib'], done);
+  runSequence('clean', ['copy', 'js', 'copy-build'], done);
 });
 
 gulp.task('default', ['build']);
 
 gulp.task('serve', function (done) {
-  runSequence('clean', ['copy', 'js', 'copy-lib'], ['browser-sync', 'watch'], done);
+  runSequence('clean', ['copy', 'js', 'copy-build'], ['browser-sync', 'watch'], done);
 });

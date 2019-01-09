@@ -18,7 +18,7 @@ import idb from 'idb';
 await idb.open(…);
 ```
 
-Or include [the script](https://github.com/jakearchibald/idb/blob/master/lib/idb.js) as it is, and `idb` will exist on the global scope.
+Or include [the script](https://github.com/jakearchibald/idb/blob/master/build/idb.js) as it is, and `idb` will exist on the global scope.
 
 # Examples
 

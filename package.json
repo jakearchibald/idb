@@ -4,10 +4,10 @@
   "description": "IndexedDB but with promises",
   "main": "lib/node.js",
   "module": "lib/idb.mjs",
-  "browser": "lib/idb.js",
+  "browser": "build/idb.js",
   "typings": "lib/idb.d.ts",
   "scripts": {
-    "build": "rollup lib/idb.mjs --file lib/idb.js --format umd --name idb",
+    "build": "rollup lib/idb.mjs --file build/idb.js --format umd --name idb",
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "gulp serve"
   },
