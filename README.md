@@ -13,9 +13,9 @@ npm install idb
 Then in your JS:
 
 ```js
-import idb from 'idb';
+import * as idb from 'idb';
 
-await idb.open(…);
+await idb.openDb(…);
 ```
 
 Or include [the script](https://github.com/jakearchibald/idb/blob/master/build/idb.js) as it is, and `idb` will exist on the global scope.
@@ -27,7 +27,7 @@ Or include [the script](https://github.com/jakearchibald/idb/blob/master/build/i
 This is very similar to `localStorage`, but async. If this is *all* you need, you may be interested in [idb-keyval](https://www.npmjs.com/package/idb-keyval), you can always upgrade to this library later.
 
 ```js
-const dbPromise = idb.open('keyval-store', 1, upgradeDB => {
+const dbPromise = idb.openDb('keyval-store', 1, upgradeDB => {
   upgradeDB.createObjectStore('keyval');
 });
 
@@ -102,7 +102,7 @@ Imagine we had a set of objects like…
 ### Upgrading existing DB
 
 ```js
-const dbPromise = idb.open('keyval-store', 2, upgradeDB => {
+const dbPromise = idb.openDb('keyval-store', 2, upgradeDB => {
   // Note: we don't use 'break' in this switch statement,
   // the fall-through behaviour is what we want.
   switch (upgradeDB.oldVersion) {
@@ -199,9 +199,9 @@ You can work around this in some versions of Firefox by using a promise polyfill
 
 ## `idb`
 
-This is your entry point to the API. It's exposed to the global scope unless you're using a module system such as browserify, in which case it's the exported object.
+This is your entry point to the API. It's exposed to the global scope unless you're using a module system such as browserify, in which case it's the exported object. If you are using native ES modules, the functions are provided as individual exports, so you can `import * as idb from 'idb'` or `import { openDb, deleteDb } from 'idb'`.
 
-### `idb.open(name, version, upgradeCallback)`
+### `idb.openDb(name, version, upgradeCallback)`
 
 This method returns a promise that resolves to a `DB`.
 
@@ -210,7 +210,7 @@ This method returns a promise that resolves to a `DB`.
 `upgradeCallback` is called if `version` is greater than the version last opened. It's similar to IDB's `onupgradeneeded`. The callback receives an instance of `UpgradeDB`.
 
 ```js
-idb.open('keyval-store', 2, upgradeDB => {
+idb.openDb('keyval-store', 2, upgradeDB => {
   // Note: we don't use 'break' in this switch statement,
   // the fall-through behaviour is what we want.
   switch (upgradeDB.oldVersion) {
@@ -222,12 +222,12 @@ idb.open('keyval-store', 2, upgradeDB => {
 }).then(db => console.log("DB opened!", db));
 ```
 
-### `idb.delete(name)`
+### `idb.deleteDb(name)`
 
 Behaves like `indexedDB.deleteDatabase`, but returns a promise.
 
 ```js
-idb.delete('keyval-store').then(() => console.log('done!'));
+idb.deleteDb('keyval-store').then(() => console.log('done!'));
 ```
 
 ## `DB`
@@ -273,7 +273,7 @@ Methods:
 * `objectStore` - as `idbTransaction.objectStore`, but returns an `ObjectStore`
 
 ```js
-idb.open('keyval-store', 1, upgradeDB => {
+idb.openDb('keyval-store', 1, upgradeDB => {
   switch (upgradeDB.oldVersion) {
     case 0:
       upgradeDB.createObjectStore('keyval');

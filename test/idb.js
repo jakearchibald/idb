@@ -5,21 +5,21 @@ import {Promise} from "es6-promise";
 self.Promise = Promise;
 
 describe('idb interface', () => {
-  beforeEach(done => idb.delete('tmp-db').then(done));
+  beforeEach(done => idb.deleteDb('tmp-db').then(done));
 
   it('exists on window', () => {
     assert('idb' in self);
   });
 
-  it('has open and delete methods', () => {
-    assert('open' in idb);
-    assert('delete' in idb);
+  it('has openDb and deleteDb methods', () => {
+    assert('openDb' in idb);
+    assert('deleteDb' in idb);
   });
 
   // yeah yeah, I know, I need to write better tests
   it('stuff', async () => {
     // Open the database
-    let db = await idb.open('tmp-db', 1, upgradeDb => {
+    let db = await idb.openDb('tmp-db', 1, upgradeDb => {
       switch (upgradeDb.oldVersion) {
         case 0:
           upgradeDb.createObjectStore('key-val').put('world', 'hello');
@@ -41,7 +41,7 @@ describe('idb interface', () => {
 
   it('lets me itterate over a cursor', async () => {
     // Open the database
-    let db = await idb.open('tmp-db', 1, upgradeDb => {
+    let db = await idb.openDb('tmp-db', 1, upgradeDb => {
       switch (upgradeDb.oldVersion) {
         case 0:
           const store = upgradeDb.createObjectStore('list', {keyPath: ''});
@@ -68,7 +68,7 @@ describe('idb interface', () => {
   });
 
   it('rejects rather than throws', async () => {
-    const db = await idb.open('tmp-db', 1, upgradeDb => {
+    const db = await idb.openDb('tmp-db', 1, upgradeDb => {
       upgradeDb.createObjectStore('key-val');
     });
 

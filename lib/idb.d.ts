@@ -14,12 +14,12 @@ export interface IDBStatic {
      * @param version Optional. The version to open the database with. If the version is not provided and the database exists, then a connection to the database will be opened without changing its version. If the version is not provided and the database does not exist, then it will be created with version 1.
      * @param upgradeCallback Optional. Called if version is greater than the version last opened. It's similar to IDB's onupgradeneeded. The callback receives an instance of UpgradeDB.
      * @returns A Promise that passes the DB once it has been opened. */
-    open(name: string, version?: number, upgradeCallback?: (db: UpgradeDB) => void): Promise<DB>;
+    openDb(name: string, version?: number, upgradeCallback?: (db: UpgradeDB) => void): Promise<DB>;
 
     /** Behaves like indexedDB.deleteDatabase, but returns a promise.
      * @param name The name of the database.
      * @returns A Promise that completes once the DB has been removed. */
-    delete(name: string): Promise<void>;
+    deleteDb(name: string): Promise<void>;
 }
 
 /** Similar to equivalent IDBDatabase. */

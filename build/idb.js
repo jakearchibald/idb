@@ -287,7 +287,7 @@
     };
   });
 
-  function open(name, version, upgradeCallback) {
+  function openDb(name, version, upgradeCallback) {
     var p = promisifyRequestCall(indexedDB, 'open', [name, version]);
     var request = p.request;
 
@@ -304,12 +304,12 @@
     });
   }
 
-  function _delete(name) {
+  function deleteDb(name) {
     return promisifyRequestCall(indexedDB, 'deleteDatabase', [name]);
   }
 
-  exports.open = open;
-  exports.delete = _delete;
+  exports.openDb = openDb;
+  exports.deleteDb = deleteDb;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
