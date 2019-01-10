@@ -7,9 +7,7 @@
   "browser": "build/idb.js",
   "typings": "lib/idb.d.ts",
   "scripts": {
-    "build": "rollup lib/idb.mjs --file build/idb.js --format umd --name idb",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "gulp serve"
+    "build": "rollup lib/idb.mjs --file build/idb.js --format umd --name idb"
   },
   "repository": {
     "type": "git",
@@ -18,23 +16,6 @@
   "author": "Jake Archibald",
   "license": "ISC",
   "devDependencies": {
-    "babelify": "^6.1.3",
-    "browser-sync": "^2.8.2",
-    "browserify": "^11.0.1",
-    "del": "^1.2.0",
-    "es6-promise": "^3.0.2",
-    "gulp": "^3.9.0",
-    "gulp-load-plugins": "^0.10.0",
-    "gulp-size": "^1.2.3",
-    "gulp-sourcemaps": "^1.5.2",
-    "gulp-util": "^3.0.6",
-    "merge-stream": "^0.1.8",
-    "mocha": "^2.2.5",
-    "rollup": "^1.0.2",
-    "run-sequence": "^1.1.2",
-    "uglifyify": "^3.0.1",
-    "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.3.1"
+    "rollup": "^1.0.2"
   }
 }
