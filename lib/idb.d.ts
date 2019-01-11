@@ -1,26 +1,14 @@
-/** This is your entry point to the API. It's exposed to the global scope unless you're using a module system such as browserify, in which case it's the exported object. */
-declare var idb: IDBStatic;
-export default idb;
-declare global {
-  var idb: IDBStatic;
-}
+/** This method returns a promise that resolves to a DB.
+ * @param name The name of the database.
+ * @param version Optional. The version to open the database with. If the version is not provided and the database exists, then a connection to the database will be opened without changing its version. If the version is not provided and the database does not exist, then it will be created with version 1.
+ * @param upgradeCallback Optional. Called if version is greater than the version last opened. It's similar to IDB's onupgradeneeded. The callback receives an instance of UpgradeDB.
+ * @returns A Promise that passes the DB once it has been opened. */
+export function openDb(name: string, version?: number, upgradeCallback?: (db: UpgradeDB) => void): Promise<DB>;
 
-/** This is a tiny library that mirrors IndexedDB, but replaces IDBRequest objects with promises.
- * This is your entry point to the API. It's exposed to the global scope unless you're using a module system such as browserify, in which case it's the exported object. */
-export interface IDBStatic {
-
-    /** This method returns a promise that resolves to a DB.
-     * @param name The name of the database.
-     * @param version Optional. The version to open the database with. If the version is not provided and the database exists, then a connection to the database will be opened without changing its version. If the version is not provided and the database does not exist, then it will be created with version 1.
-     * @param upgradeCallback Optional. Called if version is greater than the version last opened. It's similar to IDB's onupgradeneeded. The callback receives an instance of UpgradeDB.
-     * @returns A Promise that passes the DB once it has been opened. */
-    openDb(name: string, version?: number, upgradeCallback?: (db: UpgradeDB) => void): Promise<DB>;
-
-    /** Behaves like indexedDB.deleteDatabase, but returns a promise.
-     * @param name The name of the database.
-     * @returns A Promise that completes once the DB has been removed. */
-    deleteDb(name: string): Promise<void>;
-}
+/** Behaves like indexedDB.deleteDatabase, but returns a promise.
+ * @param name The name of the database.
+ * @returns A Promise that completes once the DB has been removed. */
+export function deleteDb(name: string): Promise<void>;
 
 /** Similar to equivalent IDBDatabase. */
 export interface DB {
