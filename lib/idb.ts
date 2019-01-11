@@ -3,7 +3,7 @@ type IDBCursorAdvanceMethod =
   IDBCursor['advance'] | IDBCursor['continue'] | IDBCursor['continuePrimaryKey'];
 
 const idbProxyableTypes = [IDBDatabase, IDBObjectStore, IDBIndex, IDBCursor, IDBTransaction];
-const cursorMethodOverwrites: IDBCursorAdvanceMethod[] = [
+const cursorAdvanceMethods: IDBCursorAdvanceMethod[] = [
   IDBCursor.prototype.advance,
   IDBCursor.prototype.continue,
   IDBCursor.prototype.continuePrimaryKey,
@@ -11,7 +11,7 @@ const cursorMethodOverwrites: IDBCursorAdvanceMethod[] = [
 const cursorRequestMap: WeakMap<IDBCursor, IDBRequest<IDBCursor>> = new WeakMap();
 const transactionDoneMap: WeakMap<IDBTransaction, Promise<void>> = new WeakMap();
 
-type Func = (...args: any[]) => any;
+// type Func = (...args: any[]) => any;
 type Constructor = new (...args: any[]) => any;
 
 function instanceOfAny(object: any, constructors: Constructor[]): boolean {
@@ -86,35 +86,31 @@ function processTransaction(tx: IDBTransaction) {
 }
 
 function handleIdbReturnValue(target: any, value: any) {
-  // Functions are always bound to prevent ILLEGAL INVOCATION errors when thisArg is a proxy.
-  if (typeof value === 'function') return proxyIdbFunction(value.bind(target));
+  // We can generate multiple promises from a single
   if (value instanceof IDBRequest) return promisifyRequest(value);
+
+  if (typeof value === 'function') {
+    // Functions are always bound to prevent ILLEGAL INVOCATION errors when thisArg is a proxy.
+    const func = value.bind(target);
+
+    if (target instanceof IDBCursor && cursorAdvanceMethods.includes(value)) {
+      return function (this: typeof target, ...args: Parameters<typeof func>) {
+        func(...args);
+        const request = cursorRequestMap.get(this)!;
+        return promisifyRequest(request);
+      };
+    }
+
+    return function (this: typeof target, ...args: Parameters<typeof func>) {
+      const value = func(...args);
+      return handleIdbReturnValue(target, value);
+    };
+  }
+
   if (value instanceof IDBTransaction) processTransaction(value); // Doesn't return
   if (instanceOfAny(value, idbProxyableTypes)) return proxyIdbObject(value);
   return value;
 }
-
-async function handleCursorAdvanceMethod<T extends IDBCursorAdvanceMethod>(
-  cursor: IDBCursor,
-  func: T,
-  args: Parameters<T>,
-): Promise<void> {
-  // @ts-ignore
-  func.apply(cursor, args);
-  const request = cursorRequestMap.get(cursor)!;
-  await promisifyRequest(request);
-}
-
-const idbFunctionHandler: ProxyHandler<any> = {
-  apply(target, thisArg, args) {
-    // Look out for special cursor methods
-    if (thisArg instanceof IDBCursor && cursorMethodOverwrites.includes(target)) {
-      return handleCursorAdvanceMethod(thisArg, target, args);
-    }
-    const value = target.apply(null, args);
-    return handleIdbReturnValue(target, value);
-  },
-};
 
 const idbObjectHandler: ProxyHandler<any> = {
   get(target, prop) {
@@ -126,10 +122,6 @@ const idbObjectHandler: ProxyHandler<any> = {
     return handleIdbReturnValue(target, value);
   },
 };
-
-function proxyIdbFunction<T extends Func>(target: T): T {
-  return new Proxy(target, idbFunctionHandler);
-}
 
 function proxyIdbObject<T extends IDBProxyable>(target: T): T {
   return new Proxy(target, idbObjectHandler);
@@ -153,9 +145,7 @@ export function openDb(
       });
     }
 
-    if (blocked) {
-      request.addEventListener('blocked', () => blocked());
-    }
+    if (blocked) request.addEventListener('blocked', () => blocked());
 
     promisifyRequest(request).then(proxyIdbObject).then(resolve, reject);
   });
