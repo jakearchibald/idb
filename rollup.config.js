@@ -3,7 +3,7 @@ import { terser } from "rollup-plugin-terser";
 
 const esm = {
   plugins: [ typescript({ useTsconfigDeclarationDir: false }) ],
-  input: 'lib/idb.ts',
+  input: 'lib/index.ts',
   output: {
     file: 'build/idb.mjs',
     format: 'esm'
