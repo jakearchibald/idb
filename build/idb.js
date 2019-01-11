@@ -1,6 +1,9 @@
-'use strict';
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+  typeof define === 'function' && define.amd ? define(['exports'], factory) :
+  (global = global || self, factory(global.idb = {}));
+}(this, function (exports) { 'use strict';
 
-(function() {
   function toArray(arr) {
     return Array.prototype.slice.call(arr);
   }
@@ -284,33 +287,30 @@
     };
   });
 
-  var exp = {
-    open: function(name, version, upgradeCallback) {
-      var p = promisifyRequestCall(indexedDB, 'open', [name, version]);
-      var request = p.request;
+  function openDb(name, version, upgradeCallback) {
+    var p = promisifyRequestCall(indexedDB, 'open', [name, version]);
+    var request = p.request;
 
-      if (request) {
-        request.onupgradeneeded = function(event) {
-          if (upgradeCallback) {
-            upgradeCallback(new UpgradeDB(request.result, event.oldVersion, request.transaction));
-          }
-        };
-      }
-
-      return p.then(function(db) {
-        return new DB(db);
-      });
-    },
-    delete: function(name) {
-      return promisifyRequestCall(indexedDB, 'deleteDatabase', [name]);
+    if (request) {
+      request.onupgradeneeded = function(event) {
+        if (upgradeCallback) {
+          upgradeCallback(new UpgradeDB(request.result, event.oldVersion, request.transaction));
+        }
+      };
     }
-  };
 
-  if (typeof module !== 'undefined') {
-    module.exports = exp;
-    module.exports.default = module.exports;
+    return p.then(function(db) {
+      return new DB(db);
+    });
   }
-  else {
-    self.idb = exp;
+
+  function deleteDb(name) {
+    return promisifyRequestCall(indexedDB, 'deleteDatabase', [name]);
   }
-}());
+
+  exports.openDb = openDb;
+  exports.deleteDb = deleteDb;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
+
+}));
