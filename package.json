@@ -7,7 +7,8 @@
   "browser": "build/idb.js",
   "typings": "lib/idb.d.ts",
   "scripts": {
-    "build": "rollup lib/idb.mjs --file build/idb.js --format umd --name idb"
+    "build": "rm -rf build && rollup -c",
+    "dev": "rm -rf build && rollup -c --watch"
   },
   "repository": {
     "type": "git",
@@ -16,6 +17,15 @@
   "author": "Jake Archibald",
   "license": "ISC",
   "devDependencies": {
-    "rollup": "^1.0.2"
+    "@types/chai": "^4.1.7",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "rollup": "^1.0.2",
+    "rollup-plugin-terser": "^4.0.2",
+    "rollup-plugin-typescript2": "^0.18.1",
+    "tslint": "^5.12.1",
+    "tslint-config-airbnb": "^5.11.1",
+    "tslint-react": "^3.6.0",
+    "typescript": "^3.2.2"
   }
 }
