@@ -5,7 +5,7 @@
   "main": "lib/node.js",
   "module": "lib/idb.mjs",
   "browser": "build/idb.js",
-  "typings": "lib/idb.d.ts",
+  "typings": "build/index.d.ts",
   "scripts": {
     "build": "rm -rf build && rollup -c",
     "dev": "rm -rf build && rollup -c --watch"
