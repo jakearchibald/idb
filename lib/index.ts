@@ -21,7 +21,7 @@ export function openDb(
 
     if (blocked) request.addEventListener('blocked', () => blocked());
 
-    transformIdbValue(request).then(transformIdbValue).then(resolve, reject);
+    transformIdbValue(request).then(resolve, reject);
   });
 }
 
