@@ -7,7 +7,7 @@ interface OpenDbOptions {
 }
 
 export function openDb(
-  name: string, version: number, options: OpenDbOptions,
+  name: string, version: number, options: OpenDbOptions = {},
 ) {
   const { blocked, upgrade } = options;
   const request = indexedDB.open(name, version);
