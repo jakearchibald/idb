@@ -20,6 +20,22 @@ await openDb(…);
 
 Or include [the script](https://github.com/jakearchibald/idb/blob/master/build/idb.js) as it is, and `idb` will exist on the global scope.
 
+# Changes from 2.x
+
+The library is now a module. To take advantage of this, importing has changed slightly:
+
+```js
+// Old 2.x way:
+import idb from 'idb';
+idb.open(…);
+idb.delete(…);
+
+// New way:
+import { openDb, deleteDb } from 'idb';
+openDb(…);
+deleteDb(…);
+```
+
 # Examples
 
 ## Keyval Store
