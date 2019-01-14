@@ -163,6 +163,10 @@ suite('object equality', () => {
     db = await openDb('test', 4);
   });
 
+  teardown(() => {
+    db.close();
+  });
+
   test('Function equality', async () => {
     // Function getters should return the same instance.
     equal(db.addEventListener, db.addEventListener, 'addEventListener');
@@ -188,9 +192,34 @@ suite('object equality', () => {
       'objectStore on different tx',
     );
   });
-
 });
 
-// TODO: test unwrapping
+suite('unwrap', () => {
+  test('unwrapping', async () => {
+    const dbPromise = openDb('test', 5, { blocked() { console.log('blocked'); } });
+    const request = unwrap(dbPromise);
+
+    instanceOf(request, IDBRequest);
+
+    /** @type IDBDatabase */
+    const db = await dbPromise;
+
+    const tx = db.transaction('test-store');
+    const unwrappedTx = unwrap(tx);
+    instanceOf(unwrappedTx, IDBTransaction);
+    isUndefined(unwrappedTx.done);
+
+    const store = tx.objectStore('test-store');
+    const unwrappedStore = unwrap(store);
+
+    const getPromise = store.get('bar');
+    typeOf(getPromise, 'promise');
+    const getRequest = unwrap(getPromise);
+    instanceOf(getRequest, IDBRequest);
+
+    const getRequest2 = unwrappedStore.get('bar');
+    instanceOf(getRequest2, IDBRequest);
+  });
+});
 
 mocha.run();
