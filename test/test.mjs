@@ -3,10 +3,10 @@
 
 import '../node_modules/mocha/mocha.js';
 import '../node_modules/chai/chai.js';
-import { /** @type typeof openDb */ openDb, deleteDb } from '../build/idb.mjs';
+import { openDb, deleteDb, unwrap } from '../build/idb.mjs';
 
 mocha.setup('bdd');
-const { assert, expect } = chai;
+const { expect } = chai;
 
 describe('deleteDb setup', () => {
   it('is a function', () => expect(deleteDb).to.be.a('function'));
@@ -50,10 +50,9 @@ describe('database read/write', () => {
   it('can add items & confirm with done promise', async () => {
     const tx = db.transaction('test-store', 'readwrite');
     const store = tx.objectStore('test-store');
-    const requestPromise = store.add('foo', 'bar');
+    const promise = store.add('foo', 'bar');
 
-    expect(requestPromise).to.be.a('promise');
-    expect(requestPromise.request).to.be.instanceOf(IDBRequest);
+    expect(promise).to.be.a('promise');
     expect(tx.done).to.be.a('promise');
     await tx.done;
   });
@@ -178,5 +177,7 @@ describe('object equality', () => {
       .to.not.eq(tx2.objectStore('test-store'), 'objectStore on different tx');
   });
 });
+
+// TODO: test unwrapping
 
 mocha.run();

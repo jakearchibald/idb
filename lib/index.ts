@@ -1,5 +1,5 @@
-import RequestPromise from './request-promise';
-import transformIdbValue from './transform-value';
+import { wrap } from './wrap-idb-value';
+export { unwrap } from './wrap-idb-value';
 
 interface OpenDbCallbacks {
   /**
@@ -26,21 +26,19 @@ interface OpenDbCallbacks {
  */
 export function openDb(
   name: string, version: number, callbacks: OpenDbCallbacks = {},
-): RequestPromise<IDBDatabase> {
+): Promise<IDBDatabase> {
   const { blocked, upgrade } = callbacks;
   const request = indexedDB.open(name, version);
+  const openPromise = wrap(request);
 
-  return new RequestPromise(request, (resolve, reject) => {
-    if (upgrade) {
-      request.addEventListener('upgradeneeded', (event) => {
-        upgrade(transformIdbValue(request.result), event.oldVersion, event.newVersion);
-      });
-    }
+  if (upgrade) {
+    request.addEventListener('upgradeneeded', (event) => {
+      upgrade(wrap(request.result), event.oldVersion, event.newVersion);
+    });
+  }
 
-    if (blocked) request.addEventListener('blocked', () => blocked());
-
-    transformIdbValue(request).then(resolve, reject);
-  });
+  if (blocked) request.addEventListener('blocked', () => blocked());
+  return openPromise;
 }
 
 /**
@@ -48,7 +46,7 @@ export function openDb(
  *
  * @param name Name of the database.
  */
-export function deleteDb(name: string): RequestPromise<void> {
+export function deleteDb(name: string): Promise<void> {
   const request = indexedDB.deleteDatabase(name);
-  return transformIdbValue(request);
+  return wrap(request);
 }
