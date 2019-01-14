@@ -13,8 +13,10 @@ const cursorAdvanceMethods: IDBCursorAdvanceMethod[] = [
 const cursorRequestMap: WeakMap<IDBCursor, IDBRequest<IDBCursor>> = new WeakMap();
 const transactionDoneMap: WeakMap<IDBTransaction, Promise<void>> = new WeakMap();
 const transformCache = new WeakMap();
+const reverseTransformCache = new WeakMap();
 
 type Constructor = new (...args: any[]) => any;
+type Func = (...args: any[]) => any;
 
 function instanceOfAny(object: any, constructors: Constructor[]): boolean {
   for (const constructor of constructors) {
@@ -90,24 +92,28 @@ function proxyIdbObject<T extends IDBProxyable>(target: T): T {
   return new Proxy(target, idbObjectHandler);
 }
 
-function transformCachableType(value: any, parent: any = null): any {
-  if (typeof value === 'function') {
-    // Functions are always bound to prevent ILLEGAL INVOCATION errors when thisArg is a proxy.
-    const func = value.bind(parent);
-
-    if (parent instanceof IDBCursor && cursorAdvanceMethods.includes(value)) {
-      return function (this: typeof parent, ...args: Parameters<typeof func>) {
-        func(...args);
-        const request = cursorRequestMap.get(this)!;
-        return promisifyRequest(request);
-      };
-    }
-
-    return function (this: typeof parent, ...args: Parameters<typeof func>) {
-      const value = func(...args);
-      return transformIdbValue(value, parent);
+function wrapFunction<T extends Func>(func: T, parent: any): Function {
+  // Cursor methods are special
+  if (parent instanceof IDBCursor && cursorAdvanceMethods.includes(func)) {
+    return function (this: IDBCursor, ...args: Parameters<T>) {
+      // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
+      // the original object.
+      const originalCursor = reverseTransformCache.get(this);
+      func.apply(originalCursor, args);
+      const request = cursorRequestMap.get(this);
+      return transformIdbValue(request);
     };
   }
+
+  return function (this: typeof parent, ...args: Parameters<T>) {
+    const originalParent = reverseTransformCache.get(this);
+    const value = func.apply(originalParent, args);
+    return transformIdbValue(value);
+  };
+}
+
+function transformCachableValue(value: any, parent: any = null): any {
+  if (typeof value === 'function') return wrapFunction(value, parent);
 
   if (value instanceof IDBTransaction) processTransaction(value); // Doesn't return
   if (instanceOfAny(value, idbProxyableTypes)) return proxyIdbObject(value);
@@ -115,12 +121,17 @@ function transformCachableType(value: any, parent: any = null): any {
 }
 
 export default function transformIdbValue(value: any, parent: any = null): any {
-  // We can generate multiple promises from a single IDBRequest, so these shouldn't be cached.
+  // We can generate multiple promises from a single IDBRequest (when cursoring), so these can't be
+  // cached.
   if (value instanceof IDBRequest) return promisifyRequest(value);
 
   if (transformCache.has(value)) return transformCache.get(value);
-  const newValue = transformCachableType(value, parent);
-  // TODO: this is broken because it isn't taking function binding into account
-  // if (newValue !== value) transformCache.set(value, newValue);
+  const newValue = transformCachableValue(value, parent);
+
+  if (newValue !== value) {
+    transformCache.set(value, newValue);
+    reverseTransformCache.set(newValue, value);
+  }
+
   return newValue;
 }

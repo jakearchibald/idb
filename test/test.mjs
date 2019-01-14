@@ -1,3 +1,6 @@
+// Since this library proxies IDB, I haven't retested all of IDB. I've tried to cover parts of the
+// library that behave differently to IDB, or may cause accidental differences.
+
 import '../node_modules/mocha/mocha.js';
 import '../node_modules/chai/chai.js';
 import { /** @type typeof openDb */ openDb, deleteDb } from '../build/idb.mjs';
@@ -15,7 +18,7 @@ describe('deleteDb setup', () => {
   });
 });
 
-describe('database', () => {
+describe('database read/write', () => {
   /**
    * @type IDBDatabase
    */
@@ -89,6 +92,12 @@ describe('database', () => {
     expect(blockedCalled).to.be.true;
   });
 
+  it('can upgrade without options', async () => {
+    db.close();
+    db = await openDb('test', 3);
+    expect(db.version).to.be.eq(3);
+  });
+
   it('can get items via index', async () => {
     const tx = db.transaction('index-store');
     const store = tx.objectStore('index-store');
@@ -103,8 +112,8 @@ describe('database', () => {
     ]);
   });
 
-  it('can cursor over items', async () => {
-    const tx = db.transaction('index-store', 'readwrite');
+  it('can cursor over stores', async () => {
+    const tx = db.transaction('index-store');
     const store = tx.objectStore('index-store');
 
     let storeCursor = await store.openCursor();
@@ -116,9 +125,57 @@ describe('database', () => {
     }
 
     expect(storeVals).to.eql(['hello', 'world', 'foobar']);
+  });
 
-    const index = store.index('order');
+  it('can cursor over indexes', async () => {
+    const tx = db.transaction('index-store');
+    const index = tx.objectStore('index-store').index('order');
+    let indexCursor = await index.openCursor();
     const indexVals = [];
+
+    while (indexCursor) {
+      indexVals.push(indexCursor.value.val);
+      indexCursor = await indexCursor.continue();
+    }
+
+    expect(indexVals).to.be.eql(['foobar', 'world', 'hello']);
+  });
+
+  it('can close', async () => {
+    db.close();
+  });
+});
+
+describe('object equality', () => {
+  /**
+   * @type IDBDatabase
+   */
+  let db;
+
+  it('can be opened', async () => {
+    db = await openDb('test', 4);
+    expect(db).to.be.an.instanceOf(IDBDatabase);
+    expect(db.name).to.eq('test');
+  });
+
+  it('has equal functions', async () => {
+    // Function getters should return the same instance.
+    expect(db.addEventListener).to.be.eq(db.addEventListener, 'addEventListener');
+    expect(db.transaction).to.be.eq(db.transaction, 'transaction');
+
+    const tx1 = db.transaction('test-store');
+    const tx2 = db.transaction('test-store');
+
+    // Functions should be equal across instances.
+    expect(tx1.objectStore).to.be.eq(tx2.objectStore, 'objectStore func');
+
+    // The spec says object stores from the same transaction should be equal.
+    expect(tx1.objectStore('test-store'))
+      .to.eq(tx1.objectStore('test-store'), 'objectStore on same tx');
+
+    // The spec says object stores from different transaction should not be equal.
+    expect(tx1.objectStore('test-store'))
+      .to.not.eq(tx2.objectStore('test-store'), 'objectStore on different tx');
   });
 });
 
