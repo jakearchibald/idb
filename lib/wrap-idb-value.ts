@@ -1,5 +1,3 @@
-import RequestPromise from './request-promise';
-
 type IDBCursorAdvanceMethod =
   IDBCursor['advance'] | IDBCursor['continue'] | IDBCursor['continuePrimaryKey'];
 type Constructor = new (...args: any[]) => any;
@@ -19,14 +17,14 @@ const reverseTransformCache = new WeakMap();
 const instanceOfAny = (object: any, constructors: Constructor[]): boolean =>
   constructors.some(c => object instanceof c);
 
-function promisifyRequest<T>(request: IDBRequest<T>): RequestPromise<T> {
-  const promise = new RequestPromise(request, (resolve, reject) => {
+function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
+  const promise = new Promise<T>((resolve, reject) => {
     const unlisten = () => {
       request.removeEventListener('success', success);
       request.removeEventListener('error', error);
     };
     const success = () => {
-      resolve(transformIdbValue(request.result));
+      resolve(wrap(request.result));
       unlisten();
     };
     const error = () => {
@@ -45,10 +43,13 @@ function promisifyRequest<T>(request: IDBRequest<T>): RequestPromise<T> {
     }
   });
 
-  return promise as RequestPromise<T>;
+  // This is the only mapping that exists in reverseTransformCache, but the reverse doesn't exist in
+  // transformCache. This is because we create many promises from a single IDBRequest.
+  reverseTransformCache.set(promise, request);
+  return promise;
 }
 
-function cacheDonePromiseForTransaction(tx: IDBTransaction) {
+function cacheDonePromiseForTransaction(tx: IDBTransaction): void {
   // Early bail if we've already created a done promise for this transaction.
   if (transactionDoneMap.has(tx)) return;
 
@@ -80,12 +81,12 @@ const idbObjectHandler: ProxyHandler<any> = {
     // Special handling for transaction.done.
     if (prop === 'done' && target instanceof IDBTransaction) return transactionDoneMap.get(target);
     // Else transform whatever we get back.
-    return transformIdbValue(target[prop]);
+    return wrap(target[prop]);
   },
 };
 
 function wrapFunction<T extends Func>(func: T): Function {
-  // Due to expected object equality (which is enforced by the caching in transformIdbValue), we
+  // Due to expected object equality (which is enforced by the caching in `wrap`), we
   // only create one new func per func, so we can't refer to `parent` inside the function, as it may
   // be different at call time.
 
@@ -98,19 +99,19 @@ function wrapFunction<T extends Func>(func: T): Function {
     return function (this: IDBCursor, ...args: Parameters<T>) {
       // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
       // the original object.
-      const originalCursor = reverseTransformCache.get(this);
+      const originalCursor = unwrap(this);
       func.apply(originalCursor, args);
       const request = cursorRequestMap.get(this);
-      return transformIdbValue(request);
+      return wrap(request);
     };
   }
 
   return function (this: any, ...args: Parameters<T>) {
     // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
     // the original object.
-    const originalParent = reverseTransformCache.get(this);
+    const originalParent = unwrap(this);
     const value = func.apply(originalParent, args);
-    return transformIdbValue(value);
+    return wrap(value);
   };
 }
 
@@ -132,7 +133,7 @@ function transformCachableValue(value: any): any {
  *
  * @param value The thing to enhance.
  */
-export default function transformIdbValue(value: any): any {
+export function wrap(value: any): any {
   // We sometimes generate multiple promises from a single IDBRequest (eg when cursoring), because
   // IDB is weird and a single IDBRequest can yield many responses, so these can't be cached.
   if (value instanceof IDBRequest) return promisifyRequest(value);
@@ -151,3 +152,13 @@ export default function transformIdbValue(value: any): any {
 
   return newValue;
 }
+
+/**
+ * Revert an enhanced IDB object to a plain old miserable IDB one.
+ *
+ * Will also revert a promise back to an IDBRequest.
+ *
+ * @param value The enhanced object to revert.
+ */
+export const unwrap =
+  <T extends object>(value: T): T | undefined => reverseTransformCache.get(value);
