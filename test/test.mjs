@@ -5,66 +5,74 @@ import '../node_modules/mocha/mocha.js';
 import '../node_modules/chai/chai.js';
 import { openDb, deleteDb, unwrap } from '../build/idb.mjs';
 
-mocha.setup('bdd');
-const { expect } = chai;
+mocha.setup('tdd');
+const { assert: {
+  typeOf,
+  isUndefined,
+  instanceOf,
+  equal,
+  isTrue,
+  deepEqual,
+  notEqual,
+} } = chai;
 
-describe('deleteDb setup', () => {
-  it('is a function', () => expect(deleteDb).to.be.a('function'));
-  it('returns a promise for void', async () => {
+suite('deleteDb setup', () => {
+  test('is a function', () => typeOf(deleteDb, 'function'));
+  test('returns a promise for void', async () => {
     const val = deleteDb('test');
-    expect(val).to.be.a('promise');
+    typeOf(val, 'promise');
     const resolvedVal = await val;
-    expect(resolvedVal).to.be.undefined;
+    isUndefined(resolvedVal);
   });
 });
 
-describe('database read/write', () => {
+suite('database read/write', () => {
   /**
    * @type IDBDatabase
    */
   let db;
 
-  it('can be opened', async () => {
-    expect(openDb).to.be.a('function');
+  test('can be opened', async () => {
+    typeOf(openDb, 'function');
 
     let upgradeCalled = false;
 
     db = await openDb('test', 1, {
       upgrade(db, oldVersion, newVersion) {
         upgradeCalled = true;
-        expect(db).to.be.an.instanceOf(IDBDatabase);
-        expect(oldVersion).to.eq(0);
-        expect(newVersion).to.eq(1);
+
+        instanceOf(db, IDBDatabase);
+        equal(oldVersion, 0);
+        equal(newVersion, 1);
 
         db.createObjectStore('test-store');
       },
     });
 
-    expect(upgradeCalled).to.be.true;
-
-    expect(db).to.be.an.instanceOf(IDBDatabase);
-    expect(db.name).to.eq('test');
-    expect([...db.objectStoreNames]).to.eql(['test-store']);
+    isTrue(upgradeCalled);
+    instanceOf(db, IDBDatabase);
+    equal(db.name, 'test');
+    deepEqual([...db.objectStoreNames], ['test-store']);
   });
 
-  it('can add items & confirm with done promise', async () => {
+  test('can add items & confirm with done promise', async () => {
     const tx = db.transaction('test-store', 'readwrite');
     const store = tx.objectStore('test-store');
     const promise = store.add('foo', 'bar');
 
-    expect(promise).to.be.a('promise');
-    expect(tx.done).to.be.a('promise');
+    typeOf(promise, 'promise');
+    typeOf(tx.done, 'promise');
     await tx.done;
   });
 
-  it('can get items via promises', async () => {
+  test('can get items via promises', async () => {
     const tx = db.transaction('test-store');
     const store = tx.objectStore('test-store');
     const result = await store.get('bar');
-    expect(result).to.be.eq('foo');
+    equal(result, 'foo');
   });
 
-  it('can upgrade with indexes, and handles blocking', async () => {
+  test('can upgrade with indexes, and handles blocking', async () => {
     let upgradeCalled = false;
     let blockedCalled = false;
     const oldDb = db;
@@ -72,8 +80,8 @@ describe('database read/write', () => {
     db = await openDb('test', 2, {
       upgrade(db, oldVersion, newVersion) {
         upgradeCalled = true;
-        expect(oldVersion).to.eq(1);
-        expect(newVersion).to.eq(2);
+        equal(oldVersion, 1);
+        equal(newVersion, 2);
 
         const store = db.createObjectStore('index-store', { keyPath: 'id' });
         store.createIndex('order', 'order');
@@ -87,31 +95,31 @@ describe('database read/write', () => {
       },
     });
 
-    expect(upgradeCalled).to.be.true;
-    expect(blockedCalled).to.be.true;
+    isTrue(upgradeCalled);
+    isTrue(blockedCalled);
   });
 
-  it('can upgrade without options', async () => {
+  test('can upgrade without options', async () => {
     db.close();
     db = await openDb('test', 3);
-    expect(db.version).to.be.eq(3);
+    equal(db.version, 3);
   });
 
-  it('can get items via index', async () => {
+  test('can get items via index', async () => {
     const tx = db.transaction('index-store');
     const store = tx.objectStore('index-store');
     const index = store.index('order');
 
     const all = await index.getAll();
 
-    expect(all).to.eql([
+    deepEqual(all, [
       { id: 3, order: 1, val: 'foobar' },
       { id: 2, order: 2, val: 'world' },
       { id: 1, order: 3, val: 'hello' },
     ]);
   });
 
-  it('can cursor over stores', async () => {
+  test('can cursor over stores', async () => {
     const tx = db.transaction('index-store');
     const store = tx.objectStore('index-store');
 
@@ -123,10 +131,10 @@ describe('database read/write', () => {
       storeCursor = await storeCursor.continue();
     }
 
-    expect(storeVals).to.eql(['hello', 'world', 'foobar']);
+    deepEqual(storeVals, ['hello', 'world', 'foobar']);
   });
 
-  it('can cursor over indexes', async () => {
+  test('can cursor over indexes', async () => {
     const tx = db.transaction('index-store');
     const index = tx.objectStore('index-store').index('order');
     let indexCursor = await index.openCursor();
@@ -137,45 +145,50 @@ describe('database read/write', () => {
       indexCursor = await indexCursor.continue();
     }
 
-    expect(indexVals).to.be.eql(['foobar', 'world', 'hello']);
+    deepEqual(indexVals, ['foobar', 'world', 'hello']);
   });
 
-  it('can close', async () => {
+  test('can close', async () => {
     db.close();
   });
 });
 
-describe('object equality', () => {
+suite('object equality', () => {
   /**
    * @type IDBDatabase
    */
   let db;
 
-  it('can be opened', async () => {
+  setup(async () => {
     db = await openDb('test', 4);
-    expect(db).to.be.an.instanceOf(IDBDatabase);
-    expect(db.name).to.eq('test');
   });
 
-  it('has equal functions', async () => {
+  test('Function equality', async () => {
     // Function getters should return the same instance.
-    expect(db.addEventListener).to.be.eq(db.addEventListener, 'addEventListener');
-    expect(db.transaction).to.be.eq(db.transaction, 'transaction');
+    equal(db.addEventListener, db.addEventListener, 'addEventListener');
+    equal(db.transaction, db.transaction, 'transaction');
 
     const tx1 = db.transaction('test-store');
     const tx2 = db.transaction('test-store');
 
     // Functions should be equal across instances.
-    expect(tx1.objectStore).to.be.eq(tx2.objectStore, 'objectStore func');
+    equal(tx1.objectStore, tx2.objectStore, 'objectStore func');
+  });
+
+  test('Object store equality', async () => {
+    const tx1 = db.transaction('test-store');
+    const tx2 = db.transaction('test-store');
 
     // The spec says object stores from the same transaction should be equal.
-    expect(tx1.objectStore('test-store'))
-      .to.eq(tx1.objectStore('test-store'), 'objectStore on same tx');
+    equal(tx1.objectStore('test-store'), tx1.objectStore('test-store'), 'objectStore on same tx');
 
     // The spec says object stores from different transaction should not be equal.
-    expect(tx1.objectStore('test-store'))
-      .to.not.eq(tx2.objectStore('test-store'), 'objectStore on different tx');
+    notEqual(
+      tx1.objectStore('test-store'), tx2.objectStore('test-store'),
+      'objectStore on different tx',
+    );
   });
+
 });
 
 // TODO: test unwrapping
