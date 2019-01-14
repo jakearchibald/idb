@@ -1,6 +1,6 @@
 {
   "name": "idb",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "IndexedDB but with promises",
   "main": "lib/node.js",
   "module": "lib/idb.mjs",
