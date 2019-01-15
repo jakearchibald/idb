@@ -41,10 +41,11 @@ suite('database read/write', () => {
     let upgradeCalled = false;
 
     db = await openDb('test', dbVersion += 1, {
-      upgrade(db, oldVersion, newVersion) {
+      upgrade(db, oldVersion, newVersion, transaction) {
         upgradeCalled = true;
 
         instanceOf(db, IDBDatabase);
+        instanceOf(transaction, IDBTransaction);
         equal(oldVersion, dbVersion - 1);
         equal(newVersion, dbVersion);
 

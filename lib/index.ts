@@ -9,8 +9,15 @@ interface OpenDbCallbacks<DBTypes extends DBSchema | undefined> {
    * @param database A database instance that you can use to add/remove stores and indexes.
    * @param oldVersion Last version of the database opened by the user.
    * @param newVersion Whatever new version you provided.
+   * @param transaction The transaction for this upgrade. This is useful if you need to get data
+   * from other stores as part of a migration.
    */
-  upgrade?(database: IDBPDatabase<DBTypes>, oldVersion: number, newVersion: number | null): void;
+  upgrade?(
+    database: IDBPDatabase<DBTypes>,
+    oldVersion: number,
+    newVersion: number | null,
+    transaction: IDBPTransaction<DBTypes>,
+  ): void;
   /**
    * Called if there are older versions of the database open on the origin, so this version cannot
    * open.
@@ -38,7 +45,7 @@ export function openDb<DBTypes extends DBSchema | undefined = undefined>(
 
   if (upgrade) {
     request.addEventListener('upgradeneeded', (event) => {
-      upgrade(wrap(request.result), event.oldVersion, event.newVersion);
+      upgrade(wrap(request.result), event.oldVersion, event.newVersion, wrap(request.transaction));
     });
   }
 
@@ -222,7 +229,7 @@ interface IDBPObjectStore<
 
 type IDBPTransactionExtends = Omit<IDBTransaction, keyof IDBPTransaction>;
 
-interface IDBPTransaction<DBTypes extends DBSchema | undefined = undefined>
+export interface IDBPTransaction<DBTypes extends DBSchema | undefined = undefined>
   extends IDBPTransactionExtends {
   /**
    * The transaction's connection.
