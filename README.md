@@ -24,7 +24,7 @@ async function doDatabaseStuff() {
 
 ```js
 const db = await openDb(name, version, {
-  upgrade(db, oldVersion, newVersion) {
+  upgrade(db, oldVersion, newVersion, transaction) {
     // …
   },
   blocked() {
@@ -44,6 +44,7 @@ This method opens a database, and returns an object very similar to [`IDBDatabas
     * `db`: Object similar to `IDBDatabase`.
     * `oldVersion`: Last version of the database opened by the user.
     * `newVersion`: Whatever new version you provided.
+    * `transaction`: The transaction for this upgrade. This is useful if you need to get data from other stores as part of a migration.
 * `blocked`: Called if there are older versions of the database open on the origin, so this version cannot open.
 * `blocking`: Called if this connection is blocking a future version of the database from opening.
 
