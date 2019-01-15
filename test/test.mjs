@@ -12,6 +12,7 @@ const { assert: {
   instanceOf,
   equal,
   isTrue,
+  isFalse,
   deepEqual,
   notEqual,
 } } = chai;
@@ -26,6 +27,8 @@ suite('deleteDb setup', () => {
   });
 });
 
+let dbVersion = 0;
+
 suite('database read/write', () => {
   /**
    * @type IDBDatabase
@@ -37,13 +40,13 @@ suite('database read/write', () => {
 
     let upgradeCalled = false;
 
-    db = await openDb('test', 1, {
+    db = await openDb('test', dbVersion += 1, {
       upgrade(db, oldVersion, newVersion) {
         upgradeCalled = true;
 
         instanceOf(db, IDBDatabase);
-        equal(oldVersion, 0);
-        equal(newVersion, 1);
+        equal(oldVersion, dbVersion - 1);
+        equal(newVersion, dbVersion);
 
         db.createObjectStore('test-store');
       },
@@ -72,16 +75,46 @@ suite('database read/write', () => {
     equal(result, 'foo');
   });
 
+  test('handles blocked and blocking', async () => {
+    db.close();
+
+    let blockedCalled = false;
+    let blockingCalled = false;
+    let newDbBlockedCalled = false;
+    let newDbBlockingCalled = false;
+
+    db = await openDb('test', dbVersion += 1, {
+      blocked() { blockedCalled = true; },
+      blocking() {
+        blockingCalled = true;
+        // 'blocked' isn't called if older databases close once blocking fires.
+        setTimeout(() => db.close(), 0);
+      },
+    });
+
+    isFalse(blockedCalled);
+    isFalse(blockingCalled);
+
+    db = await openDb('test', dbVersion += 1, {
+      blocked() { newDbBlockedCalled = true; },
+      blocking() { newDbBlockingCalled = true; },
+    });
+
+    isFalse(blockedCalled);
+    isTrue(blockingCalled);
+    isTrue(newDbBlockedCalled);
+    isFalse(newDbBlockingCalled);
+  });
+
   test('can upgrade with indexes, and handles blocking', async () => {
     let upgradeCalled = false;
-    let blockedCalled = false;
-    const oldDb = db;
+    db.close();
 
-    db = await openDb('test', 2, {
+    db = await openDb('test', dbVersion += 1, {
       upgrade(db, oldVersion, newVersion) {
         upgradeCalled = true;
-        equal(oldVersion, 1);
-        equal(newVersion, 2);
+        equal(oldVersion, dbVersion - 1);
+        equal(newVersion, dbVersion);
 
         const store = db.createObjectStore('index-store', { keyPath: 'id' });
         store.createIndex('order', 'order');
@@ -89,20 +122,15 @@ suite('database read/write', () => {
         store.put({ id: 2, order: 2, val: 'world' });
         store.put({ id: 3, order: 1, val: 'foobar' });
       },
-      blocked() {
-        blockedCalled = true;
-        oldDb.close();
-      },
     });
 
     isTrue(upgradeCalled);
-    isTrue(blockedCalled);
   });
 
   test('can upgrade without options', async () => {
     db.close();
-    db = await openDb('test', 3);
-    equal(db.version, 3);
+    db = await openDb('test', dbVersion += 1);
+    equal(db.version, dbVersion);
   });
 
   test('can get items via index', async () => {
@@ -160,7 +188,7 @@ suite('object equality', () => {
   let db;
 
   setup(async () => {
-    db = await openDb('test', 4);
+    db = await openDb('test', dbVersion += 1);
   });
 
   teardown(() => {
@@ -196,7 +224,7 @@ suite('object equality', () => {
 
 suite('unwrap', () => {
   test('unwrapping', async () => {
-    const dbPromise = openDb('test', 5, { blocked() { console.log('blocked'); } });
+    const dbPromise = openDb('test', dbVersion += 1);
     const request = unwrap(dbPromise);
 
     instanceOf(request, IDBRequest);

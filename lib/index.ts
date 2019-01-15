@@ -1,7 +1,7 @@
 import { wrap } from './wrap-idb-value';
 export { unwrap } from './wrap-idb-value';
 
-interface OpenDbCallbacks {
+interface OpenDbCallbacks<DBTypes extends DBSchema | undefined> {
   /**
    * Called if this version of the database has never been opened before. Use it to specify the
    * schema for the database.
@@ -10,11 +10,16 @@ interface OpenDbCallbacks {
    * @param oldVersion Last version of the database opened by the user.
    * @param newVersion Whatever new version you provided.
    */
-  upgrade?(database: IDBDatabase, oldVersion: number, newVersion: number | null): void;
+  upgrade?(database: IDBPDatabase<DBTypes>, oldVersion: number, newVersion: number | null): void;
   /**
-   * There are older versions of the database open on the origin, so this version cannot open.
+   * Called if there are older versions of the database open on the origin, so this version cannot
+   * open.
    */
   blocked?(): void;
+  /**
+   * Called if this connection is blocking a future version of the database from opening.
+   */
+  blocking?(): void;
 }
 
 /**
@@ -25,11 +30,11 @@ interface OpenDbCallbacks {
  * @param callbacks Additional callbacks.
  */
 export function openDb<DBTypes extends DBSchema | undefined = undefined>(
-  name: string, version: number, callbacks: OpenDbCallbacks = {},
+  name: string, version: number, callbacks: OpenDbCallbacks<DBTypes> = {},
 ): Promise<IDBPDatabase<DBTypes>> {
-  const { blocked, upgrade } = callbacks;
+  const { blocked, upgrade, blocking } = callbacks;
   const request = indexedDB.open(name, version);
-  const openPromise = wrap(request);
+  const openPromise = wrap(request) as Promise<IDBPDatabase<DBTypes>>;
 
   if (upgrade) {
     request.addEventListener('upgradeneeded', (event) => {
@@ -38,6 +43,8 @@ export function openDb<DBTypes extends DBSchema | undefined = undefined>(
   }
 
   if (blocked) request.addEventListener('blocked', () => blocked());
+  if (blocking) openPromise.then(db => db.addEventListener('versionchange', blocking));
+
   return openPromise;
 }
 
