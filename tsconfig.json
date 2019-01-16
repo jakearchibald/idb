@@ -1,5 +1,4 @@
 {
-  "compileOnSave": false,
   "compilerOptions": {
     "strict": true,
     "target": "es2017",
@@ -8,7 +7,7 @@
     "noUnusedLocals": true,
     "sourceMap": true,
     "declaration": true,
-    "allowJs": false,
-    "baseUrl": "."
+    "declarationDir": "build"
   },
+  "files": ["lib/index.ts"]
 }

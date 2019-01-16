@@ -2,7 +2,7 @@ import typescript from 'rollup-plugin-typescript2';
 import { terser } from "rollup-plugin-terser";
 
 const esm = {
-  plugins: [ typescript({ useTsconfigDeclarationDir: false }) ],
+  plugins: [ typescript() ],
   input: 'lib/index.ts',
   output: {
     file: 'build/idb.mjs',
