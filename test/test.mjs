@@ -191,7 +191,7 @@ suite('database read/write', () => {
 
 suite('object equality', () => {
   /**
-   * @type IDBDatabase
+   * @type import('../lib/index').IDBPDatabase
    */
   let db;
 
