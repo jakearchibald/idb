@@ -1,13 +1,12 @@
 {
   "name": "idb",
   "version": "4.0.0",
-  "description": "IndexedDB but with promises",
-  "main": "lib/node.js",
-  "module": "lib/idb.mjs",
-  "browser": "build/idb.js",
+  "description": "A small wrapper that makes IndexedDB usable",
+  "main": "build/idb.js",
+  "module": "build/idb.mjs",
   "typings": "build/index.d.ts",
   "scripts": {
-    "build": "rm -rf build && rollup -c",
+    "build": "rm -rf build && rollup -c && gzip-size build/idb-min.js",
     "dev": "rm -rf build && rollup -c --watch"
   },
   "repository": {
@@ -19,6 +18,7 @@
   "devDependencies": {
     "@types/chai": "^4.1.7",
     "chai": "^4.2.0",
+    "gzip-size-cli": "^3.0.0",
     "mocha": "^5.2.0",
     "rollup": "^1.0.2",
     "rollup-plugin-terser": "^4.0.2",
@@ -27,5 +27,6 @@
     "tslint-config-airbnb": "^5.11.1",
     "tslint-react": "^3.6.0",
     "typescript": "^3.2.2"
-  }
+  },
+  "dependencies": {}
 }
