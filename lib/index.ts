@@ -193,7 +193,7 @@ interface IDBPObjectStore<
    * Get a query of a given name.
    */
   index
-    <I extends IndexKeyTypes extends IndexKeys ? KnownKeys<IndexKeyTypes> : any>
+    <I extends (IndexKeyTypes extends IndexKeys ? KnownKeys<IndexKeyTypes> : any)>
     (name: I):
     IDBPIndex<DBTypes, K, V, IndexKeyTypes, IndexKeyTypes[I]>;
 
@@ -237,6 +237,11 @@ export interface IDBPTransaction<DBTypes extends DBSchema | undefined = undefine
   readonly db: IDBPDatabase<DBTypes>;
 
   /**
+   * Promise for the completion of this transaction.
+   */
+  readonly done: Promise<void>;
+
+  /**
    * Returns an IDBObjectStore in the transaction's scope.
    */
   objectStore
@@ -245,7 +250,7 @@ export interface IDBPTransaction<DBTypes extends DBSchema | undefined = undefine
     IDBPObjectStore<
       DBTypes,
       DBTypes[K]['key'], DBTypes[K]['value'],
-      DBTypes[K]['indexes'] extends object ? DBTypes[K]['indexes'] : IndexKeys
+      DBTypes[K]['indexes'] extends IndexKeys ? DBTypes[K]['indexes'] : any
     >;
 }
 
