@@ -1,9 +1,16 @@
+// @ts-check
 // Since this library proxies IDB, I haven't retested all of IDB. I've tried to cover parts of the
 // library that behave differently to IDB, or may cause accidental differences.
 
 import '../node_modules/mocha/mocha.js';
 import '../node_modules/chai/chai.js';
-import { openDb, deleteDb, unwrap } from '../build/idb.mjs';
+// @ts-ignore
+import * as idb from '../build/idb.mjs';
+
+// TypeScript can't handle the mjs import above, so I need to do this for the types.
+/** @type typeof import('../lib/index') */
+const idbModule = idb;
+const { openDb, deleteDb, unwrap } = idbModule;
 
 mocha.setup('tdd');
 const { assert: {
@@ -31,7 +38,7 @@ let dbVersion = 0;
 
 suite('database read/write', () => {
   /**
-   * @type IDBDatabase
+   * @type import('../lib/index').IDBPDatabase
    */
   let db;
 
@@ -230,7 +237,7 @@ suite('unwrap', () => {
 
     instanceOf(request, IDBRequest);
 
-    /** @type IDBDatabase */
+    /** @type import('../lib/index').IDBPDatabase */
     const db = await dbPromise;
 
     const tx = db.transaction('test-store');
