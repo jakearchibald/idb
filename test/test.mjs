@@ -72,6 +72,7 @@ suite('database read/write', () => {
     const promise = store.add('foo', 'bar');
 
     typeOf(promise, 'promise');
+    isTrue('done' in tx, 'done in tx');
     typeOf(tx.done, 'promise');
     await tx.done;
   });
@@ -255,6 +256,8 @@ suite('unwrap', () => {
 
     const getRequest2 = unwrappedStore.get('bar');
     instanceOf(getRequest2, IDBRequest);
+
+    db.close();
   });
 });
 

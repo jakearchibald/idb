@@ -83,12 +83,15 @@ const idbObjectHandler: ProxyHandler<any> = {
     // Else transform whatever we get back.
     return wrap(target[prop]);
   },
+  has(target, prop) {
+    if (prop === 'done' && target instanceof IDBTransaction) return true;
+    return prop in target;
+  },
 };
 
 function wrapFunction<T extends Func>(func: T): Function {
   // Due to expected object equality (which is enforced by the caching in `wrap`), we
-  // only create one new func per func, so we can't refer to `parent` inside the function, as it may
-  // be different at call time.
+  // only create one new func per func.
 
   // Cursor methods are special, as the behaviour is a little more different to standard IDB. In
   // IDB, you advance the cursor and wait for a new 'success' on the IDBRequest that gave you the
