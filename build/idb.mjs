@@ -33,8 +33,8 @@ function promisifyRequest(request) {
             cursorRequestMap.set(value, request);
         }
     });
-    // This is the only mapping that exists in reverseTransformCache, but the reverse doesn't exist in
-    // transformCache. This is because we create many promises from a single IDBRequest.
+    // This is the only mapping that exists in reverseTransformCache where the reverse doesn't exist
+    // in transformCache. This is because we create many promises from a single IDBRequest.
     reverseTransformCache.set(promise, request);
     return promise;
 }
@@ -71,11 +71,15 @@ const idbObjectHandler = {
         // Else transform whatever we get back.
         return wrap(target[prop]);
     },
+    has(target, prop) {
+        if (prop === 'done' && target instanceof IDBTransaction)
+            return true;
+        return prop in target;
+    },
 };
 function wrapFunction(func) {
     // Due to expected object equality (which is enforced by the caching in `wrap`), we
-    // only create one new func per func, so we can't refer to `parent` inside the function, as it may
-    // be different at call time.
+    // only create one new func per func.
     // Cursor methods are special, as the behaviour is a little more different to standard IDB. In
     // IDB, you advance the cursor and wait for a new 'success' on the IDBRequest that gave you the
     // cursor. It's kinda like a promise that can resolve with many values. That doesn't make sense
@@ -111,11 +115,6 @@ function transformCachableValue(value) {
     // Return the same value back if we're not going to transform it.
     return value;
 }
-/**
- * Enhance an object/function with library helpers.
- *
- * @param value The thing to enhance.
- */
 function wrap(value) {
     // We sometimes generate multiple promises from a single IDBRequest (eg when cursoring), because
     // IDB is weird and a single IDBRequest can yield many responses, so these can't be cached.
@@ -134,14 +133,9 @@ function wrap(value) {
     }
     return newValue;
 }
-/**
- * Revert an enhanced IDB object to a plain old miserable IDB one.
- *
- * Will also revert a promise back to an IDBRequest.
- *
- * @param value The enhanced object to revert.
- */
-const unwrap = (value) => reverseTransformCache.get(value);
+function unwrap(value) {
+    return reverseTransformCache.get(value);
+}
 
 /**
  * Open a database.
@@ -170,9 +164,12 @@ function openDb(name, version, callbacks = {}) {
  *
  * @param name Name of the database.
  */
-function deleteDb(name) {
+function deleteDb(name, callbacks) {
+    const { blocked } = callbacks;
     const request = indexedDB.deleteDatabase(name);
-    return wrap(request);
+    if (blocked)
+        request.addEventListener('blocked', () => blocked());
+    return wrap(request).then(() => undefined);
 }
 
-export { openDb, deleteDb, unwrap };
+export { openDb, deleteDb, unwrap, wrap };

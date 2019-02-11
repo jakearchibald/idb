@@ -44,7 +44,12 @@ export function openDb<DBTypes extends DBSchema | undefined = undefined>(
 
   if (upgrade) {
     request.addEventListener('upgradeneeded', (event) => {
-      upgrade(wrap(request.result), event.oldVersion, event.newVersion, wrap(request.transaction));
+      upgrade(
+        wrap(request.result) as IDBPDatabase<DBTypes>,
+        event.oldVersion,
+        event.newVersion,
+        wrap(request.transaction!) as IDBPTransaction<DBTypes>,
+      );
     });
   }
 
@@ -54,14 +59,23 @@ export function openDb<DBTypes extends DBSchema | undefined = undefined>(
   return openPromise;
 }
 
+interface DeleteDbCallbacks {
+  /**
+   * Called if there are connections to this database open, so it cannot be deleted.
+   */
+  blocked?(): void;
+}
+
 /**
  * Delete a database.
  *
  * @param name Name of the database.
  */
-export function deleteDb(name: string): Promise<void> {
+export function deleteDb(name: string, callbacks: DeleteDbCallbacks): Promise<void> {
+  const { blocked } = callbacks;
   const request = indexedDB.deleteDatabase(name);
-  return wrap(request);
+  if (blocked) request.addEventListener('blocked', () => blocked());
+  return wrap(request).then(() => undefined);
 }
 
 export { unwrap, wrap } from './wrap-idb-value';
