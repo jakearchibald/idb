@@ -91,6 +91,7 @@ Cursor advance methods (`advance`, `continue`, `continuePrimaryKey`) return a pr
 ```js
 const store = db.transaction(storeName).objectStore(storeName);
 let cursor = await store.openCursor();
+
 while (cursor) {
   console.log(cursor.key, cursor.value);
   cursor = await cursor.continue();

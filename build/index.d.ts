@@ -1,4 +1,3 @@
-export { unwrap } from './wrap-idb-value';
 interface OpenDbCallbacks<DBTypes extends DBSchema | undefined> {
     /**
      * Called if this version of the database has never been opened before. Use it to specify the
@@ -29,12 +28,19 @@ interface OpenDbCallbacks<DBTypes extends DBSchema | undefined> {
  * @param callbacks Additional callbacks.
  */
 export declare function openDb<DBTypes extends DBSchema | undefined = undefined>(name: string, version: number, callbacks?: OpenDbCallbacks<DBTypes>): Promise<IDBPDatabase<DBTypes>>;
+interface DeleteDbCallbacks {
+    /**
+     * Called if there are connections to this database open, so it cannot be deleted.
+     */
+    blocked?(): void;
+}
 /**
  * Delete a database.
  *
  * @param name Name of the database.
  */
-export declare function deleteDb(name: string): Promise<void>;
+export declare function deleteDb(name: string, callbacks: DeleteDbCallbacks): Promise<void>;
+export { unwrap, wrap } from './wrap-idb-value';
 declare type KnownKeys<T> = {
     [K in keyof T]: string extends K ? never : number extends K ? never : K;
 } extends {
@@ -75,7 +81,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | undefined = undefined> 
     transaction<K extends DBTypes extends DBSchema ? KnownKeys<DBTypes> : string>(storeNames: K | K[], mode?: IDBTransactionMode): IDBPTransaction<DBTypes>;
 }
 declare type IDBPObjectStoreExtends = Omit<IDBObjectStore, keyof IDBPObjectStore>;
-interface IDBPObjectStore<DBTypes extends DBSchema | undefined = undefined, K extends IDBValidKey = IDBValidKey, V extends any = any, IndexKeyTypes extends IndexKeys | undefined = undefined> extends IDBPObjectStoreExtends {
+export interface IDBPObjectStore<DBTypes extends DBSchema | undefined = undefined, K extends IDBValidKey = IDBValidKey, V extends any = any, IndexKeyTypes extends IndexKeys | undefined = undefined> extends IDBPObjectStoreExtends {
     /**
      * The associated transaction.
      */
@@ -175,7 +181,7 @@ export interface IDBPTransaction<DBTypes extends DBSchema | undefined = undefine
     objectStore<K extends (DBTypes extends DBSchema ? KnownKeys<DBTypes> : any)>(name: K): IDBPObjectStore<DBTypes, DBTypes[K]['key'], DBTypes[K]['value'], DBTypes[K]['indexes'] extends IndexKeys ? DBTypes[K]['indexes'] : any>;
 }
 declare type IDBPIndexExtends = Omit<IDBIndex, keyof IDBPIndex>;
-interface IDBPIndex<DBTypes extends DBSchema | undefined = undefined, StoreKey extends IDBValidKey = IDBValidKey, V extends any = any, IndexKeyTypes extends IndexKeys | undefined = undefined, K extends IDBValidKey = IDBValidKey> extends IDBPIndexExtends {
+export interface IDBPIndex<DBTypes extends DBSchema | undefined = undefined, StoreKey extends IDBValidKey = IDBValidKey, V extends any = any, IndexKeyTypes extends IndexKeys | undefined = undefined, K extends IDBValidKey = IDBValidKey> extends IDBPIndexExtends {
     /**
      * The IDBObjectStore the index belongs to.
      */
@@ -230,7 +236,7 @@ interface IDBPIndex<DBTypes extends DBSchema | undefined = undefined, StoreKey e
     openKeyCursor(query?: K | IDBKeyRange, direction?: IDBCursorDirection): Promise<IDBPCursor<IDBPObjectStore, DBTypes, K, V, IndexKeyTypes, K> | null>;
 }
 declare type IDBPCursorExtends = Omit<IDBCursor, keyof IDBPCursor<IDBPObjectStore>>;
-interface IDBPCursor<Source extends IDBPObjectStore | IDBPIndex, DBTypes extends DBSchema | undefined = undefined, StoreKey extends IDBValidKey = IDBValidKey, V extends any = any, IndexKeyTypes extends IndexKeys | undefined = undefined, K extends IDBValidKey = IDBValidKey> extends IDBPCursorExtends {
+export interface IDBPCursor<Source extends IDBPObjectStore | IDBPIndex = IDBPObjectStore | IDBPIndex, DBTypes extends DBSchema | undefined = undefined, StoreKey extends IDBValidKey = IDBValidKey, V extends any = any, IndexKeyTypes extends IndexKeys | undefined = undefined, K extends IDBValidKey = IDBValidKey> extends IDBPCursorExtends {
     /**
      * The key of the current index or object store item.
      */
@@ -277,7 +283,7 @@ interface IDBPCursor<Source extends IDBPObjectStore | IDBPIndex, DBTypes extends
      */
     update(value: V): Promise<K>;
 }
-interface IDBPCursorWithValue<Source extends IDBPObjectStore | IDBPIndex, DBTypes extends DBSchema | undefined = undefined, StoreKey extends IDBValidKey = IDBValidKey, V extends any = any, IndexKeyTypes extends IndexKeys | undefined = undefined, K extends IDBValidKey = IDBValidKey> extends IDBPCursor<Source, DBTypes, StoreKey, V, IndexKeyTypes, K> {
+export interface IDBPCursorWithValue<Source extends IDBPObjectStore | IDBPIndex = IDBPObjectStore | IDBPIndex, DBTypes extends DBSchema | undefined = undefined, StoreKey extends IDBValidKey = IDBValidKey, V extends any = any, IndexKeyTypes extends IndexKeys | undefined = undefined, K extends IDBValidKey = IDBValidKey> extends IDBPCursor<Source, DBTypes, StoreKey, V, IndexKeyTypes, K> {
     /**
      * The value of the current item.
      */

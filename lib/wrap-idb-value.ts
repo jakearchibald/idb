@@ -1,3 +1,12 @@
+import {
+    IDBPCursor,
+    IDBPCursorWithValue,
+    IDBPDatabase,
+    IDBPIndex,
+    IDBPObjectStore,
+    IDBPTransaction,
+} from '.';
+
 type IDBCursorAdvanceMethod =
   IDBCursor['advance'] | IDBCursor['continue'] | IDBCursor['continuePrimaryKey'];
 type Constructor = new (...args: any[]) => any;
@@ -9,7 +18,7 @@ const cursorAdvanceMethods: IDBCursorAdvanceMethod[] = [
   IDBCursor.prototype.continue,
   IDBCursor.prototype.continuePrimaryKey,
 ];
-const cursorRequestMap: WeakMap<IDBCursor, IDBRequest<IDBCursor>> = new WeakMap();
+const cursorRequestMap: WeakMap<IDBPCursor, IDBRequest<IDBCursor>> = new WeakMap();
 const transactionDoneMap: WeakMap<IDBTransaction, Promise<void>> = new WeakMap();
 const transformCache = new WeakMap();
 const reverseTransformCache = new WeakMap();
@@ -24,7 +33,7 @@ function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
       request.removeEventListener('error', error);
     };
     const success = () => {
-      resolve(wrap(request.result));
+      resolve(wrap(request.result as any) as any);
       unlisten();
     };
     const error = () => {
@@ -39,7 +48,10 @@ function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
     // Since cursoring reuses the IDBRequest (*sigh*), we cache it for later retrieval
     // (see wrapFunction).
     if (value instanceof IDBCursor) {
-      cursorRequestMap.set(value, request as unknown as IDBRequest<IDBCursor>);
+      cursorRequestMap.set(
+        value as unknown as IDBPCursor,
+        request as unknown as IDBRequest<IDBCursor>,
+      );
     }
   });
 
@@ -99,12 +111,12 @@ function wrapFunction<T extends Func>(func: T): Function {
   // with real promises, so each advance methods returns a new promise for the cursor object, or
   // undefined if the end of the cursor has been reached.
   if (cursorAdvanceMethods.includes(func)) {
-    return function (this: IDBCursor, ...args: Parameters<T>) {
+    return function (this: IDBPCursor, ...args: Parameters<T>) {
       // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
       // the original object.
       const originalCursor = unwrap(this);
       func.apply(originalCursor, args);
-      const request = cursorRequestMap.get(this);
+      const request = cursorRequestMap.get(this)!;
       return wrap(request);
     };
   }
@@ -136,6 +148,14 @@ function transformCachableValue(value: any): any {
  *
  * @param value The thing to enhance.
  */
+export function wrap(value: IDBCursorWithValue): IDBPCursorWithValue;
+export function wrap(value: IDBCursor): IDBPCursor;
+export function wrap(value: IDBDatabase): IDBPDatabase;
+export function wrap(value: IDBIndex): IDBPIndex;
+export function wrap(value: IDBObjectStore): IDBPObjectStore;
+export function wrap(value: IDBTransaction): IDBPTransaction;
+export function wrap(value: IDBOpenDBRequest): Promise<IDBPDatabase | undefined>;
+export function wrap<T>(value: IDBRequest<T>): Promise<T>;
 export function wrap(value: any): any {
   // We sometimes generate multiple promises from a single IDBRequest (eg when cursoring), because
   // IDB is weird and a single IDBRequest can yield many responses, so these can't be cached.
@@ -163,5 +183,14 @@ export function wrap(value: any): any {
  *
  * @param value The enhanced object to revert.
  */
-export const unwrap =
-  <T extends object>(value: T): T | undefined => reverseTransformCache.get(value);
+export function unwrap(value: IDBPCursorWithValue): IDBCursorWithValue;
+export function unwrap(value: IDBPCursor): IDBCursor;
+export function unwrap(value: IDBPDatabase): IDBDatabase;
+export function unwrap(value: IDBPIndex): IDBIndex;
+export function unwrap(value: IDBPObjectStore): IDBObjectStore;
+export function unwrap(value: IDBPTransaction): IDBTransaction;
+export function unwrap(value: Promise<IDBPDatabase>): IDBOpenDBRequest;
+export function unwrap<T>(value: Promise<T>): IDBRequest<T>;
+export function unwrap(value: any): any {
+  return reverseTransformCache.get(value);
+}
