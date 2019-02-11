@@ -43,8 +43,8 @@ function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
     }
   });
 
-  // This is the only mapping that exists in reverseTransformCache, but the reverse doesn't exist in
-  // transformCache. This is because we create many promises from a single IDBRequest.
+  // This is the only mapping that exists in reverseTransformCache where the reverse doesn't exist
+  // in transformCache. This is because we create many promises from a single IDBRequest.
   reverseTransformCache.set(promise, request);
   return promise;
 }
@@ -132,7 +132,7 @@ function transformCachableValue(value: any): any {
 }
 
 /**
- * Enhance an object/function with library helpers.
+ * Enhance an IDB object with helpers.
  *
  * @param value The thing to enhance.
  */
