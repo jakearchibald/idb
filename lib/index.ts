@@ -1,5 +1,4 @@
 import { wrap } from './wrap-idb-value';
-export { unwrap } from './wrap-idb-value';
 
 interface OpenDbCallbacks<DBTypes extends DBSchema | undefined> {
   /**
@@ -65,7 +64,9 @@ export function deleteDb(name: string): Promise<void> {
   return wrap(request);
 }
 
-// Types:
+export { unwrap, wrap } from './wrap-idb-value';
+
+// === The rest of this file is type defs ===
 type KnownKeys<T> = {
   [K in keyof T]: string extends K ? never : number extends K ? never : K
 } extends { [_ in keyof T]: infer U } ? U : never;
@@ -127,7 +128,7 @@ export interface IDBPDatabase
 
 type IDBPObjectStoreExtends = Omit<IDBObjectStore, keyof IDBPObjectStore>;
 
-interface IDBPObjectStore<
+export interface IDBPObjectStore<
   DBTypes extends DBSchema | undefined = undefined,
   K extends IDBValidKey = IDBValidKey, V extends any = any,
   IndexKeyTypes extends IndexKeys | undefined = undefined,
@@ -256,7 +257,7 @@ export interface IDBPTransaction<DBTypes extends DBSchema | undefined = undefine
 
 type IDBPIndexExtends = Omit<IDBIndex, keyof IDBPIndex>;
 
-interface IDBPIndex<
+export interface IDBPIndex<
   DBTypes extends DBSchema | undefined = undefined,
   StoreKey extends IDBValidKey = IDBValidKey, V extends any = any,
   IndexKeyTypes extends IndexKeys | undefined = undefined,
@@ -321,8 +322,8 @@ interface IDBPIndex<
 
 type IDBPCursorExtends = Omit<IDBCursor, keyof IDBPCursor<IDBPObjectStore>>;
 
-interface IDBPCursor<
-  Source extends IDBPObjectStore | IDBPIndex,
+export interface IDBPCursor<
+  Source extends IDBPObjectStore | IDBPIndex = IDBPObjectStore | IDBPIndex,
   DBTypes extends DBSchema | undefined = undefined,
   StoreKey extends IDBValidKey = IDBValidKey, V extends any = any,
   IndexKeyTypes extends IndexKeys | undefined = undefined,
@@ -379,8 +380,8 @@ interface IDBPCursor<
   update(value: V): Promise<K>;
 }
 
-interface IDBPCursorWithValue<
-  Source extends IDBPObjectStore | IDBPIndex,
+export interface IDBPCursorWithValue<
+  Source extends IDBPObjectStore | IDBPIndex = IDBPObjectStore | IDBPIndex,
   DBTypes extends DBSchema | undefined = undefined,
   StoreKey extends IDBValidKey = IDBValidKey, V extends any = any,
   IndexKeyTypes extends IndexKeys | undefined = undefined,
