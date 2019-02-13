@@ -71,7 +71,7 @@ interface DeleteDbCallbacks {
  *
  * @param name Name of the database.
  */
-export function deleteDb(name: string, callbacks: DeleteDbCallbacks): Promise<void> {
+export function deleteDb(name: string, callbacks: DeleteDbCallbacks = {}): Promise<void> {
   const { blocked } = callbacks;
   const request = indexedDB.deleteDatabase(name);
   if (blocked) request.addEventListener('blocked', () => blocked());
