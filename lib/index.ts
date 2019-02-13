@@ -140,7 +140,11 @@ export interface IDBPDatabase
     IDBPTransaction<DBTypes>;
 }
 
-type IDBPObjectStoreExtends = Omit<IDBObjectStore, keyof IDBPObjectStore>;
+type IDBPObjectStoreExtends = Omit<
+  IDBObjectStore,
+  'transaction' | 'add' | 'clear' | 'count' | 'createIndex' | 'delete' | 'get' | 'getAll' |
+  'getAllKeys' | 'getKey' | 'index' | 'openCursor' | 'openKeyCursor' | 'put'
+>;
 
 export interface IDBPObjectStore<
   DBTypes extends DBSchema | undefined = undefined,
@@ -242,7 +246,10 @@ export interface IDBPObjectStore<
   put(value: V, key?: K | IDBKeyRange): Promise<K>;
 }
 
-type IDBPTransactionExtends = Omit<IDBTransaction, keyof IDBPTransaction>;
+type IDBPTransactionExtends = Omit<
+  IDBTransaction,
+  'db' | 'objectStore'
+>;
 
 export interface IDBPTransaction<DBTypes extends DBSchema | undefined = undefined>
   extends IDBPTransactionExtends {
@@ -269,7 +276,11 @@ export interface IDBPTransaction<DBTypes extends DBSchema | undefined = undefine
     >;
 }
 
-type IDBPIndexExtends = Omit<IDBIndex, keyof IDBPIndex>;
+type IDBPIndexExtends = Omit<
+  IDBIndex,
+  'objectStore' | 'count' | 'get' | 'getAll' | 'getAllKeys' | 'getKey' | 'openCursor' |
+  'openKeyCursor'
+>;
 
 export interface IDBPIndex<
   DBTypes extends DBSchema | undefined = undefined,
@@ -334,7 +345,11 @@ export interface IDBPIndex<
     Promise<IDBPCursor<IDBPObjectStore, DBTypes, K, V, IndexKeyTypes, K> | null>;
 }
 
-type IDBPCursorExtends = Omit<IDBCursor, keyof IDBPCursor<IDBPObjectStore>>;
+type IDBPCursorExtends = Omit<
+  IDBCursor,
+  'key' | 'primaryKey' | 'source' | 'advance' | 'continue' | 'continuePrimaryKey' | 'delete' |
+  'update'
+>;
 
 export interface IDBPCursor<
   Source extends IDBPObjectStore | IDBPIndex = IDBPObjectStore | IDBPIndex,
