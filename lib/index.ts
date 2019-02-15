@@ -395,11 +395,11 @@ export interface IDBPCursor<
   /**
    * The key of the current index or object store item.
    */
-  readonly key: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange;
+  readonly key: CursorKey<DBTypes, StoreName, IndexName>;
   /**
    * The key of the current object store item.
    */
-  readonly primaryKey: StoreKey<DBTypes, StoreName> | IDBKeyRange;
+  readonly primaryKey: StoreKey<DBTypes, StoreName>;
   /**
    * Returns the IDBObjectStore or IDBIndex the cursor was opened from.
    */
