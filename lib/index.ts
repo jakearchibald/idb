@@ -120,7 +120,7 @@ type IndexKey<
 > = DBTypes extends DBSchema ? IndexName extends keyof DBTypes[StoreName]['indexes'] ?
   DBTypes[StoreName]['indexes'][IndexName] : IDBValidKey : IDBValidKey;
 
-type IndexSource<
+type CursorSource<
   DBTypes extends DBSchema | void,
   StoreName extends StoreNames<DBTypes>,
   IndexName extends IndexNames<DBTypes, StoreName> | void,
@@ -300,7 +300,7 @@ export interface IDBPTransaction<DBTypes extends DBSchema | void = void>
    * Returns an IDBObjectStore in the transaction's scope.
    */
   objectStore
-    <StoreName extends DBTypes extends DBSchema ? KnownKeys<DBTypes> : string>
+    <StoreName extends StoreNames<DBTypes>>
     (name: StoreName):
     IDBPObjectStore<DBTypes, StoreName>;
 }
@@ -403,7 +403,7 @@ export interface IDBPCursor<
   /**
    * Returns the IDBObjectStore or IDBIndex the cursor was opened from.
    */
-  readonly source: IndexSource<DBTypes, StoreName, IndexName>;
+  readonly source: CursorSource<DBTypes, StoreName, IndexName>;
   /**
    * Advances the cursor a given number of records.
    *
