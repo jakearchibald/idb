@@ -171,7 +171,7 @@ export interface IDBPObjectStore<
   /**
    * Deletes all records in store.
    */
-  clear(): Promise<void>;
+  clear(): Promise<undefined>;
   /**
    * Retrieves the number of records matching the given query.
    */
@@ -188,14 +188,14 @@ export interface IDBPObjectStore<
   /**
    * Deletes records in store matching the given query.
    */
-  delete(key: StoreKey<DBTypes, StoreName> | IDBKeyRange): Promise<void>;
+  delete(key: StoreKey<DBTypes, StoreName> | IDBKeyRange): Promise<undefined>;
   /**
    * Retrieves the value of the first record matching the query.
    *
    * Resolves with undefined if no match is found.
    */
   get(query: StoreKey<DBTypes, StoreName> | IDBKeyRange):
-    Promise<StoreValue<DBTypes, StoreName> | void>;
+    Promise<StoreValue<DBTypes, StoreName> | undefined>;
   /**
    * Retrieves all values that match the query.
    *
@@ -218,7 +218,7 @@ export interface IDBPObjectStore<
    * Resolves with undefined if no match is found.
    */
   getKey(query: StoreKey<DBTypes, StoreName> | IDBKeyRange):
-    Promise<StoreKey<DBTypes, StoreName> | void>;
+    Promise<StoreKey<DBTypes, StoreName> | undefined>;
   /**
    * Get a query of a given name.
    */
@@ -271,7 +271,7 @@ export interface IDBPTransaction<DBTypes extends DBSchema | undefined = undefine
   /**
    * Promise for the completion of this transaction.
    */
-  readonly done: Promise<void>;
+  readonly done: Promise<undefined>;
 
   /**
    * Returns an IDBObjectStore in the transaction's scope.
