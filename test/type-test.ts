@@ -74,9 +74,11 @@ async function demo() {
   cursor!.continue(123);
   cursor!.continuePrimaryKey(123, 123);
 
-  cursor = await cursor!.continue();
+  cursor = await cursor!.continue('foo');
   cursor = await cursor!.advance(5);
   cursor = await cursor!.continuePrimaryKey('hello', 'world');
+  // Test: key should be of type string.
+  cursor!.key;
 
   // Test: should be number
   const val6 = cursor!.value;
@@ -102,6 +104,14 @@ async function demo() {
 
   // Test: Should work & val8 should have id, title, date fields.
   const val8 = await index.get(new Date());
+
+  // Test: These should all work.
+  let cursor2 = await index.openCursor(new Date());
+  cursor2 = await cursor2!.continue(new Date());
+  cursor2 = await cursor2!.advance(5);
+  cursor2 = await cursor2!.continuePrimaryKey(new Date(), 123);
+  // Test: should be index
+  cursor2!.source;
 }
 
 // This is the same as above, but untyped. This shouldn't cause failures.
@@ -117,7 +127,7 @@ async function demoUntyped() {
   tx.objectStore('object-store');
   tx.objectStore('not-real');
 
-  let store = tx.objectStore('key-val-store');
+  const store = tx.objectStore('key-val-store');
   const val = await store.get('foo');
   await store.get(123);
   await store.getAll(123);
@@ -137,7 +147,7 @@ async function demoUntyped() {
   let cursor = await store.openCursor('123');
   const val4 = cursor!.value;
   const val5 = cursor!.key;
-  store = cursor!.source;
+  const store2 = cursor!.source;
 
   cursor!.continue(123);
   cursor!.continuePrimaryKey(123, 123);

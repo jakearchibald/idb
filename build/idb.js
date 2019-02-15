@@ -167,7 +167,7 @@ var idb = (function (exports) {
      *
      * @param name Name of the database.
      */
-    function deleteDb(name, callbacks) {
+    function deleteDb(name, callbacks = {}) {
         const { blocked } = callbacks;
         const request = indexedDB.deleteDatabase(name);
         if (blocked)

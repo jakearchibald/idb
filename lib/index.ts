@@ -390,7 +390,7 @@ type CursorKey<
 export interface IDBPCursor<
   DBTypes extends DBSchema | undefined = undefined,
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
-  IndexName extends IndexNames<DBTypes, StoreName> = IndexNames<DBTypes, StoreName>,
+  IndexName extends IndexNames<DBTypes, StoreName> | undefined = undefined,
 > extends IDBPCursorExtends {
   /**
    * The key of the current index or object store item.
@@ -449,7 +449,7 @@ export interface IDBPCursor<
 export interface IDBPCursorWithValue<
   DBTypes extends DBSchema | undefined = undefined,
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
-  IndexName extends IndexNames<DBTypes, StoreName> = IndexNames<DBTypes, StoreName>,
+  IndexName extends IndexNames<DBTypes, StoreName> | undefined = undefined,
 > extends IDBPCursor<DBTypes, StoreName, IndexName> {
   /**
    * The value of the current item.
