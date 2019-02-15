@@ -51,7 +51,7 @@ async function demo() {
   await store.openKeyCursor(123);
   // Test: This should work, and val2 should have type string.
   const val2 = await store.add(123, 'foo');
-  // Test: This should work, and val2 should have type string.
+  // Test: This should work, and val3 should have type string.
   const val3 = await store.put(123, 'foo');
   // Test: These should fail.
   store.add('213', 123);

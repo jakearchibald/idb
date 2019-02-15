@@ -40,15 +40,15 @@ export function openDb<DBTypes extends DBSchema | undefined = undefined>(
 ): Promise<IDBPDatabase<DBTypes>> {
   const { blocked, upgrade, blocking } = callbacks;
   const request = indexedDB.open(name, version);
-  const openPromise = wrap(request) as Promise<IDBPDatabase<DBTypes>>;
+  const openPromise = wrap(request) as unknown as Promise<IDBPDatabase<DBTypes>>;
 
   if (upgrade) {
     request.addEventListener('upgradeneeded', (event) => {
       upgrade(
-        wrap(request.result) as IDBPDatabase<DBTypes>,
+        wrap(request.result) as unknown as IDBPDatabase<DBTypes>,
         event.oldVersion,
         event.newVersion,
-        wrap(request.transaction!) as IDBPTransaction<DBTypes>,
+        wrap(request.transaction!) as unknown as IDBPTransaction<DBTypes>,
       );
     });
   }
@@ -101,32 +101,32 @@ interface DBSchemaValue {
   indexes?: IndexKeys;
 }
 
-type IDBPDatabaseExtends = Omit<IDBDatabase, keyof IDBPDatabase>;
+type IDBPDatabaseExtends = Omit<
+  IDBDatabase,
+  'createObjectStore' | 'deleteObjectStore' | 'transaction'
+>;
 
-export interface IDBPDatabase
-  <DBTypes extends DBSchema | undefined = undefined> extends IDBPDatabaseExtends {
+type StoreNames<DBTypes extends DBSchema | undefined> =
+  DBTypes extends DBSchema ? KnownKeys<DBTypes> : string;
+
+export interface IDBPDatabase<
+  DBTypes extends DBSchema | undefined = undefined,
+> extends IDBPDatabaseExtends {
   /**
    * Creates a new object store.
    *
    * Throws a "InvalidStateError" DOMException if not called within an upgrade transaction.
    */
-  createObjectStore
-    <K extends DBTypes extends DBSchema ? KnownKeys<DBTypes> : any>
-    (name: K, optionalParameters?: IDBObjectStoreParameters):
-    IDBPObjectStore<
-      DBTypes,
-      DBTypes[K]['key'], DBTypes[K]['value'],
-      DBTypes[K]['indexes']
-    >;
+  createObjectStore<Name extends StoreNames<DBTypes>>
+    (name: Name, optionalParameters?: IDBObjectStoreParameters):
+    IDBPObjectStore<DBTypes, Name>;
 
   /**
    * Deletes the object store with the given name.
    *
    * Throws a "InvalidStateError" DOMException if not called within an upgrade transaction.
    */
-  deleteObjectStore
-    <K extends DBTypes extends DBSchema ? KnownKeys<DBTypes> : string>
-    (name: K): void;
+  deleteObjectStore(name: StoreNames<DBTypes>): void;
 
   /**
    * Start a new transaction.
@@ -134,9 +134,7 @@ export interface IDBPDatabase
    * @param storeNames The object store(s) this transaction needs.
    * @param mode
    */
-  transaction
-    <K extends DBTypes extends DBSchema ? KnownKeys<DBTypes> : string>
-    (storeNames: K | K[], mode?: IDBTransactionMode):
+  transaction(storeNames: StoreNames<DBTypes> | StoreNames<DBTypes>[], mode?: IDBTransactionMode):
     IDBPTransaction<DBTypes>;
 }
 
@@ -146,10 +144,18 @@ type IDBPObjectStoreExtends = Omit<
   'getAllKeys' | 'getKey' | 'index' | 'openCursor' | 'openKeyCursor' | 'put'
 >;
 
+type StoreValue<DBTypes extends DBSchema | undefined, StoreName extends StoreNames<DBTypes>> =
+  DBTypes extends DBSchema ? DBTypes[StoreName]['value'] : any;
+
+type StoreKey<DBTypes extends DBSchema | undefined, StoreName extends StoreNames<DBTypes>> =
+  DBTypes extends DBSchema ? DBTypes[StoreName]['key'] : IDBValidKey;
+
+type IndexNames<DBTypes extends DBSchema | undefined, StoreName extends StoreNames<DBTypes>> =
+  DBTypes extends DBSchema ? keyof DBTypes[StoreName]['indexes'] : string;
+
 export interface IDBPObjectStore<
   DBTypes extends DBSchema | undefined = undefined,
-  K extends IDBValidKey = IDBValidKey, V extends any = any,
-  IndexKeyTypes extends IndexKeys | undefined = undefined,
+  StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
 > extends IDBPObjectStoreExtends {
   /**
    * The associated transaction.
@@ -160,7 +166,8 @@ export interface IDBPObjectStore<
    *
    * Rejects if an item of a given key already exists in the database.
    */
-  add(value: V, key?: K | IDBKeyRange): Promise<K>;
+  add(value: StoreValue<DBTypes, StoreName>, key?: StoreKey<DBTypes, StoreName> | IDBKeyRange):
+    Promise<StoreKey<DBTypes, StoreName>>;
   /**
    * Deletes all records in store.
    */
@@ -168,82 +175,85 @@ export interface IDBPObjectStore<
   /**
    * Retrieves the number of records matching the given query.
    */
-  count(key?: K | IDBKeyRange): Promise<number>;
+  count(key?: StoreKey<DBTypes, StoreName> | IDBKeyRange): Promise<number>;
   /**
    * Creates a new index in store.
    *
    * Throws an "InvalidStateError" DOMException if not called within an upgrade transaction.
    */
   createIndex
-    <I extends IndexKeyTypes extends IndexKeys ? KnownKeys<IndexKeyTypes> : any>
-    (name: I, keyPath: string | string[], options?: IDBIndexParameters):
-    IDBPIndex<DBTypes, K, V, IndexKeyTypes, IndexKeyTypes[I]>;
+    <IndexName extends IndexNames<DBTypes, StoreName>>
+    (name: IndexName, keyPath: string | string[], options?: IDBIndexParameters):
+    IDBPIndex<DBTypes, StoreName, IndexName>;
   /**
    * Deletes records in store matching the given query.
    */
-  delete(key: K | IDBKeyRange): Promise<void>;
+  delete(key: StoreKey<DBTypes, StoreName> | IDBKeyRange): Promise<void>;
   /**
    * Retrieves the value of the first record matching the query.
    *
    * Resolves with undefined if no match is found.
    */
-  get(query: K | IDBKeyRange): Promise<V | undefined>;
+  get(query: StoreKey<DBTypes, StoreName> | IDBKeyRange):
+    Promise<StoreValue<DBTypes, StoreName> | void>;
   /**
    * Retrieves all values that match the query.
    *
    * @param query
    * @param count Maximum number of values to return.
    */
-  getAll(query?: K | IDBKeyRange, count?: number): Promise<V[]>;
+  getAll(query?: StoreKey<DBTypes, StoreName> | IDBKeyRange, count?: number):
+    Promise<StoreValue<DBTypes, StoreName>[]>;
   /**
    * Retrieves the keys of records matching the query.
    *
    * @param query
    * @param count Maximum number of keys to return.
    */
-  getAllKeys(query?: K | IDBKeyRange, count?: number): Promise<K[]>;
+  getAllKeys(query?: StoreKey<DBTypes, StoreName> | IDBKeyRange, count?: number):
+    Promise<StoreKey<DBTypes, StoreName>[]>;
   /**
    * Retrieves the key of the first record that matches the query.
    *
    * Resolves with undefined if no match is found.
    */
-  getKey(query: K | IDBKeyRange): Promise<K | undefined>;
+  getKey(query: StoreKey<DBTypes, StoreName> | IDBKeyRange):
+    Promise<StoreKey<DBTypes, StoreName> | void>;
   /**
    * Get a query of a given name.
    */
-  index
-    <I extends (IndexKeyTypes extends IndexKeys ? KnownKeys<IndexKeyTypes> : any)>
-    (name: I):
-    IDBPIndex<DBTypes, K, V, IndexKeyTypes, IndexKeyTypes[I]>;
+  index<IndexName extends IndexNames<DBTypes, StoreName>>(name: IndexName):
+    IDBPIndex<DBTypes, StoreName, IndexName>;
 
   /**
    * Opens a cursor over the records matching the query.
    *
    * Resolves with null if no matches are found.
    *
-   * @param range If null, all records match.
+   * @param query If null, all records match.
    * @param direction
    */
-  openCursor(range?: K | IDBKeyRange, direction?: IDBCursorDirection):
-    Promise<IDBPCursorWithValue<IDBPObjectStore, DBTypes, K, V, IndexKeyTypes, K> | null>;
+  openCursor(query?: StoreKey<DBTypes, StoreName> | IDBKeyRange, direction?: IDBCursorDirection):
+    Promise<IDBPCursorWithValue<DBTypes, StoreName> | null>;
 
   /**
    * Opens a cursor over the keys matching the query.
    *
    * Resolves with null if no matches are found.
    *
-   * @param range If null, all records match.
+   * @param query If null, all records match.
    * @param direction
    */
-  openKeyCursor(query?: K | IDBKeyRange, direction?: IDBCursorDirection):
-    Promise<IDBPCursor<IDBPObjectStore, DBTypes, K, V, IndexKeyTypes, K> | null>;
+  openKeyCursor(query?: StoreKey<DBTypes, StoreName> | IDBKeyRange, direction?: IDBCursorDirection):
+    Promise<IDBPCursor<DBTypes, StoreName> | null>;
 
   /**
    * Put an item in the database.
    *
    * Replaces any item with the same key.
    */
-  put(value: V, key?: K | IDBKeyRange): Promise<K>;
+  put(value: StoreValue<DBTypes, StoreName>, key?: StoreKey<DBTypes, StoreName> | IDBKeyRange):
+    Promise<StoreKey<DBTypes, StoreName>>;
 }
 
 type IDBPTransactionExtends = Omit<
@@ -267,13 +277,9 @@ export interface IDBPTransaction<DBTypes extends DBSchema | undefined = undefine
    * Returns an IDBObjectStore in the transaction's scope.
    */
   objectStore
-    <K extends (DBTypes extends DBSchema ? KnownKeys<DBTypes> : any)>
-    (name: K):
-    IDBPObjectStore<
-      DBTypes,
-      DBTypes[K]['key'], DBTypes[K]['value'],
-      DBTypes[K]['indexes'] extends IndexKeys ? DBTypes[K]['indexes'] : any
-    >;
+    <StoreName extends DBTypes extends DBSchema ? KnownKeys<DBTypes> : string>
+    (name: StoreName):
+    IDBPObjectStore<DBTypes, StoreName>;
 }
 
 type IDBPIndexExtends = Omit<
@@ -282,67 +288,81 @@ type IDBPIndexExtends = Omit<
   'openKeyCursor'
 >;
 
+type IndexKey<
+  DBTypes extends DBSchema | undefined,
+  StoreName extends StoreNames<DBTypes>,
+  IndexName extends IndexNames<DBTypes, StoreName>,
+> = DBTypes extends DBSchema ? IndexName extends keyof DBTypes[StoreName]['indexes'] ?
+  DBTypes[StoreName]['indexes'][IndexName] : IDBValidKey : IDBValidKey;
+
 export interface IDBPIndex<
   DBTypes extends DBSchema | undefined = undefined,
-  StoreKey extends IDBValidKey = IDBValidKey, V extends any = any,
-  IndexKeyTypes extends IndexKeys | undefined = undefined,
-  K extends IDBValidKey = IDBValidKey,
+  StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
+  IndexName extends IndexNames<DBTypes, StoreName> = IndexNames<DBTypes, StoreName>,
 > extends IDBPIndexExtends {
   /**
    * The IDBObjectStore the index belongs to.
    */
-  readonly objectStore: IDBPObjectStore<DBTypes, StoreKey, V, IndexKeyTypes>;
+  readonly objectStore: IDBPObjectStore<DBTypes, StoreName>;
 
   /**
    * Retrieves the number of records matching the given query.
    */
-  count(key?: K | IDBKeyRange): Promise<number>;
+  count(key?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange): Promise<number>;
   /**
    * Retrieves the value of the first record matching the query.
    *
    * Resolves with undefined if no match is found.
    */
-  get(query: K | IDBKeyRange): Promise<V | undefined>;
+  get(query: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange):
+    Promise<StoreValue<DBTypes, StoreName> | undefined>;
   /**
    * Retrieves all values that match the query.
    *
    * @param query
    * @param count Maximum number of values to return.
    */
-  getAll(query?: K | IDBKeyRange, count?: number): Promise<V[]>;
+  getAll(query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange, count?: number):
+    Promise<StoreValue<DBTypes, StoreName>[]>;
   /**
    * Retrieves the keys of records matching the query.
    *
    * @param query
    * @param count Maximum number of keys to return.
    */
-  getAllKeys(query?: K | IDBKeyRange, count?: number): Promise<K[]>;
+  getAllKeys(query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange, count?: number):
+    Promise<IndexKey<DBTypes, StoreName, IndexName>[]>;
   /**
    * Retrieves the key of the first record that matches the query.
    *
    * Resolves with undefined if no match is found.
    */
-  getKey(query: K | IDBKeyRange): Promise<K | undefined>;
+  getKey(query: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange):
+    Promise<IndexKey<DBTypes, StoreName, IndexName> | undefined>;
   /**
    * Opens a cursor over the records matching the query.
    *
    * Resolves with null if no matches are found.
    *
-   * @param range If null, all records match.
+   * @param query If null, all records match.
    * @param direction
    */
-  openCursor(range?: K | IDBKeyRange, direction?: IDBCursorDirection):
-    Promise<IDBPCursorWithValue<IDBPObjectStore, DBTypes, K, V, IndexKeyTypes, K> | null>;
+  openCursor(
+    query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
+    direction?: IDBCursorDirection,
+  ): Promise<IDBPCursorWithValue<DBTypes, StoreName, IndexName> | null>;
   /**
    * Opens a cursor over the keys matching the query.
    *
    * Resolves with null if no matches are found.
    *
-   * @param range If null, all records match.
+   * @param query If null, all records match.
    * @param direction
    */
-  openKeyCursor(query?: K | IDBKeyRange, direction?: IDBCursorDirection):
-    Promise<IDBPCursor<IDBPObjectStore, DBTypes, K, V, IndexKeyTypes, K> | null>;
+  openKeyCursor(
+    query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
+    direction?: IDBCursorDirection,
+  ): Promise<IDBPCursor<DBTypes, StoreName, IndexName> | null>;
 }
 
 type IDBPCursorExtends = Omit<
@@ -351,33 +371,45 @@ type IDBPCursorExtends = Omit<
   'update'
 >;
 
+type IndexSource<
+  DBTypes extends DBSchema | undefined,
+  StoreName extends StoreNames<DBTypes>,
+  IndexName extends IndexNames<DBTypes, StoreName> | undefined,
+> = IndexName extends IndexNames<DBTypes, StoreName> ?
+  IDBPIndex<DBTypes, StoreName, IndexName> :
+  IDBPObjectStore<DBTypes, StoreName>;
+
+type CursorKey<
+  DBTypes extends DBSchema | undefined,
+  StoreName extends StoreNames<DBTypes>,
+  IndexName extends IndexNames<DBTypes, StoreName> | undefined,
+> = IndexName extends IndexNames<DBTypes, StoreName> ?
+  IndexKey<DBTypes, StoreName, IndexName> :
+  StoreKey<DBTypes, StoreName>;
+
 export interface IDBPCursor<
-  Source extends IDBPObjectStore | IDBPIndex = IDBPObjectStore | IDBPIndex,
   DBTypes extends DBSchema | undefined = undefined,
-  StoreKey extends IDBValidKey = IDBValidKey, V extends any = any,
-  IndexKeyTypes extends IndexKeys | undefined = undefined,
-  K extends IDBValidKey = IDBValidKey,
+  StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
+  IndexName extends IndexNames<DBTypes, StoreName> = IndexNames<DBTypes, StoreName>,
 > extends IDBPCursorExtends {
   /**
    * The key of the current index or object store item.
    */
-  readonly key: K | IDBKeyRange;
+  readonly key: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange;
   /**
    * The key of the current object store item.
    */
-  readonly primaryKey: StoreKey | IDBKeyRange;
+  readonly primaryKey: StoreKey<DBTypes, StoreName> | IDBKeyRange;
   /**
    * Returns the IDBObjectStore or IDBIndex the cursor was opened from.
    */
-  readonly source: Source extends IDBPObjectStore ?
-    IDBPObjectStore<DBTypes, StoreKey, V, IndexKeyTypes> :
-    IDBPIndex<DBTypes, StoreKey, V, IndexKeyTypes, K>;
+  readonly source: IndexSource<DBTypes, StoreName, IndexName>;
   /**
    * Advances the cursor a given number of records.
    *
    * Resolves to null if no matching records remain.
    */
-  advance<T extends any>(this: T, count: number): Promise<T | null>;
+  advance<T>(this: T, count: number): Promise<T | null>;
   /**
    * Advance the cursor by one record (unless 'key' is provided).
    *
@@ -385,7 +417,8 @@ export interface IDBPCursor<
    *
    * @param key Advance to the index or object store with a key equal to or greater than this value.
    */
-  continue<T extends any>(this: T, key?: K | IDBKeyRange): Promise<T | null>;
+  continue<T>(this: T, key?: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange):
+    Promise<T | null>;
   /**
    * Advance the cursor by given keys.
    *
@@ -396,8 +429,12 @@ export interface IDBPCursor<
    * @param key Advance to the index or object store with a key equal to or greater than this value.
    * @param primaryKey and where the object store has a key equal to or greater than this value.
    */
-  continuePrimaryKey<T extends any>
-    (this: T, key: K | IDBKeyRange, primaryKey: StoreKey | IDBKeyRange):
+  continuePrimaryKey<T>
+    (
+      this: T,
+      key: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
+      primaryKey: StoreKey<DBTypes, StoreName> | IDBKeyRange,
+    ):
     Promise<T | null>;
   /**
    * Delete the current record.
@@ -406,18 +443,16 @@ export interface IDBPCursor<
   /**
    * Updated the current record.
    */
-  update(value: V): Promise<K>;
+  update(value: StoreValue<DBTypes, StoreName>): Promise<StoreKey<DBTypes, StoreName>>;
 }
 
 export interface IDBPCursorWithValue<
-  Source extends IDBPObjectStore | IDBPIndex = IDBPObjectStore | IDBPIndex,
   DBTypes extends DBSchema | undefined = undefined,
-  StoreKey extends IDBValidKey = IDBValidKey, V extends any = any,
-  IndexKeyTypes extends IndexKeys | undefined = undefined,
-  K extends IDBValidKey = IDBValidKey,
-> extends IDBPCursor<Source, DBTypes, StoreKey, V, IndexKeyTypes, K> {
+  StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
+  IndexName extends IndexNames<DBTypes, StoreName> = IndexNames<DBTypes, StoreName>,
+> extends IDBPCursor<DBTypes, StoreName, IndexName> {
   /**
    * The value of the current item.
    */
-  readonly value: V;
+  readonly value: StoreValue<DBTypes, StoreName>;
 }

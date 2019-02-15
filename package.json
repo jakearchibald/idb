@@ -17,6 +17,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
     "chai": "^4.2.0",
     "gzip-size-cli": "^3.0.0",
     "mocha": "^5.2.0",

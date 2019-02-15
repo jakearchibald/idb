@@ -244,7 +244,7 @@ suite('unwrap', () => {
     const tx = db.transaction('test-store');
     const unwrappedTx = unwrap(tx);
     instanceOf(unwrappedTx, IDBTransaction);
-    isUndefined(unwrappedTx.done);
+    isFalse('done' in unwrappedTx);
 
     const store = tx.objectStore('test-store');
     const unwrappedStore = unwrap(store);
