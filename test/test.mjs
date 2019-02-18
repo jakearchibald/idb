@@ -115,6 +115,34 @@ suite('database read/write', () => {
     isFalse(newDbBlockingCalled);
   });
 
+  test('handles blocked and blocking on delete', async () => {
+    db.close();
+
+    let blockedCalled = false;
+    let blockingCalled = false;
+    let closeDbBlockedCalled = false;
+
+    db = await openDb('delete-test', 1, {
+      blocked() { blockedCalled = true; },
+      blocking() {
+        blockingCalled = true;
+        // 'blocked' isn't called if older databases close once blocking fires.
+        setTimeout(() => db.close(), 0);
+      },
+    });
+
+    isFalse(blockedCalled);
+    isFalse(blockingCalled);
+
+    await deleteDb('delete-test', {
+      blocked() { closeDbBlockedCalled = true; },
+    });
+
+    isFalse(blockedCalled);
+    isTrue(blockingCalled);
+    isTrue(closeDbBlockedCalled);
+  });
+
   test('can upgrade with indexes, and handles blocking', async () => {
     let upgradeCalled = false;
     db.close();
