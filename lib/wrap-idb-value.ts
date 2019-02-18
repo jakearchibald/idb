@@ -1,23 +1,31 @@
 import {
-    IDBPCursor,
-    IDBPCursorWithValue,
-    IDBPDatabase,
-    IDBPIndex,
-    IDBPObjectStore,
-    IDBPTransaction,
+  IDBPCursor, IDBPCursorWithValue, IDBPDatabase, IDBPIndex, IDBPObjectStore, IDBPTransaction,
 } from '.';
 
-type IDBCursorAdvanceMethod =
-  IDBCursor['advance'] | IDBCursor['continue'] | IDBCursor['continuePrimaryKey'];
 type Constructor = new (...args: any[]) => any;
 type Func = (...args: any[]) => any;
 
-const idbProxyableTypes = [IDBDatabase, IDBObjectStore, IDBIndex, IDBCursor, IDBTransaction];
-const cursorAdvanceMethods: IDBCursorAdvanceMethod[] = [
-  IDBCursor.prototype.advance,
-  IDBCursor.prototype.continue,
-  IDBCursor.prototype.continuePrimaryKey,
-];
+let idbProxyableTypes: Constructor[];
+let cursorAdvanceMethods: Func[];
+
+function getIdbProxyableTypes(): Constructor[] {
+  if (!idbProxyableTypes) {
+    idbProxyableTypes = [IDBDatabase, IDBObjectStore, IDBIndex, IDBCursor, IDBTransaction];
+  }
+  return idbProxyableTypes;
+}
+
+function getCursorAdvanceMethods(): Func[] {
+  if (!cursorAdvanceMethods) {
+    cursorAdvanceMethods = [
+      IDBCursor.prototype.advance,
+      IDBCursor.prototype.continue,
+      IDBCursor.prototype.continuePrimaryKey,
+    ];
+  }
+  return cursorAdvanceMethods;
+}
+
 const cursorRequestMap: WeakMap<IDBPCursor, IDBRequest<IDBCursor>> = new WeakMap();
 const transactionDoneMap: WeakMap<IDBTransaction, Promise<void>> = new WeakMap();
 const transformCache = new WeakMap();
@@ -110,7 +118,7 @@ function wrapFunction<T extends Func>(func: T): Function {
   // cursor. It's kinda like a promise that can resolve with many values. That doesn't make sense
   // with real promises, so each advance methods returns a new promise for the cursor object, or
   // undefined if the end of the cursor has been reached.
-  if (cursorAdvanceMethods.includes(func)) {
+  if (getCursorAdvanceMethods().includes(func)) {
     return function (this: IDBPCursor, ...args: Parameters<T>) {
       // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
       // the original object.
@@ -137,7 +145,7 @@ function transformCachableValue(value: any): any {
   // which is later returned for transaction.done (see idbObjectHandler).
   if (value instanceof IDBTransaction) cacheDonePromiseForTransaction(value);
 
-  if (instanceOfAny(value, idbProxyableTypes)) return new Proxy(value, idbObjectHandler);
+  if (instanceOfAny(value, getIdbProxyableTypes())) return new Proxy(value, idbObjectHandler);
 
   // Return the same value back if we're not going to transform it.
   return value;

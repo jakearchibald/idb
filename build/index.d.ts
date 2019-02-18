@@ -1,4 +1,4 @@
-interface OpenDbCallbacks<DBTypes extends DBSchema | undefined> {
+interface OpenDbCallbacks<DBTypes extends DBSchema | unknown> {
     /**
      * Called if this version of the database has never been opened before. Use it to specify the
      * schema for the database.
@@ -27,7 +27,7 @@ interface OpenDbCallbacks<DBTypes extends DBSchema | undefined> {
  * @param version Schema version.
  * @param callbacks Additional callbacks.
  */
-export declare function openDb<DBTypes extends DBSchema | undefined = undefined>(name: string, version: number, callbacks?: OpenDbCallbacks<DBTypes>): Promise<IDBPDatabase<DBTypes>>;
+export declare function openDb<DBTypes extends DBSchema | unknown = unknown>(name: string, version: number, callbacks?: OpenDbCallbacks<DBTypes>): Promise<IDBPDatabase<DBTypes>>;
 interface DeleteDbCallbacks {
     /**
      * Called if there are connections to this database open, so it cannot be deleted.
@@ -58,9 +58,15 @@ interface DBSchemaValue {
     value: any;
     indexes?: IndexKeys;
 }
+declare type StoreNames<DBTypes extends DBSchema | unknown> = DBTypes extends DBSchema ? KnownKeys<DBTypes> : string;
+declare type StoreValue<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>> = DBTypes extends DBSchema ? DBTypes[StoreName]['value'] : any;
+declare type StoreKey<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>> = DBTypes extends DBSchema ? DBTypes[StoreName]['key'] : IDBValidKey;
+declare type IndexNames<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>> = DBTypes extends DBSchema ? keyof DBTypes[StoreName]['indexes'] : string;
+declare type IndexKey<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName>> = DBTypes extends DBSchema ? IndexName extends keyof DBTypes[StoreName]['indexes'] ? DBTypes[StoreName]['indexes'][IndexName] : IDBValidKey : IDBValidKey;
+declare type CursorSource<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName> | unknown> = IndexName extends IndexNames<DBTypes, StoreName> ? IDBPIndex<DBTypes, StoreName, IndexName> : IDBPObjectStore<DBTypes, StoreName>;
+declare type CursorKey<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName> | unknown> = IndexName extends IndexNames<DBTypes, StoreName> ? IndexKey<DBTypes, StoreName, IndexName> : StoreKey<DBTypes, StoreName>;
 declare type IDBPDatabaseExtends = Omit<IDBDatabase, 'createObjectStore' | 'deleteObjectStore' | 'transaction'>;
-declare type StoreNames<DBTypes extends DBSchema | undefined> = DBTypes extends DBSchema ? KnownKeys<DBTypes> : string;
-export interface IDBPDatabase<DBTypes extends DBSchema | undefined = undefined> extends IDBPDatabaseExtends {
+export interface IDBPDatabase<DBTypes extends DBSchema | unknown = any> extends IDBPDatabaseExtends {
     /**
      * Creates a new object store.
      *
@@ -82,10 +88,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | undefined = undefined> 
     transaction(storeNames: StoreNames<DBTypes> | StoreNames<DBTypes>[], mode?: IDBTransactionMode): IDBPTransaction<DBTypes>;
 }
 declare type IDBPObjectStoreExtends = Omit<IDBObjectStore, 'transaction' | 'add' | 'clear' | 'count' | 'createIndex' | 'delete' | 'get' | 'getAll' | 'getAllKeys' | 'getKey' | 'index' | 'openCursor' | 'openKeyCursor' | 'put'>;
-declare type StoreValue<DBTypes extends DBSchema | undefined, StoreName extends StoreNames<DBTypes>> = DBTypes extends DBSchema ? DBTypes[StoreName]['value'] : any;
-declare type StoreKey<DBTypes extends DBSchema | undefined, StoreName extends StoreNames<DBTypes>> = DBTypes extends DBSchema ? DBTypes[StoreName]['key'] : IDBValidKey;
-declare type IndexNames<DBTypes extends DBSchema | undefined, StoreName extends StoreNames<DBTypes>> = DBTypes extends DBSchema ? keyof DBTypes[StoreName]['indexes'] : string;
-export interface IDBPObjectStore<DBTypes extends DBSchema | undefined = undefined, StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>> extends IDBPObjectStoreExtends {
+export interface IDBPObjectStore<DBTypes extends DBSchema | unknown = unknown, StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>> extends IDBPObjectStoreExtends {
     /**
      * The associated transaction.
      */
@@ -170,7 +173,7 @@ export interface IDBPObjectStore<DBTypes extends DBSchema | undefined = undefine
     put(value: StoreValue<DBTypes, StoreName>, key?: StoreKey<DBTypes, StoreName> | IDBKeyRange): Promise<StoreKey<DBTypes, StoreName>>;
 }
 declare type IDBPTransactionExtends = Omit<IDBTransaction, 'db' | 'objectStore'>;
-export interface IDBPTransaction<DBTypes extends DBSchema | undefined = undefined> extends IDBPTransactionExtends {
+export interface IDBPTransaction<DBTypes extends DBSchema | unknown = unknown> extends IDBPTransactionExtends {
     /**
      * The transaction's connection.
      */
@@ -182,11 +185,10 @@ export interface IDBPTransaction<DBTypes extends DBSchema | undefined = undefine
     /**
      * Returns an IDBObjectStore in the transaction's scope.
      */
-    objectStore<StoreName extends DBTypes extends DBSchema ? KnownKeys<DBTypes> : string>(name: StoreName): IDBPObjectStore<DBTypes, StoreName>;
+    objectStore<StoreName extends StoreNames<DBTypes>>(name: StoreName): IDBPObjectStore<DBTypes, StoreName>;
 }
 declare type IDBPIndexExtends = Omit<IDBIndex, 'objectStore' | 'count' | 'get' | 'getAll' | 'getAllKeys' | 'getKey' | 'openCursor' | 'openKeyCursor'>;
-declare type IndexKey<DBTypes extends DBSchema | undefined, StoreName extends StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName>> = DBTypes extends DBSchema ? IndexName extends keyof DBTypes[StoreName]['indexes'] ? DBTypes[StoreName]['indexes'][IndexName] : IDBValidKey : IDBValidKey;
-export interface IDBPIndex<DBTypes extends DBSchema | undefined = undefined, StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName> = IndexNames<DBTypes, StoreName>> extends IDBPIndexExtends {
+export interface IDBPIndex<DBTypes extends DBSchema | unknown = unknown, StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName> = IndexNames<DBTypes, StoreName>> extends IDBPIndexExtends {
     /**
      * The IDBObjectStore the index belongs to.
      */
@@ -241,9 +243,7 @@ export interface IDBPIndex<DBTypes extends DBSchema | undefined = undefined, Sto
     openKeyCursor(query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange, direction?: IDBCursorDirection): Promise<IDBPCursor<DBTypes, StoreName, IndexName> | null>;
 }
 declare type IDBPCursorExtends = Omit<IDBCursor, 'key' | 'primaryKey' | 'source' | 'advance' | 'continue' | 'continuePrimaryKey' | 'delete' | 'update'>;
-declare type IndexSource<DBTypes extends DBSchema | undefined, StoreName extends StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName> | undefined> = IndexName extends IndexNames<DBTypes, StoreName> ? IDBPIndex<DBTypes, StoreName, IndexName> : IDBPObjectStore<DBTypes, StoreName>;
-declare type CursorKey<DBTypes extends DBSchema | undefined, StoreName extends StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName> | undefined> = IndexName extends IndexNames<DBTypes, StoreName> ? IndexKey<DBTypes, StoreName, IndexName> : StoreKey<DBTypes, StoreName>;
-export interface IDBPCursor<DBTypes extends DBSchema | undefined = undefined, StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName> | undefined = undefined> extends IDBPCursorExtends {
+export interface IDBPCursor<DBTypes extends DBSchema | unknown = unknown, StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown> extends IDBPCursorExtends {
     /**
      * The key of the current index or object store item.
      */
@@ -255,7 +255,7 @@ export interface IDBPCursor<DBTypes extends DBSchema | undefined = undefined, St
     /**
      * Returns the IDBObjectStore or IDBIndex the cursor was opened from.
      */
-    readonly source: IndexSource<DBTypes, StoreName, IndexName>;
+    readonly source: CursorSource<DBTypes, StoreName, IndexName>;
     /**
      * Advances the cursor a given number of records.
      *
@@ -290,7 +290,7 @@ export interface IDBPCursor<DBTypes extends DBSchema | undefined = undefined, St
      */
     update(value: StoreValue<DBTypes, StoreName>): Promise<StoreKey<DBTypes, StoreName>>;
 }
-export interface IDBPCursorWithValue<DBTypes extends DBSchema | undefined = undefined, StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName> | undefined = undefined> extends IDBPCursor<DBTypes, StoreName, IndexName> {
+export interface IDBPCursorWithValue<DBTypes extends DBSchema | unknown = unknown, StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown> extends IDBPCursor<DBTypes, StoreName, IndexName> {
     /**
      * The value of the current item.
      */

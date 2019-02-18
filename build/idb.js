@@ -1,12 +1,24 @@
 var idb = (function (exports) {
     'use strict';
 
-    const idbProxyableTypes = [IDBDatabase, IDBObjectStore, IDBIndex, IDBCursor, IDBTransaction];
-    const cursorAdvanceMethods = [
-        IDBCursor.prototype.advance,
-        IDBCursor.prototype.continue,
-        IDBCursor.prototype.continuePrimaryKey,
-    ];
+    let idbProxyableTypes;
+    let cursorAdvanceMethods;
+    function getIdbProxyableTypes() {
+        if (!idbProxyableTypes) {
+            idbProxyableTypes = [IDBDatabase, IDBObjectStore, IDBIndex, IDBCursor, IDBTransaction];
+        }
+        return idbProxyableTypes;
+    }
+    function getCursorAdvanceMethods() {
+        if (!cursorAdvanceMethods) {
+            cursorAdvanceMethods = [
+                IDBCursor.prototype.advance,
+                IDBCursor.prototype.continue,
+                IDBCursor.prototype.continuePrimaryKey,
+            ];
+        }
+        return cursorAdvanceMethods;
+    }
     const cursorRequestMap = new WeakMap();
     const transactionDoneMap = new WeakMap();
     const transformCache = new WeakMap();
@@ -88,7 +100,7 @@ var idb = (function (exports) {
         // cursor. It's kinda like a promise that can resolve with many values. That doesn't make sense
         // with real promises, so each advance methods returns a new promise for the cursor object, or
         // undefined if the end of the cursor has been reached.
-        if (cursorAdvanceMethods.includes(func)) {
+        if (getCursorAdvanceMethods().includes(func)) {
             return function (...args) {
                 // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
                 // the original object.
@@ -113,7 +125,7 @@ var idb = (function (exports) {
         // which is later returned for transaction.done (see idbObjectHandler).
         if (value instanceof IDBTransaction)
             cacheDonePromiseForTransaction(value);
-        if (instanceOfAny(value, idbProxyableTypes))
+        if (instanceOfAny(value, getIdbProxyableTypes()))
             return new Proxy(value, idbObjectHandler);
         // Return the same value back if we're not going to transform it.
         return value;
