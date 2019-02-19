@@ -1,4 +1,5 @@
 import { IDBPCursor, IDBPCursorWithValue, IDBPDatabase, IDBPIndex, IDBPObjectStore, IDBPTransaction } from '.';
+export declare function addTraps(callback: (currentTraps: ProxyHandler<any>) => ProxyHandler<any>): void;
 /**
  * Enhance an IDB object with helpers.
  *

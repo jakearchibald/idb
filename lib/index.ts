@@ -1,5 +1,6 @@
 import { wrap } from './wrap-idb-value';
-import './get-set-helpers';
+import './database-extras';
+import './async-iterators';
 
 interface OpenDbCallbacks<DBTypes extends DBSchema | unknown> {
   /**

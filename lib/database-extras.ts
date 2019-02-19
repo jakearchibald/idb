@@ -1,5 +1,12 @@
-import { addTraps, Func } from './wrap-idb-value';
+import { Func } from './util';
+import { addTraps } from './wrap-idb-value';
 import { IDBPDatabase, IDBPObjectStore, IDBPIndex } from '.';
+
+function potentialDatabaseExtra(target: any, prop: string | number | symbol) {
+  return (target instanceof IDBDatabase) &&
+    !(prop in target) &&
+    typeof prop === 'string';
+}
 
 const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
 const writeMethods = ['put', 'add', 'delete', 'clear'];
@@ -40,9 +47,12 @@ function getMethod(prop: string): Func | undefined {
 addTraps(oldTraps => ({
   get(target, prop, receiver) {
     // Quick bails
-    if (!(target instanceof IDBDatabase) || prop in target || typeof prop !== 'string') {
+    if (!potentialDatabaseExtra(target, prop)) {
       return oldTraps.get!(target, prop, receiver);
     }
+
+    // tslint:disable-next-line:no-parameter-reassignment
+    prop = prop as string;
 
     const cachedMethod = cachedMethods.get(prop);
     if (cachedMethod) return cachedMethod;
@@ -57,10 +67,9 @@ addTraps(oldTraps => ({
     return oldTraps.get!(target, prop, receiver);
   },
   has(target, prop) {
-    if (
-      target instanceof IDBDatabase && typeof prop === 'string' &&
-      (readMethods.includes(prop) || writeMethods.includes(prop))
-    ) return true;
-    return oldTraps.has!(target, prop);
+    return (
+      potentialDatabaseExtra(target, prop) &&
+      (readMethods.includes(prop as string) || writeMethods.includes(prop as string))
+    ) || oldTraps.has!(target, prop);
   },
 }));
