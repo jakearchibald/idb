@@ -1,6 +1,8 @@
 var idb = (function (exports) {
     'use strict';
 
+    const instanceOfAny = (object, constructors) => constructors.some(c => object instanceof c);
+
     let idbProxyableTypes;
     let cursorAdvanceMethods;
     function getIdbProxyableTypes() {
@@ -23,7 +25,6 @@ var idb = (function (exports) {
     const transactionDoneMap = new WeakMap();
     const transformCache = new WeakMap();
     const reverseTransformCache = new WeakMap();
-    const instanceOfAny = (object, constructors) => constructors.some(c => object instanceof c);
     function promisifyRequest(request) {
         const promise = new Promise((resolve, reject) => {
             const unlisten = () => {
@@ -78,7 +79,7 @@ var idb = (function (exports) {
         // Cache it for later retrieval.
         transactionDoneMap.set(tx, done);
     }
-    const idbObjectHandler = {
+    let idbProxyTraps = {
         get(target, prop) {
             // Special handling for transaction.done.
             if (prop === 'done' && target instanceof IDBTransaction)
@@ -92,6 +93,9 @@ var idb = (function (exports) {
             return prop in target;
         },
     };
+    function addTraps(callback) {
+        idbProxyTraps = callback(idbProxyTraps);
+    }
     function wrapFunction(func) {
         // Due to expected object equality (which is enforced by the caching in `wrap`), we
         // only create one new func per func.
@@ -126,7 +130,7 @@ var idb = (function (exports) {
         if (value instanceof IDBTransaction)
             cacheDonePromiseForTransaction(value);
         if (instanceOfAny(value, getIdbProxyableTypes()))
-            return new Proxy(value, idbObjectHandler);
+            return new Proxy(value, idbProxyTraps);
         // Return the same value back if we're not going to transform it.
         return value;
     }
@@ -151,6 +155,96 @@ var idb = (function (exports) {
     function unwrap(value) {
         return reverseTransformCache.get(value);
     }
+
+    function potentialDatabaseExtra(target, prop) {
+        return (target instanceof IDBDatabase) &&
+            !(prop in target) &&
+            typeof prop === 'string';
+    }
+    const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
+    const writeMethods = ['put', 'add', 'delete', 'clear'];
+    // Add index methods
+    readMethods.push(...readMethods.map(n => n + 'Index'));
+    const cachedMethods = new Map();
+    function getMethod(prop) {
+        if (readMethods.includes(prop)) {
+            return function (storeName, ...args) {
+                // Are we dealing with an index method?
+                let indexName = '';
+                let targetFuncName = prop;
+                if (targetFuncName.endsWith('Index')) {
+                    indexName = args.shift();
+                    targetFuncName = targetFuncName.slice(0, -5); // remove "Index"
+                }
+                const tx = this.transaction(storeName);
+                let target = tx.objectStore(storeName);
+                if (indexName)
+                    target = target.index(indexName);
+                return target[targetFuncName](...args);
+            };
+        }
+        if (writeMethods.includes(prop)) {
+            return function (storeName, ...args) {
+                const tx = this.transaction(storeName, 'readwrite');
+                const store = tx.objectStore(storeName);
+                store[prop](...args);
+                return tx.done;
+            };
+        }
+    }
+    addTraps(oldTraps => ({
+        get(target, prop, receiver) {
+            // Quick bails
+            if (!potentialDatabaseExtra(target, prop)) {
+                return oldTraps.get(target, prop, receiver);
+            }
+            // tslint:disable-next-line:no-parameter-reassignment
+            prop = prop;
+            const cachedMethod = cachedMethods.get(prop);
+            if (cachedMethod)
+                return cachedMethod;
+            const method = getMethod(prop);
+            if (method) {
+                cachedMethods.set(prop, method);
+                return method;
+            }
+            return oldTraps.get(target, prop, receiver);
+        },
+        has(target, prop) {
+            return (potentialDatabaseExtra(target, prop) &&
+                (readMethods.includes(prop) || writeMethods.includes(prop))) || oldTraps.has(target, prop);
+        },
+    }));
+
+    async function* iterate() {
+        // tslint:disable-next-line:no-this-assignment
+        let cursor = this;
+        if (!(cursor instanceof IDBCursor)) {
+            cursor = await cursor.openCursor();
+        }
+        cursor = cursor;
+        while (cursor) {
+            if (cursor instanceof IDBCursorWithValue)
+                yield [cursor.key, cursor.value];
+            else
+                yield cursor.key;
+            cursor = await cursor.continue();
+        }
+    }
+    function isIteratorProp(target, prop) {
+        return prop === Symbol.asyncIterator &&
+            instanceOfAny(target, [IDBCursor, IDBObjectStore, IDBIndex]);
+    }
+    addTraps(oldTraps => ({
+        get(target, prop, receiver) {
+            if (isIteratorProp(target, prop))
+                return iterate;
+            return oldTraps.get(target, prop, receiver);
+        },
+        has(target, prop) {
+            return isIteratorProp(target, prop) || oldTraps.has(target, prop);
+        },
+    }));
 
     /**
      * Open a database.

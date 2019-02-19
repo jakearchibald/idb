@@ -1,9 +1,7 @@
 import {
   IDBPCursor, IDBPCursorWithValue, IDBPDatabase, IDBPIndex, IDBPObjectStore, IDBPTransaction,
 } from '.';
-
-type Constructor = new (...args: any[]) => any;
-export type Func = (...args: any[]) => any;
+import { Constructor, Func, instanceOfAny } from './util';
 
 let idbProxyableTypes: Constructor[];
 let cursorAdvanceMethods: Func[];
@@ -30,9 +28,6 @@ const cursorRequestMap: WeakMap<IDBPCursor, IDBRequest<IDBCursor>> = new WeakMap
 const transactionDoneMap: WeakMap<IDBTransaction, Promise<void>> = new WeakMap();
 const transformCache = new WeakMap();
 const reverseTransformCache = new WeakMap();
-
-const instanceOfAny = (object: any, constructors: Constructor[]): boolean =>
-  constructors.some(c => object instanceof c);
 
 function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
   const promise = new Promise<T>((resolve, reject) => {

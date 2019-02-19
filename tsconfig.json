@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "strict": true,
-    "target": "es2017",
+    "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node",
     "noUnusedLocals": true,

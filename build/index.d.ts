@@ -1,3 +1,5 @@
+import './database-extras';
+import './async-iterators';
 interface OpenDbCallbacks<DBTypes extends DBSchema | unknown> {
     /**
      * Called if this version of the database has never been opened before. Use it to specify the
