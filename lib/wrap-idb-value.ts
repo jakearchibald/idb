@@ -3,7 +3,7 @@ import {
 } from '.';
 
 type Constructor = new (...args: any[]) => any;
-type Func = (...args: any[]) => any;
+export type Func = (...args: any[]) => any;
 
 let idbProxyableTypes: Constructor[];
 let cursorAdvanceMethods: Func[];
@@ -96,7 +96,7 @@ function cacheDonePromiseForTransaction(tx: IDBTransaction): void {
   transactionDoneMap.set(tx, done);
 }
 
-const idbObjectHandler: ProxyHandler<any> = {
+let idbProxyTraps: ProxyHandler<any> = {
   get(target, prop) {
     // Special handling for transaction.done.
     if (prop === 'done' && target instanceof IDBTransaction) return transactionDoneMap.get(target);
@@ -108,6 +108,10 @@ const idbObjectHandler: ProxyHandler<any> = {
     return prop in target;
   },
 };
+
+export function addTraps(callback: (currentTraps: ProxyHandler<any>) => ProxyHandler<any>): void {
+  idbProxyTraps = callback(idbProxyTraps);
+}
 
 function wrapFunction<T extends Func>(func: T): Function {
   // Due to expected object equality (which is enforced by the caching in `wrap`), we
@@ -145,7 +149,7 @@ function transformCachableValue(value: any): any {
   // which is later returned for transaction.done (see idbObjectHandler).
   if (value instanceof IDBTransaction) cacheDonePromiseForTransaction(value);
 
-  if (instanceOfAny(value, getIdbProxyableTypes())) return new Proxy(value, idbObjectHandler);
+  if (instanceOfAny(value, getIdbProxyableTypes())) return new Proxy(value, idbProxyTraps);
 
   // Return the same value back if we're not going to transform it.
   return value;
