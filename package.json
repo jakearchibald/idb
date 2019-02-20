@@ -7,7 +7,8 @@
   "typings": "build/index.d.ts",
   "scripts": {
     "build": "rm -rf build && rollup -c && gzip-size build/idb-min.js",
-    "dev": "rm -rf build && rollup -c --watch"
+    "dev": "rm -rf build && rollup -c --watch",
+    "test:types": "cd test && tsc --noEmit --pretty false | assert-ts-errors type-test.json"
   },
   "repository": {
     "type": "git",
@@ -18,6 +19,7 @@
   "devDependencies": {
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.5",
+    "assert-typescript-errors": "^1.0.1",
     "chai": "^4.2.0",
     "gzip-size-cli": "^3.0.0",
     "mocha": "^5.2.0",

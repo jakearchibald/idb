@@ -1,4 +1,7 @@
 {
   "extends": "../tsconfig.json",
-  "files": ["type-test.ts"]
+  "files": ["type-test.ts"],
+  "compilerOptions": {
+    "noUnusedLocals": false
+  }
 }
