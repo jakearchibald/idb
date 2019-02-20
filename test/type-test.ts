@@ -22,18 +22,18 @@ async function demo() {
   const db = await openDb<TestDbSchema>('test-db', 1);
   // Test: The name of the store should be limited to the keys in TestDbSchema, and should
   // autocomplete.
-  let tx = db.transaction('key-val-store');
+  const tx1 = db.transaction('key-val-store');
   // Test: The items in the array should also autocomplete
-  tx = db.transaction(['key-val-store', 'object-store']);
+  const tx2 = db.transaction(['key-val-store', 'object-store']);
   // Test: This should fail.
-  tx = db.transaction('not real');
+  db.transaction('not real');
   // Test: This should fail.
-  tx = db.transaction(['key-val-store', 'not-real']);
+  db.transaction(['key-val-store', 'not-real']);
 
-  tx = db.transaction('key-val-store');
+  const tx = db.transaction('key-val-store');
   // Test: This should autocomplete.
   tx.objectStore('key-val-store');
-  // Test: This should fail, as it isn't part of the transaction (this isn't working right now)
+  // Test: This should fail, as it isn't part of the transaction
   tx.objectStore('object-store');
   // Test: This should fail.
   tx.objectStore('not-real');
@@ -58,7 +58,7 @@ async function demo() {
   store.put('213', 123);
 
   // Test: tx should be IDBPTransaction<TestDbSchema>
-  tx = store.transaction;
+  store.transaction;
   // Test: tx should be IDBPDatabase<TestDbSchema>
   const otherDb = tx.db;
 
