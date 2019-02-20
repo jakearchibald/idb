@@ -208,7 +208,7 @@ const db = await openDb<V2MyDB>('my-db', 2, {
 
       // We'll need to copy the data, that means casting the transaction too:
       const v1Tx = tx as unknown as IDBPTransaction<V1MyDB>;
-      let cursor = tx.objectStore('favourite-numbers').openCursor();
+      let cursor = await tx.objectStore('favourite-numbers').openCursor();
 
       while (cursor) {
         store.add(cursor.value, cursor.key);
@@ -219,4 +219,4 @@ const db = await openDb<V2MyDB>('my-db', 2, {
 });
 ```
 
-You can also cast to a typeless database/transaction by omiting the type, eg `db as unknown as IDBPDatabase`.
+You can also cast to a typeless database/transaction by omiting the type, eg `db as IDBPDatabase`.
