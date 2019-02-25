@@ -17,17 +17,20 @@
   "license": "ISC",
   "devDependencies": {
     "@types/chai": "^4.1.7",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^5.2.6",
     "chai": "^4.2.0",
+    "conditional-type-checks": "^0.6.0",
     "gzip-size-cli": "^3.0.0",
     "mocha": "^5.2.0",
     "rollup": "^1.0.2",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-copy": "^0.2.3",
+    "rollup-plugin-node-resolve": "^4.0.1",
     "rollup-plugin-terser": "^4.0.2",
     "rollup-plugin-typescript2": "^0.18.1",
     "tslint": "^5.12.1",
     "tslint-config-airbnb": "^5.11.1",
     "tslint-react": "^3.6.0",
     "typescript": "^3.2.2"
-  },
-  "dependencies": {}
+  }
 }

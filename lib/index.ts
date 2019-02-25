@@ -2,7 +2,7 @@ import { wrap } from './wrap-idb-value';
 import './database-extras';
 import './async-iterators';
 
-interface OpenDbCallbacks<DBTypes extends DBSchema | unknown> {
+interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
   /**
    * Called if this version of the database has never been opened before. Use it to specify the
    * schema for the database.
@@ -37,8 +37,8 @@ interface OpenDbCallbacks<DBTypes extends DBSchema | unknown> {
  * @param version Schema version.
  * @param callbacks Additional callbacks.
  */
-export function openDb<DBTypes extends DBSchema | unknown = unknown>(
-  name: string, version: number, callbacks: OpenDbCallbacks<DBTypes> = {},
+export function openDB<DBTypes extends DBSchema | unknown = unknown>(
+  name: string, version: number, callbacks: OpenDBCallbacks<DBTypes> = {},
 ): Promise<IDBPDatabase<DBTypes>> {
   const { blocked, upgrade, blocking } = callbacks;
   const request = indexedDB.open(name, version);
@@ -61,7 +61,7 @@ export function openDb<DBTypes extends DBSchema | unknown = unknown>(
   return openPromise;
 }
 
-interface DeleteDbCallbacks {
+interface DeleteDBCallbacks {
   /**
    * Called if there are connections to this database open, so it cannot be deleted.
    */
@@ -73,7 +73,7 @@ interface DeleteDbCallbacks {
  *
  * @param name Name of the database.
  */
-export function deleteDb(name: string, callbacks: DeleteDbCallbacks = {}): Promise<void> {
+export function deleteDB(name: string, callbacks: DeleteDBCallbacks = {}): Promise<void> {
   const { blocked } = callbacks;
   const request = indexedDB.deleteDatabase(name);
   if (blocked) request.addEventListener('blocked', () => blocked());
@@ -213,7 +213,8 @@ export interface IDBPTransaction<
 type IDBPObjectStoreExtends = Omit<
   IDBObjectStore,
   'transaction' | 'add' | 'clear' | 'count' | 'createIndex' | 'delete' | 'get' | 'getAll' |
-  'getAllKeys' | 'getKey' | 'index' | 'openCursor' | 'openKeyCursor' | 'put'
+  'getAllKeys' | 'getKey' | 'index' | 'openCursor' | 'openKeyCursor' | 'put' | 'indexNames' |
+  'name'
 >;
 
 export interface IDBPObjectStore<
@@ -221,6 +222,14 @@ export interface IDBPObjectStore<
   TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
 > extends IDBPObjectStoreExtends {
+  /**
+   * The names of indexes in the store.
+   */
+  readonly indexNames: IndexNames<DBTypes, StoreName>[];
+  /**
+   * The name of the store to newName. Can be set during an upgrade transaction.
+   */
+  name: StoreName;
   /**
    * The associated transaction.
    */

@@ -1,8 +1,31 @@
 import typescript from 'rollup-plugin-typescript2';
-import { terser } from "rollup-plugin-terser";
+import { terser } from 'rollup-plugin-terser';
+import copy from 'rollup-plugin-copy';
+import resolve from 'rollup-plugin-node-resolve';
+import commonjs from 'rollup-plugin-commonjs';
+
+const testBuild = {
+  plugins: [
+    resolve(),
+    commonjs({
+      namedExports: {
+        'chai': ['assert'],
+      },
+    }),
+    typescript(),
+    copy({
+      'test/index.html': 'test-build/index.html',
+    }),
+  ],
+  input: 'test/index.ts',
+  output: {
+    file: 'test-build/index.js',
+    format: 'iife'
+  },
+};
 
 const esm = {
-  plugins: [ typescript() ],
+  plugins: [typescript()],
   input: 'lib/index.ts',
   output: {
     file: 'build/idb.mjs',
@@ -33,4 +56,4 @@ const iffeMin = {
   },
 };
 
-export default [esm, iffe, iffeMin];
+export default [testBuild, esm, iffe, iffeMin];
