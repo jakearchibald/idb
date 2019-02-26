@@ -3,7 +3,7 @@
 
 import 'mocha/mocha';
 import { assert } from 'chai';
-import { DBSchema, openDB, IDBPDatabase, IDBPTransaction, deleteDB } from '../lib';
+import { DBSchema, openDB, IDBPDatabase, IDBPTransaction, deleteDB, wrap, unwrap } from '../lib';
 import { assert as typeAssert, IsExactType } from 'conditional-type-checks';
 
 interface TestDBSchema extends DBSchema {
@@ -39,7 +39,7 @@ suite('openDb', () => {
     if (db) db.close();
   });
 
-  test('openDb', async () => {
+  test('upgrade', async () => {
     let upgradeRun = false;
     const version = getNextVersion();
     db = await openDB<TestDBSchema>(dbName, version, {
@@ -66,110 +66,283 @@ suite('openDb', () => {
     assert.isTrue(upgradeRun, 'upgrade run');
   });
 
-  test('openDb - typeless', async () => {
+  test('upgrade - schemaless', async () => {
     let upgradeRun = false;
     const version = getNextVersion();
     db = await openDB(dbName, version, {
       upgrade(db, oldVersion, newVersion, tx) {
         upgradeRun = true;
-        typeAssert<IsExactType<typeof db, IDBPDatabase>>(true);
-        typeAssert<IsExactType<typeof tx, IDBPTransaction>>(true);
+        typeAssert<IsExactType<
+          typeof db,
+          IDBPDatabase
+        >>(true);
+        typeAssert<IsExactType<
+          typeof tx,
+          IDBPTransaction
+        >>(true);
       },
     });
 
     assert.isTrue(upgradeRun, 'upgrade run');
   });
 
-  test('upgrade', () => assert.fail('TODO'));
-  test('blocked', () => assert.fail('TODO'));
-  test('blocking', () => assert.fail('TODO'));
-  test('wrap', () => assert.fail('TODO'));
-  test('unwrap', () => assert.fail('TODO'));
+  test('blocked and blocking', async () => {
+    let blockedCalled = false;
+    let blockingCalled = false;
+    let newDbBlockedCalled = false;
+    let newDbBlockingCalled = false;
+
+    db = await openDB<TestDBSchema>(dbName, getNextVersion(), {
+      blocked() { blockedCalled = true; },
+      blocking() {
+        blockingCalled = true;
+        // 'blocked' isn't called if older databases close once blocking fires.
+        // Using set timeout so closing isn't immediate.
+        setTimeout(() => db.close(), 0);
+      },
+    });
+
+    assert.isFalse(blockedCalled);
+    assert.isFalse(blockingCalled);
+
+    db = await openDB<TestDBSchema>(dbName, getNextVersion(), {
+      blocked() { newDbBlockedCalled = true; },
+      blocking() { newDbBlockingCalled = true; },
+    });
+
+    assert.isFalse(blockedCalled);
+    assert.isTrue(blockingCalled);
+    assert.isTrue(newDbBlockedCalled);
+    assert.isFalse(newDbBlockingCalled);
+  });
+
+  test('wrap', async () => {
+    // Let's do it the old fashioned way
+    const idb = await new Promise<IDBDatabase>((resolve) => {
+      const req = indexedDB.open(dbName, getNextVersion());
+      req.onsuccess = () => resolve(req.result);
+    });
+
+    db = wrap(idb);
+
+    typeAssert<IsExactType<
+      typeof db,
+      IDBPDatabase
+    >>(true);
+
+    assert.instanceOf(db, IDBDatabase, 'DB type');
+    assert.property(db, 'getAllIndex', 'DB looks wrapped');
+  });
+
+  test('unwrap', async () => {
+    db = await openDB<TestDBSchema>(dbName, getNextVersion());
+    const idb = unwrap(db);
+
+    typeAssert<IsExactType<
+      typeof idb,
+      IDBDatabase
+    >>(true);
+
+    assert.instanceOf(idb, IDBDatabase, 'DB type');
+    assert.isFalse('getAllIndex' in idb, 'DB looks unwrapped');
+  });
 });
 
 suite('deleteDb', () => {
-  test('TODO', () => assert.fail('TODO'));
+  test('TODO', async () => {
+    assert.fail('TODO');
+  });
 });
 
 suite('wrap', () => {
-  test('TODO', () => assert.fail('TODO'));
+  test('TODO', async () => {
+    assert.fail('TODO');
+  });
 });
 
 suite('unwrap', () => {
-  test('TODO', () => assert.fail('TODO'));
+  test('TODO', async () => {
+    assert.fail('TODO');
+  });
 });
 
 suite('IDBPDatabase', () => {
-  test('createObjectStore', () => assert.fail('TODO'));
-  test('deleteObjectStore', () => assert.fail('TODO'));
-  test('transaction', () => assert.fail('TODO'));
+  test('createObjectStore', async () => {
+    assert.fail('TODO');
+  });
+  test('deleteObjectStore', async () => {
+    assert.fail('TODO');
+  });
+  test('transaction', async () => {
+    assert.fail('TODO');
+  });
   // TODO helper methods
-  test('wrap', () => assert.fail('TODO'));
-  test('unwrap', () => assert.fail('TODO'));
+  test('wrap', async () => {
+    assert.fail('TODO');
+  });
+  test('unwrap', async () => {
+    assert.fail('TODO');
+  });
 });
 
 suite('IDBPTransaction', () => {
   // test upgrade transaction
-  test('objectStoreNames', () => assert.fail('TODO'));
-  test('db', () => assert.fail('TODO'));
-  test('done', () => assert.fail('TODO'));
-  test('store', () => assert.fail('TODO'));
-  test('objectStore', () => assert.fail('TODO'));
-  test('wrap', () => assert.fail('TODO'));
-  test('unwrap', () => assert.fail('TODO'));
+  test('objectStoreNames', async () => {
+    assert.fail('TODO');
+  });
+  test('db', async () => {
+    assert.fail('TODO');
+  });
+  test('done', async () => {
+    assert.fail('TODO');
+  });
+  test('store', async () => {
+    assert.fail('TODO');
+  });
+  test('objectStore', async () => {
+    assert.fail('TODO');
+  });
+  test('wrap', async () => {
+    assert.fail('TODO');
+  });
+  test('unwrap', async () => {
+    assert.fail('TODO');
+  });
 });
 
 suite('IDBPObjectStore', () => {
-  test('indexNames', () => assert.fail('TODO'));
-  test('name', () => assert.fail('TODO'));
-  test('transaction', () => assert.fail('TODO'));
-  test('add', () => assert.fail('TODO'));
-  test('clear', () => assert.fail('TODO'));
-  test('count', () => assert.fail('TODO'));
-  test('createIndex', () => assert.fail('TODO'));
-  test('delete', () => assert.fail('TODO'));
-  test('get', () => assert.fail('TODO'));
-  test('getAll', () => assert.fail('TODO'));
-  test('getAllKeys', () => assert.fail('TODO'));
-  test('getKey', () => assert.fail('TODO'));
-  test('index', () => assert.fail('TODO'));
-  test('openCursor', () => assert.fail('TODO'));
-  test('openKeyCursor', () => assert.fail('TODO'));
-  test('put', () => assert.fail('TODO'));
-  test('wrap', () => assert.fail('TODO'));
-  test('unwrap', () => assert.fail('TODO'));
+  test('indexNames', async () => {
+    assert.fail('TODO');
+  });
+  test('name', async () => {
+    assert.fail('TODO');
+  });
+  test('transaction', async () => {
+    assert.fail('TODO');
+  });
+  test('add', async () => {
+    assert.fail('TODO');
+  });
+  test('clear', async () => {
+    assert.fail('TODO');
+  });
+  test('count', async () => {
+    assert.fail('TODO');
+  });
+  test('createIndex', async () => {
+    assert.fail('TODO');
+  });
+  test('delete', async () => {
+    assert.fail('TODO');
+  });
+  test('get', async () => {
+    assert.fail('TODO');
+  });
+  test('getAll', async () => {
+    assert.fail('TODO');
+  });
+  test('getAllKeys', async () => {
+    assert.fail('TODO');
+  });
+  test('getKey', async () => {
+    assert.fail('TODO');
+  });
+  test('index', async () => {
+    assert.fail('TODO');
+  });
+  test('openCursor', async () => {
+    assert.fail('TODO');
+  });
+  test('openKeyCursor', async () => {
+    assert.fail('TODO');
+  });
+  test('put', async () => {
+    assert.fail('TODO');
+  });
+  test('wrap', async () => {
+    assert.fail('TODO');
+  });
+  test('unwrap', async () => {
+    assert.fail('TODO');
+  });
 });
 
 suite('IDBPIndex', () => {
-  test('objectStore', () => assert.fail('TODO'));
-  test('count', () => assert.fail('TODO'));
-  test('get', () => assert.fail('TODO'));
-  test('getAll', () => assert.fail('TODO'));
-  test('getAllKeys', () => assert.fail('TODO'));
-  test('getKey', () => assert.fail('TODO'));
-  test('openCursor', () => assert.fail('TODO'));
-  test('openKeyCursor', () => assert.fail('TODO'));
-  test('wrap', () => assert.fail('TODO'));
-  test('unwrap', () => assert.fail('TODO'));
+  test('objectStore', async () => {
+    assert.fail('TODO');
+  });
+  test('count', async () => {
+    assert.fail('TODO');
+  });
+  test('get', async () => {
+    assert.fail('TODO');
+  });
+  test('getAll', async () => {
+    assert.fail('TODO');
+  });
+  test('getAllKeys', async () => {
+    assert.fail('TODO');
+  });
+  test('getKey', async () => {
+    assert.fail('TODO');
+  });
+  test('openCursor', async () => {
+    assert.fail('TODO');
+  });
+  test('openKeyCursor', async () => {
+    assert.fail('TODO');
+  });
+  test('wrap', async () => {
+    assert.fail('TODO');
+  });
+  test('unwrap', async () => {
+    assert.fail('TODO');
+  });
 });
 
 suite('IDBPCursor', () => {
-  test('key', () => assert.fail('TODO'));
-  test('primaryKey', () => assert.fail('TODO'));
-  test('source', () => assert.fail('TODO'));
-  test('advance', () => assert.fail('TODO'));
-  test('continue', () => assert.fail('TODO'));
-  test('continuePrimaryKey', () => assert.fail('TODO'));
-  test('delete', () => assert.fail('TODO'));
-  test('update', () => assert.fail('TODO'));
-  test('wrap', () => assert.fail('TODO'));
-  test('unwrap', () => assert.fail('TODO'));
+  test('key', async () => {
+    assert.fail('TODO');
+  });
+  test('primaryKey', async () => {
+    assert.fail('TODO');
+  });
+  test('source', async () => {
+    assert.fail('TODO');
+  });
+  test('advance', async () => {
+    assert.fail('TODO');
+  });
+  test('continue', async () => {
+    assert.fail('TODO');
+  });
+  test('continuePrimaryKey', async () => {
+    assert.fail('TODO');
+  });
+  test('delete', async () => {
+    assert.fail('TODO');
+  });
+  test('update', async () => {
+    assert.fail('TODO');
+  });
+  test('wrap', async () => {
+    assert.fail('TODO');
+  });
+  test('unwrap', async () => {
+    assert.fail('TODO');
+  });
 });
 
 suite('IDBPCursorWithValue', () => {
-  test('value', () => assert.fail('TODO'));
-  test('wrap', () => assert.fail('TODO'));
-  test('unwrap', () => assert.fail('TODO'));
+  test('value', async () => {
+    assert.fail('TODO');
+  });
+  test('wrap', async () => {
+    assert.fail('TODO');
+  });
+  test('unwrap', async () => {
+    assert.fail('TODO');
+  });
 });
 
 deleteDB(dbName).then(() => mocha.run());
