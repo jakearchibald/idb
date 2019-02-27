@@ -433,6 +433,7 @@ suite('IDBPDatabase', () => {
 
     assert.strictEqual(val2, 'foo', 'Correct value');
   });
+
   test('getKeyFromIndex', async () => {
     const schemaDB = await openDBWithData();
     db = schemaDB;
@@ -450,7 +451,9 @@ suite('IDBPDatabase', () => {
 
     assert.strictEqual(val, 1, 'Correct value');
 
-    const val2 = await db.getKey('key-val-store', 'date');
+    const val2 = await db.getKeyFromIndex(
+      'object-store', 'date', IDBKeyRange.lowerBound(new Date('1990-01-01')),
+    );
 
     typeAssert<IsExactType<
       typeof val2,
@@ -459,24 +462,222 @@ suite('IDBPDatabase', () => {
 
     assert.strictEqual(val2, 4, 'Correct value');
   });
+
   test('getAll', async () => {
-    throw 'TODO';
+    const schemaDB = await openDBWithData();
+    db = schemaDB;
+
+    assert.property(schemaDB, 'getAll', 'Method exists');
+
+    typeAssert<IsExactType<
+      Parameters<typeof schemaDB.getAll>[0],
+      'key-val-store' | 'object-store'
+    >>(true);
+
+    const val = await schemaDB.getAll('key-val-store');
+
+    typeAssert<IsExactType<
+      typeof val,
+      number[]
+    >>(true);
+
+    assert.deepStrictEqual(val, [456, 123, 789], 'Correct values from store');
+
+    const val2 = await db.getAll('key-val-store');
+
+    typeAssert<IsExactType<
+      typeof val2,
+      any[]
+    >>(true);
+
+    assert.deepStrictEqual(val2, [456, 123, 789], 'Correct values from store');
   });
+
   test('getAllFromIndex', async () => {
-    throw 'TODO';
+    const schemaDB = await openDBWithData();
+    db = schemaDB;
+
+    assert.property(schemaDB, 'getAllFromIndex', 'Method exists');
+    const val = await schemaDB.getAllFromIndex('object-store', 'date');
+
+    typeAssert<IsExactType<
+      typeof val,
+      ObjectStoreValue[]
+    >>(true);
+
+    assert.deepStrictEqual(
+      val,
+      [
+        {
+          id: 4,
+          title: 'Article 4',
+          date: new Date('2019-01-01'),
+        },
+        {
+          id: 3,
+          title: 'Article 3',
+          date: new Date('2019-01-02'),
+        },
+        {
+          id: 2,
+          title: 'Article 2',
+          date: new Date('2019-01-03'),
+        },
+        {
+          id: 1,
+          title: 'Article 1',
+          date: new Date('2019-01-04'),
+        },
+      ],
+      'Correct values from store',
+    );
+
+    const val2 = await db.getAllFromIndex('object-store', 'title');
+
+    typeAssert<IsExactType<
+      typeof val2,
+      any[]
+    >>(true);
+
+    assert.deepStrictEqual(
+      val2,
+      [
+        {
+          id: 1,
+          title: 'Article 1',
+          date: new Date('2019-01-04'),
+        },
+        {
+          id: 2,
+          title: 'Article 2',
+          date: new Date('2019-01-03'),
+        },
+        {
+          id: 3,
+          title: 'Article 3',
+          date: new Date('2019-01-02'),
+        },
+        {
+          id: 4,
+          title: 'Article 4',
+          date: new Date('2019-01-01'),
+        },
+      ],
+      'Correct values from store',
+    );
   });
+
   test('getAllKeys', async () => {
-    throw 'TODO';
+    const schemaDB = await openDBWithData();
+    db = schemaDB;
+
+    assert.property(schemaDB, 'getAllKeys', 'Method exists');
+
+    typeAssert<IsExactType<
+      Parameters<typeof schemaDB.getAllKeys>[0],
+      'key-val-store' | 'object-store'
+    >>(true);
+
+    const val = await schemaDB.getAllKeys('key-val-store');
+
+    typeAssert<IsExactType<
+      typeof val,
+      string[]
+    >>(true);
+
+    assert.deepStrictEqual(val, ['bar', 'foo', 'hello'], 'Correct values from store');
+
+    const val2 = await db.getAllKeys('key-val-store');
+
+    typeAssert<IsExactType<
+      typeof val2,
+      any[]
+    >>(true);
+
+    assert.deepStrictEqual(val2, ['bar', 'foo', 'hello'], 'Correct values from store');
   });
+
   test('getAllKeysFromIndex', async () => {
-    throw 'TODO';
+    const schemaDB = await openDBWithData();
+    db = schemaDB;
+
+    assert.property(schemaDB, 'getAllKeysFromIndex', 'Method exists');
+    const val = await schemaDB.getAllKeysFromIndex('object-store', 'date');
+
+    typeAssert<IsExactType<
+      typeof val,
+      number[]
+    >>(true);
+
+    assert.deepStrictEqual(val, [4, 3, 2, 1], 'Correct values from store');
+
+    const val2 = await db.getAllKeysFromIndex('object-store', 'title');
+
+    typeAssert<IsExactType<
+      typeof val2,
+      any[]
+    >>(true);
+
+    assert.deepStrictEqual(val2, [1, 2, 3, 4], 'Correct values from store');
   });
+
   test('count', async () => {
-    throw 'TODO';
+    const schemaDB = await openDBWithData();
+    db = schemaDB;
+
+    assert.property(schemaDB, 'count', 'Method exists');
+
+    typeAssert<IsExactType<
+      Parameters<typeof schemaDB.count>[0],
+      'key-val-store' | 'object-store'
+    >>(true);
+
+    const val = await schemaDB.count('key-val-store');
+
+    typeAssert<IsExactType<
+      typeof val,
+      number
+    >>(true);
+
+    assert.strictEqual(val, 3, 'Correct count');
+
+    const val2 = await db.count('object-store');
+
+    typeAssert<IsExactType<
+      typeof val2,
+      number
+    >>(true);
+
+    assert.strictEqual(val2, 4, 'Correct count');
   });
+
   test('countFromIndex', async () => {
-    throw 'TODO';
+    const schemaDB = await openDBWithData();
+    db = schemaDB;
+
+    assert.property(schemaDB, 'countFromIndex', 'Method exists');
+    const val = await schemaDB.countFromIndex('object-store', 'date');
+
+    typeAssert<IsExactType<
+      typeof val,
+      number
+    >>(true);
+
+    assert.strictEqual(val, 4, 'Correct count');
+
+    const val2 = await db.countFromIndex(
+      'object-store', 'title', IDBKeyRange.lowerBound('Article 10'),
+    );
+
+    typeAssert<IsExactType<
+      typeof val2,
+      number
+    >>(true);
+
+    assert.strictEqual(val2, 3, 'Correct count');
   });
+
+  // TODO: write methods
 });
 
 suite('IDBPTransaction', () => {

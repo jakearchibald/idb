@@ -1,4 +1,5 @@
 const instanceOfAny = (object, constructors) => constructors.some(c => object instanceof c);
+//# sourceMappingURL=util.js.map
 
 let idbProxyableTypes;
 let cursorAdvanceMethods;
@@ -159,6 +160,7 @@ function wrap(value) {
 function unwrap(value) {
     return reverseTransformCache.get(value);
 }
+//# sourceMappingURL=wrap-idb-value.js.map
 
 function potentialDatabaseExtra(target, prop) {
     return (target instanceof IDBDatabase) &&
@@ -168,7 +170,7 @@ function potentialDatabaseExtra(target, prop) {
 const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
 const writeMethods = ['put', 'add', 'delete', 'clear'];
 // Add index methods
-readMethods.push(...readMethods.map(n => n + 'Index'));
+readMethods.push(...readMethods.map(n => n + 'FromIndex'));
 const cachedMethods = new Map();
 function getMethod(prop) {
     if (readMethods.includes(prop)) {
@@ -176,9 +178,9 @@ function getMethod(prop) {
             // Are we dealing with an index method?
             let indexName = '';
             let targetFuncName = prop;
-            if (targetFuncName.endsWith('Index')) {
+            if (targetFuncName.endsWith('FromIndex')) {
                 indexName = args.shift();
-                targetFuncName = targetFuncName.slice(0, -5); // remove "Index"
+                targetFuncName = targetFuncName.slice(0, -9); // remove "FromIndex"
             }
             const tx = this.transaction(storeName);
             let target = tx.objectStore(storeName);
@@ -219,6 +221,7 @@ addTraps(oldTraps => ({
             (readMethods.includes(prop) || writeMethods.includes(prop))) || oldTraps.has(target, prop);
     },
 }));
+//# sourceMappingURL=database-extras.js.map
 
 async function* iterate() {
     // tslint:disable-next-line:no-this-assignment
@@ -249,6 +252,7 @@ addTraps(oldTraps => ({
         return isIteratorProp(target, prop) || oldTraps.has(target, prop);
     },
 }));
+//# sourceMappingURL=async-iterators.js.map
 
 /**
  * Open a database.
@@ -257,7 +261,7 @@ addTraps(oldTraps => ({
  * @param version Schema version.
  * @param callbacks Additional callbacks.
  */
-function openDb(name, version, callbacks = {}) {
+function openDB(name, version, callbacks = {}) {
     const { blocked, upgrade, blocking } = callbacks;
     const request = indexedDB.open(name, version);
     const openPromise = wrap(request);
@@ -277,12 +281,13 @@ function openDb(name, version, callbacks = {}) {
  *
  * @param name Name of the database.
  */
-function deleteDb(name, callbacks = {}) {
+function deleteDB(name, callbacks = {}) {
     const { blocked } = callbacks;
     const request = indexedDB.deleteDatabase(name);
     if (blocked)
         request.addEventListener('blocked', () => blocked());
     return wrap(request).then(() => undefined);
 }
+//# sourceMappingURL=index.js.map
 
-export { openDb, deleteDb, unwrap, wrap };
+export { openDB, deleteDB, unwrap, wrap };

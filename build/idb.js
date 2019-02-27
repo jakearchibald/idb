@@ -2,6 +2,7 @@ var idb = (function (exports) {
     'use strict';
 
     const instanceOfAny = (object, constructors) => constructors.some(c => object instanceof c);
+    //# sourceMappingURL=util.js.map
 
     let idbProxyableTypes;
     let cursorAdvanceMethods;
@@ -162,6 +163,7 @@ var idb = (function (exports) {
     function unwrap(value) {
         return reverseTransformCache.get(value);
     }
+    //# sourceMappingURL=wrap-idb-value.js.map
 
     function potentialDatabaseExtra(target, prop) {
         return (target instanceof IDBDatabase) &&
@@ -171,7 +173,7 @@ var idb = (function (exports) {
     const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
     const writeMethods = ['put', 'add', 'delete', 'clear'];
     // Add index methods
-    readMethods.push(...readMethods.map(n => n + 'Index'));
+    readMethods.push(...readMethods.map(n => n + 'FromIndex'));
     const cachedMethods = new Map();
     function getMethod(prop) {
         if (readMethods.includes(prop)) {
@@ -179,9 +181,9 @@ var idb = (function (exports) {
                 // Are we dealing with an index method?
                 let indexName = '';
                 let targetFuncName = prop;
-                if (targetFuncName.endsWith('Index')) {
+                if (targetFuncName.endsWith('FromIndex')) {
                     indexName = args.shift();
-                    targetFuncName = targetFuncName.slice(0, -5); // remove "Index"
+                    targetFuncName = targetFuncName.slice(0, -9); // remove "FromIndex"
                 }
                 const tx = this.transaction(storeName);
                 let target = tx.objectStore(storeName);
@@ -222,6 +224,7 @@ var idb = (function (exports) {
                 (readMethods.includes(prop) || writeMethods.includes(prop))) || oldTraps.has(target, prop);
         },
     }));
+    //# sourceMappingURL=database-extras.js.map
 
     async function* iterate() {
         // tslint:disable-next-line:no-this-assignment
@@ -252,6 +255,7 @@ var idb = (function (exports) {
             return isIteratorProp(target, prop) || oldTraps.has(target, prop);
         },
     }));
+    //# sourceMappingURL=async-iterators.js.map
 
     /**
      * Open a database.
@@ -260,7 +264,7 @@ var idb = (function (exports) {
      * @param version Schema version.
      * @param callbacks Additional callbacks.
      */
-    function openDb(name, version, callbacks = {}) {
+    function openDB(name, version, callbacks = {}) {
         const { blocked, upgrade, blocking } = callbacks;
         const request = indexedDB.open(name, version);
         const openPromise = wrap(request);
@@ -280,7 +284,7 @@ var idb = (function (exports) {
      *
      * @param name Name of the database.
      */
-    function deleteDb(name, callbacks = {}) {
+    function deleteDB(name, callbacks = {}) {
         const { blocked } = callbacks;
         const request = indexedDB.deleteDatabase(name);
         if (blocked)
@@ -288,8 +292,8 @@ var idb = (function (exports) {
         return wrap(request).then(() => undefined);
     }
 
-    exports.openDb = openDb;
-    exports.deleteDb = deleteDb;
+    exports.openDB = openDB;
+    exports.deleteDB = deleteDB;
     exports.unwrap = unwrap;
     exports.wrap = wrap;
 
