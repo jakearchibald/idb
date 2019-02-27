@@ -5,6 +5,7 @@ import 'mocha/mocha';
 import { assert } from 'chai';
 import {
   DBSchema, openDB, IDBPDatabase, IDBPTransaction, deleteDB, wrap, unwrap, DeleteDBCallbacks,
+  IDBPObjectStore,
 } from '../lib';
 import { assert as typeAssert, IsExactType } from 'conditional-type-checks';
 
@@ -333,6 +334,9 @@ suite('IDBPDatabase', () => {
       Parameters<typeof db.transaction>[0],
       string[]
     >>(true);
+
+    // Function getters should return the same instance.
+    assert.strictEqual(db.transaction, db.transaction, 'transaction');
   });
 
   test('get', async () => {
@@ -823,29 +827,163 @@ suite('IDBPDatabase', () => {
 
     assert.strictEqual(val2, 0, 'Correct value from store');
   });
-
 });
 
 suite('IDBPTransaction', () => {
-  // test upgrade transaction
+  let db: IDBPDatabase;
+
+  teardown('Close DB', async () => {
+    if (db) db.close();
+  });
+
   test('objectStoreNames', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB;
+
+    const tx1 = schemaDB.transaction('key-val-store');
+    const tx2 = schemaDB.transaction('object-store');
+    const tx3 = schemaDB.transaction(['object-store', 'key-val-store']);
+
+    typeAssert<IsExactType<
+      typeof tx1.objectStoreNames,
+      ['key-val-store']
+    >>(true);
+
+    typeAssert<IsExactType<
+      typeof tx2.objectStoreNames,
+      ['object-store']
+    >>(true);
+
+    typeAssert<IsExactType<
+      typeof tx3.objectStoreNames,
+      ('object-store' | 'key-val-store')[]
+    >>(true);
+
+    // Without schema it should still work:
+    const tx4 = db.transaction('key-val-store');
+
+    typeAssert<IsExactType<
+      typeof tx4.objectStoreNames,
+      ['key-val-store']
+    >>(true);
   });
+
   test('db', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB;
+
+    const tx = schemaDB.transaction('key-val-store');
+
+    typeAssert<IsExactType<
+      typeof tx.db,
+      IDBPDatabase<TestDBSchema>
+    >>(true);
+
+    const tx2 = db.transaction('key-val-store');
+
+    typeAssert<IsExactType<
+      typeof tx2.db,
+      IDBPDatabase
+    >>(true);
   });
+
   test('done', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB;
+
+    const tx = schemaDB.transaction('key-val-store');
+    assert.property(tx, 'done');
+    assert.instanceOf(tx.done, Promise);
   });
+
   test('store', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB;
+
+    const tx = schemaDB.transaction('key-val-store');
+    assert.property(tx, 'store');
+
+    typeAssert<IsExactType<
+      typeof tx.store,
+      IDBPObjectStore<TestDBSchema, ['key-val-store'], 'key-val-store'>
+    >>(true);
+
+    assert.instanceOf(tx.store, IDBObjectStore);
+    assert.strictEqual(tx.store.name, 'key-val-store');
+
+    const tx2 = schemaDB.transaction(['key-val-store', 'object-store']);
+    assert.property(tx2, 'store');
+
+    typeAssert<IsExactType<
+      typeof tx2.store,
+      undefined
+    >>(true);
+
+    assert.isUndefined(tx2.store);
   });
+
   test('objectStore', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB;
+
+    const tx1 = schemaDB.transaction('key-val-store');
+    const tx2 = schemaDB.transaction('key-val-store');
+    const tx3 = schemaDB.transaction(['key-val-store', 'object-store']);
+    const tx4 = db.transaction('object-store');
+
+    // Functions should be equal across instances.
+    assert.strictEqual(tx1.objectStore, tx2.objectStore);
+
+    typeAssert<IsExactType<
+      Parameters<typeof tx1.objectStore>[0],
+      'key-val-store'
+    >>(true);
+
+    typeAssert<IsExactType<
+      Parameters<typeof tx3.objectStore>[0],
+      'key-val-store' | 'object-store'
+    >>(true);
+
+    typeAssert<IsExactType<
+      Parameters<typeof tx4.objectStore>[0],
+      'object-store'
+    >>(true);
+
+    // The spec says object stores from the same transaction should be equal.
+    assert.strictEqual(
+      tx1.objectStore('key-val-store'),
+      tx1.objectStore('key-val-store'),
+      'objectStore on same tx',
+    );
+
+    // The spec says object stores from different transaction should not be equal.
+    assert.notEqual(
+      tx1.objectStore('key-val-store'),
+      tx2.objectStore('key-val-store'),
+      'objectStore on different tx',
+    );
+
+    const store = tx1.objectStore('key-val-store');
+    const schemalessStore = tx4.objectStore('object-store');
+
+    typeAssert<IsExactType<
+      typeof store,
+      IDBPObjectStore<TestDBSchema, ['key-val-store'], 'key-val-store'>
+    >>(true);
+
+    typeAssert<IsExactType<
+      typeof schemalessStore,
+      IDBPObjectStore<any, ['object-store'], 'object-store'>
+    >>(true);
+
+    assert.strictEqual(store.name, 'key-val-store');
+    assert.strictEqual(schemalessStore.name, 'object-store');
   });
+
   test('wrap', async () => {
     assert.fail('TODO');
   });
+
   test('unwrap', async () => {
     assert.fail('TODO');
   });

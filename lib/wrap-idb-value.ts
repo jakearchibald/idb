@@ -1,11 +1,13 @@
 import {
-  IDBPCursor, IDBPCursorWithValue, IDBPDatabase, IDBPIndex, IDBPObjectStore, IDBPTransaction, DBSchema,
+  IDBPCursor, IDBPCursorWithValue, IDBPDatabase, IDBPIndex, IDBPObjectStore, IDBPTransaction,
+  DBSchema,
 } from '.';
 import { Constructor, Func, instanceOfAny } from './util';
 
 let idbProxyableTypes: Constructor[];
 let cursorAdvanceMethods: Func[];
 
+// This is a function to prevent it throwing up in node environments.
 function getIdbProxyableTypes(): Constructor[] {
   if (!idbProxyableTypes) {
     idbProxyableTypes = [IDBDatabase, IDBObjectStore, IDBIndex, IDBCursor, IDBTransaction];
@@ -13,6 +15,7 @@ function getIdbProxyableTypes(): Constructor[] {
   return idbProxyableTypes;
 }
 
+// This is a function to prevent it throwing up in node environments.
 function getCursorAdvanceMethods(): Func[] {
   if (!cursorAdvanceMethods) {
     cursorAdvanceMethods = [
