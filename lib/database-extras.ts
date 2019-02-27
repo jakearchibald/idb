@@ -12,7 +12,7 @@ const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
 const writeMethods = ['put', 'add', 'delete', 'clear'];
 
 // Add index methods
-readMethods.push(...readMethods.map(n => n + 'Index'));
+readMethods.push(...readMethods.map(n => n + 'FromIndex'));
 
 const cachedMethods = new Map<string, Func>();
 
@@ -22,9 +22,9 @@ function getMethod(prop: string): Func | undefined {
       // Are we dealing with an index method?
       let indexName: string = '';
       let targetFuncName: string = prop;
-      if (targetFuncName.endsWith('Index')) {
+      if (targetFuncName.endsWith('FromIndex')) {
         indexName = args.shift();
-        targetFuncName = targetFuncName.slice(0, -5); // remove "Index"
+        targetFuncName = targetFuncName.slice(0, -9); // remove "FromIndex"
       }
 
       const tx = this.transaction(storeName);

@@ -31,6 +31,6 @@
     "tslint": "^5.12.1",
     "tslint-config-airbnb": "^5.11.1",
     "tslint-react": "^3.6.0",
-    "typescript": "^3.2.2"
+    "typescript": "^3.3.3333"
   }
 }

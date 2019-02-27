@@ -4,5 +4,5 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   },
-  "files": ["type-test.ts"]
+  "files": ["index.ts"]
 }
