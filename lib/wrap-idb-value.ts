@@ -1,6 +1,5 @@
 import {
   IDBPCursor, IDBPCursorWithValue, IDBPDatabase, IDBPIndex, IDBPObjectStore, IDBPTransaction,
-  DBSchema,
 } from '.';
 import { Constructor, Func, instanceOfAny } from './util';
 
@@ -205,8 +204,8 @@ export function unwrap(value: IDBPCursor): IDBCursor;
 export function unwrap(value: IDBPDatabase): IDBDatabase;
 export function unwrap(value: IDBPIndex): IDBIndex;
 export function unwrap(value: IDBPObjectStore): IDBObjectStore;
-export function unwrap(value: IDBPTransaction): IDBTransaction;
-export function unwrap<T extends DBSchema>(value: Promise<IDBPDatabase<T>>): IDBOpenDBRequest;
+export function unwrap(value: IDBPTransaction<any, any>): IDBTransaction;
+export function unwrap<T extends any>(value: Promise<IDBPDatabase<T>>): IDBOpenDBRequest;
 export function unwrap(value: Promise<IDBPDatabase>): IDBOpenDBRequest;
 export function unwrap<T>(value: Promise<T>): IDBRequest<T>;
 export function unwrap(value: any): any {

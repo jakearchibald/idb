@@ -981,11 +981,45 @@ suite('IDBPTransaction', () => {
   });
 
   test('wrap', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB;
+
+    const idb = unwrap(db);
+    const tx = idb.transaction('key-val-store');
+
+    assert.notProperty(tx, 'store');
+
+    const wrappedTx = wrap(tx);
+
+    typeAssert<IsExactType<
+      typeof wrappedTx,
+      IDBPTransaction<unknown, string[]>
+    >>(true);
+
+    assert.property(wrappedTx, 'store');
   });
 
   test('unwrap', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB;
+
+    const tx = schemaDB.transaction('key-val-store');
+    const tx2 = db.transaction('key-val-store');
+    const unwrappedTx = unwrap(tx);
+    const unwrappedTx2 = unwrap(tx2);
+
+    typeAssert<IsExactType<
+      typeof unwrappedTx,
+      IDBTransaction
+    >>(true);
+
+    typeAssert<IsExactType<
+      typeof unwrappedTx2,
+      IDBTransaction
+    >>(true);
+
+    assert.notProperty(unwrappedTx, 'store');
+    assert.notProperty(unwrappedTx2, 'store');
   });
 });
 
