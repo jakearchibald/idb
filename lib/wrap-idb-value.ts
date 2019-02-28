@@ -94,14 +94,14 @@ function cacheDonePromiseForTransaction(tx: IDBTransaction): void {
 }
 
 let idbProxyTraps: ProxyHandler<any> = {
-  get(target, prop) {
+  get(target, prop, receiver) {
     if (target instanceof IDBTransaction) {
       // Special handling for transaction.done.
       if (prop === 'done') return transactionDoneMap.get(target);
       // Make tx.store return the only store in the transaction, or undefined if there are many.
       if (prop === 'store') {
         return target.objectStoreNames[1] ?
-          undefined : target.objectStore(target.objectStoreNames[0]);
+          undefined : receiver.objectStore(target.objectStoreNames[0]);
       }
     }
     // Else transform whatever we get back.

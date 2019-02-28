@@ -911,6 +911,8 @@ suite('IDBPTransaction', () => {
     assert.instanceOf(tx.store, IDBObjectStore);
     assert.strictEqual(tx.store.name, 'key-val-store');
 
+    assert.instanceOf(tx.store.get('blah'), Promise, 'Is the store wrapped?');
+
     const tx2 = schemaDB.transaction(['key-val-store', 'object-store']);
     assert.property(tx2, 'store');
 
