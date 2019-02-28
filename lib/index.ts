@@ -145,7 +145,7 @@ type IDBPDatabaseExtends = Omit<
 >;
 
 export interface IDBPDatabase<
-  DBTypes extends DBSchema | unknown = any,
+  DBTypes extends DBSchema | unknown = unknown,
 > extends IDBPDatabaseExtends {
   /**
    * The names of stores in the database.

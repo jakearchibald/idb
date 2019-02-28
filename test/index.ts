@@ -123,7 +123,7 @@ suite('openDb', () => {
         assert.instanceOf(tx, IDBTransaction, 'db instance');
         assert.strictEqual(tx.mode, 'versionchange', 'tx mode');
       },
-    });
+    }) as IDBPDatabase;
 
     assert.isTrue(upgradeRun, 'upgrade run');
   });
@@ -162,7 +162,7 @@ suite('openDb', () => {
         // Using set timeout so closing isn't immediate.
         setTimeout(() => db.close(), 0);
       },
-    });
+    }) as IDBPDatabase;
 
     assert.isFalse(blockedCalled);
     assert.isFalse(blockingCalled);
@@ -170,7 +170,7 @@ suite('openDb', () => {
     db = await openDB<TestDBSchema>(dbName, getNextVersion(), {
       blocked() { newDbBlockedCalled = true; },
       blocking() { newDbBlockingCalled = true; },
-    });
+    }) as IDBPDatabase;
 
     assert.isFalse(blockedCalled);
     assert.isTrue(blockingCalled);
@@ -211,7 +211,7 @@ suite('openDb', () => {
     >>(true);
 
     assert.instanceOf(request, IDBOpenDBRequest, 'Request type');
-    db = await openPromise;
+    db = await openPromise as IDBPDatabase;
     const idb = unwrap(db);
 
     typeAssert<IsExactType<
@@ -232,7 +232,7 @@ suite('deleteDb', () => {
   });
 
   test('deleteDb', async () => {
-    db = await openDBWithSchema();
+    db = await openDBWithSchema() as IDBPDatabase;
     assert.lengthOf(db.objectStoreNames, 2, 'DB has two stores');
     db.close();
     await deleteDatabase();
@@ -278,7 +278,7 @@ suite('IDBPDatabase', () => {
 
   test('objectStoreNames', async () => {
     const schemaDB = await openDBWithSchema();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     typeAssert<IsExactType<
       typeof schemaDB.objectStoreNames,
@@ -293,7 +293,7 @@ suite('IDBPDatabase', () => {
 
   test('createObjectStore', async () => {
     const schemaDB = await openDBWithSchema();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     typeAssert<IsExactType<
       Parameters<typeof schemaDB.createObjectStore>[0],
@@ -308,7 +308,7 @@ suite('IDBPDatabase', () => {
 
   test('deleteObjectStore', async () => {
     const schemaDB = await openDBWithSchema();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     typeAssert<IsExactType<
       Parameters<typeof schemaDB.deleteObjectStore>[0],
@@ -323,7 +323,7 @@ suite('IDBPDatabase', () => {
 
   test('transaction', async () => {
     const schemaDB = await openDBWithSchema();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     typeAssert<IsExactType<
       Parameters<typeof schemaDB.transaction>[0],
@@ -341,7 +341,7 @@ suite('IDBPDatabase', () => {
 
   test('get', async () => {
     const schemaDB = await openDBWithData();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     assert.property(schemaDB, 'get', 'Method exists');
 
@@ -371,7 +371,7 @@ suite('IDBPDatabase', () => {
 
   test('getFromIndex', async () => {
     const schemaDB = await openDBWithData();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     assert.property(schemaDB, 'getFromIndex', 'Method exists');
     const val = await schemaDB.getFromIndex('object-store', 'title', 'Article 1');
@@ -411,7 +411,7 @@ suite('IDBPDatabase', () => {
 
   test('getKey', async () => {
     const schemaDB = await openDBWithData();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     assert.property(schemaDB, 'getKey', 'Method exists');
 
@@ -441,7 +441,7 @@ suite('IDBPDatabase', () => {
 
   test('getKeyFromIndex', async () => {
     const schemaDB = await openDBWithData();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     assert.property(schemaDB, 'getKeyFromIndex', 'Method exists');
 
@@ -470,7 +470,7 @@ suite('IDBPDatabase', () => {
 
   test('getAll', async () => {
     const schemaDB = await openDBWithData();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     assert.property(schemaDB, 'getAll', 'Method exists');
 
@@ -500,7 +500,7 @@ suite('IDBPDatabase', () => {
 
   test('getAllFromIndex', async () => {
     const schemaDB = await openDBWithData();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     assert.property(schemaDB, 'getAllFromIndex', 'Method exists');
     const val = await schemaDB.getAllFromIndex('object-store', 'date');
@@ -574,7 +574,7 @@ suite('IDBPDatabase', () => {
 
   test('getAllKeys', async () => {
     const schemaDB = await openDBWithData();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     assert.property(schemaDB, 'getAllKeys', 'Method exists');
 
@@ -604,7 +604,7 @@ suite('IDBPDatabase', () => {
 
   test('getAllKeysFromIndex', async () => {
     const schemaDB = await openDBWithData();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     assert.property(schemaDB, 'getAllKeysFromIndex', 'Method exists');
     const val = await schemaDB.getAllKeysFromIndex('object-store', 'date');
@@ -628,7 +628,7 @@ suite('IDBPDatabase', () => {
 
   test('count', async () => {
     const schemaDB = await openDBWithData();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     assert.property(schemaDB, 'count', 'Method exists');
 
@@ -658,7 +658,7 @@ suite('IDBPDatabase', () => {
 
   test('countFromIndex', async () => {
     const schemaDB = await openDBWithData();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     assert.property(schemaDB, 'countFromIndex', 'Method exists');
     const val = await schemaDB.countFromIndex('object-store', 'date');
@@ -684,7 +684,7 @@ suite('IDBPDatabase', () => {
 
   test('put', async () => {
     const schemaDB = await openDBWithData();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     assert.property(schemaDB, 'put', 'Method exists');
 
@@ -735,7 +735,7 @@ suite('IDBPDatabase', () => {
 
   test('add', async () => {
     const schemaDB = await openDBWithData();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     assert.property(schemaDB, 'add', 'Method exists');
 
@@ -786,7 +786,7 @@ suite('IDBPDatabase', () => {
 
   test('delete', async () => {
     const schemaDB = await openDBWithData();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     assert.property(schemaDB, 'delete', 'Method exists');
 
@@ -808,7 +808,7 @@ suite('IDBPDatabase', () => {
 
   test('clear', async () => {
     const schemaDB = await openDBWithData();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     assert.property(schemaDB, 'clear', 'Method exists');
 
@@ -838,7 +838,7 @@ suite('IDBPTransaction', () => {
 
   test('objectStoreNames', async () => {
     const schemaDB = await openDBWithSchema();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     const tx1 = schemaDB.transaction('key-val-store');
     const tx2 = schemaDB.transaction('object-store');
@@ -870,7 +870,7 @@ suite('IDBPTransaction', () => {
 
   test('db', async () => {
     const schemaDB = await openDBWithSchema();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     const tx = schemaDB.transaction('key-val-store');
 
@@ -889,7 +889,7 @@ suite('IDBPTransaction', () => {
 
   test('done', async () => {
     const schemaDB = await openDBWithSchema();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     const tx = schemaDB.transaction('key-val-store');
     assert.property(tx, 'done');
@@ -898,7 +898,7 @@ suite('IDBPTransaction', () => {
 
   test('store', async () => {
     const schemaDB = await openDBWithSchema();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     const tx = schemaDB.transaction('key-val-store');
     assert.property(tx, 'store');
@@ -924,7 +924,7 @@ suite('IDBPTransaction', () => {
 
   test('objectStore', async () => {
     const schemaDB = await openDBWithSchema();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     const tx1 = schemaDB.transaction('key-val-store');
     const tx2 = schemaDB.transaction('key-val-store');
@@ -982,7 +982,7 @@ suite('IDBPTransaction', () => {
 
   test('wrap', async () => {
     const schemaDB = await openDBWithSchema();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     const idb = unwrap(db);
     const tx = idb.transaction('key-val-store');
@@ -1001,7 +1001,7 @@ suite('IDBPTransaction', () => {
 
   test('unwrap', async () => {
     const schemaDB = await openDBWithSchema();
-    db = schemaDB;
+    db = schemaDB as IDBPDatabase;
 
     const tx = schemaDB.transaction('key-val-store');
     const tx2 = db.transaction('key-val-store');
@@ -1024,8 +1024,29 @@ suite('IDBPTransaction', () => {
 });
 
 suite('IDBPObjectStore', () => {
+  let db: IDBPDatabase;
+
+  teardown('Close DB', async () => {
+    if (db) db.close();
+    await deleteDatabase();
+  });
+
   test('indexNames', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB as IDBPDatabase;
+
+    const tx = schemaDB.transaction('object-store');
+    const tx2 = db.transaction('object-store');
+
+    typeAssert<IsExactType<
+      typeof tx.store.indexNames,
+      ('date' | 'title')[]
+    >>(true);
+
+    typeAssert<IsExactType<
+      typeof tx2.store.indexNames,
+      string[]
+    >>(true);
   });
   test('name', async () => {
     assert.fail('TODO');
