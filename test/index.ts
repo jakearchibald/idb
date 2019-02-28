@@ -1050,57 +1050,195 @@ suite('IDBPObjectStore', () => {
       string[]
     >>(true);
   });
+
   test('name', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB as IDBPDatabase;
+
+    const tx = schemaDB.transaction('object-store');
+    const tx2 = db.transaction('object-store');
+    const store = db.transaction('object-store').objectStore('object-store');
+
+    typeAssert<IsExactType<
+      typeof tx.store.name,
+      'object-store'
+    >>(true);
+
+    typeAssert<IsExactType<
+      typeof tx2.store.name,
+      'object-store'
+    >>(true);
+
+    typeAssert<IsExactType<
+      typeof store.name,
+      'object-store'
+    >>(true);
   });
+
   test('transaction', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB as IDBPDatabase;
+
+    const tx = schemaDB.transaction('object-store');
+    const tx2 = db.transaction('object-store');
+    const store =
+      schemaDB.transaction(['object-store', 'key-val-store']).objectStore('object-store');
+
+    typeAssert<IsExactType<
+      typeof tx.store.transaction,
+      IDBPTransaction<TestDBSchema, ['object-store']>
+    >>(true);
+
+    typeAssert<IsExactType<
+      typeof tx2.store.transaction,
+      IDBPTransaction<unknown, ['object-store']>
+    >>(true);
+
+    typeAssert<IsExactType<
+      typeof store.transaction,
+      IDBPTransaction<TestDBSchema, ('object-store' | 'key-val-store')[]>
+    >>(true);
   });
+
   test('add', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    const store1 = schemaDB.transaction('key-val-store', 'readwrite').store;
+
+    typeAssert<IsExactType<
+      Parameters<typeof store1.add>[0],
+      number
+    >>(true);
+
+    typeAssert<IsExactType<
+      Parameters<typeof store1.add>[1],
+      string | IDBKeyRange | undefined
+    >>(true);
+
+    const key = await store1.add(234, 'new');
+
+    typeAssert<IsExactType<
+      typeof key,
+      string
+    >>(true);
+
+    const val = await store1.get('new');
+
+    assert.strictEqual(val, 234, 'Correct value from store');
+
+    const store2 = db.transaction('object-store', 'readwrite').store;
+
+    typeAssert<IsExactType<
+      Parameters<typeof store2.add>[0],
+      any
+    >>(true);
+
+    typeAssert<IsExactType<
+      Parameters<typeof store2.add>[1],
+      IDBValidKey | IDBKeyRange | undefined
+    >>(true);
+
+    const key2 = await store2.add({
+      id: 5,
+      title: 'Article 5',
+      date: new Date('2018-05-09'),
+    });
+
+    typeAssert<IsExactType<
+      typeof key2,
+      IDBValidKey
+    >>(true);
+
+    const val2 = await store2.get(5);
+
+    typeAssert<IsExactType<
+      typeof val2,
+      any
+    >>(true);
+
+    assert.deepStrictEqual(
+      val2,
+      {
+        id: 5,
+        title: 'Article 5',
+        date: new Date('2018-05-09'),
+      },
+      'Correct value from store',
+    );
   });
+
   test('clear', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    const store1 = schemaDB.transaction('key-val-store', 'readwrite').store;
+
+    store1.clear();
+    const val = await store1.count();
+
+    assert.strictEqual(val, 0, 'Correct value from store');
+
+    const store2 = db.transaction('object-store', 'readwrite').store;
+
+    store2.clear();
+    const val2 = await store2.count();
+
+    assert.strictEqual(val2, 0, 'Correct value from store');
   });
+
   test('count', async () => {
     assert.fail('TODO');
   });
+
   test('createIndex', async () => {
     assert.fail('TODO');
   });
+
   test('delete', async () => {
     assert.fail('TODO');
   });
+
   test('get', async () => {
     assert.fail('TODO');
   });
+
   test('getAll', async () => {
     assert.fail('TODO');
   });
+
   test('getAllKeys', async () => {
     assert.fail('TODO');
   });
+
   test('getKey', async () => {
     assert.fail('TODO');
   });
+
   test('index', async () => {
     assert.fail('TODO');
   });
+
   test('openCursor', async () => {
     assert.fail('TODO');
   });
+
   test('openKeyCursor', async () => {
     assert.fail('TODO');
   });
+
   test('put', async () => {
     assert.fail('TODO');
   });
+
   test('wrap', async () => {
     assert.fail('TODO');
   });
+
   test('unwrap', async () => {
     assert.fail('TODO');
   });
+
 });
 
 suite('IDBPIndex', () => {
