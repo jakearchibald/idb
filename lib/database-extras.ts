@@ -1,6 +1,6 @@
 import { Func } from './util';
 import { addTraps } from './wrap-idb-value';
-import { IDBPDatabase, IDBPObjectStore, IDBPIndex } from '.';
+import { IDBPDatabase, IDBPObjectStore, IDBPIndex } from './entry';
 
 function potentialDatabaseExtra(target: any, prop: string | number | symbol) {
   return (target instanceof IDBDatabase) &&

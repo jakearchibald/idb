@@ -1,4 +1,5 @@
 const instanceOfAny = (object, constructors) => constructors.some(c => object instanceof c);
+//# sourceMappingURL=util.js.map
 
 let idbProxyableTypes;
 let cursorAdvanceMethods;
@@ -161,6 +162,43 @@ function wrap(value) {
 function unwrap(value) {
     return reverseTransformCache.get(value);
 }
+//# sourceMappingURL=wrap-idb-value.js.map
+
+/**
+ * Open a database.
+ *
+ * @param name Name of the database.
+ * @param version Schema version.
+ * @param callbacks Additional callbacks.
+ */
+function openDB(name, version, callbacks = {}) {
+    const { blocked, upgrade, blocking } = callbacks;
+    const request = indexedDB.open(name, version);
+    const openPromise = wrap(request);
+    if (upgrade) {
+        request.addEventListener('upgradeneeded', (event) => {
+            upgrade(wrap(request.result), event.oldVersion, event.newVersion, wrap(request.transaction));
+        });
+    }
+    if (blocked)
+        request.addEventListener('blocked', () => blocked());
+    if (blocking)
+        openPromise.then(db => db.addEventListener('versionchange', blocking));
+    return openPromise;
+}
+/**
+ * Delete a database.
+ *
+ * @param name Name of the database.
+ */
+function deleteDB(name, callbacks = {}) {
+    const { blocked } = callbacks;
+    const request = indexedDB.deleteDatabase(name);
+    if (blocked)
+        request.addEventListener('blocked', () => blocked());
+    return wrap(request).then(() => undefined);
+}
+//# sourceMappingURL=entry.js.map
 
 function potentialDatabaseExtra(target, prop) {
     return (target instanceof IDBDatabase) &&
@@ -220,6 +258,7 @@ addTraps(oldTraps => ({
             (readMethods.includes(prop) || writeMethods.includes(prop))) || oldTraps.has(target, prop);
     },
 }));
+//# sourceMappingURL=database-extras.js.map
 
 const advanceMethodProps = ['continue', 'continuePrimaryKey', 'advance'];
 const methodMap = {};
@@ -238,12 +277,14 @@ const cursorIteratorTraps = {
         return cachedFunc;
     },
 };
-async function* iterate() {
+async function* iterate(...args) {
     // tslint:disable-next-line:no-this-assignment
     let cursor = this;
     if (!(cursor instanceof IDBCursor)) {
-        cursor = await cursor.openCursor();
+        cursor = await cursor.openCursor(...args);
     }
+    if (!cursor)
+        return;
     cursor = cursor;
     const proxiedCursor = new Proxy(cursor, cursorIteratorTraps);
     proxiedCursorToOriginal.set(proxiedCursor, cursor);
@@ -255,8 +296,9 @@ async function* iterate() {
     }
 }
 function isIteratorProp(target, prop) {
-    return prop === Symbol.asyncIterator &&
-        instanceOfAny(target, [IDBCursor, IDBObjectStore, IDBIndex]);
+    return (prop === Symbol.asyncIterator &&
+        instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor])) || (prop === 'iterate' &&
+        instanceOfAny(target, [IDBIndex, IDBObjectStore]));
 }
 addTraps(oldTraps => ({
     get(target, prop, receiver) {
@@ -268,40 +310,8 @@ addTraps(oldTraps => ({
         return isIteratorProp(target, prop) || oldTraps.has(target, prop);
     },
 }));
+//# sourceMappingURL=async-iterators.js.map
 
-/**
- * Open a database.
- *
- * @param name Name of the database.
- * @param version Schema version.
- * @param callbacks Additional callbacks.
- */
-function openDB(name, version, callbacks = {}) {
-    const { blocked, upgrade, blocking } = callbacks;
-    const request = indexedDB.open(name, version);
-    const openPromise = wrap(request);
-    if (upgrade) {
-        request.addEventListener('upgradeneeded', (event) => {
-            upgrade(wrap(request.result), event.oldVersion, event.newVersion, wrap(request.transaction));
-        });
-    }
-    if (blocked)
-        request.addEventListener('blocked', () => blocked());
-    if (blocking)
-        openPromise.then(db => db.addEventListener('versionchange', blocking));
-    return openPromise;
-}
-/**
- * Delete a database.
- *
- * @param name Name of the database.
- */
-function deleteDB(name, callbacks = {}) {
-    const { blocked } = callbacks;
-    const request = indexedDB.deleteDatabase(name);
-    if (blocked)
-        request.addEventListener('blocked', () => blocked());
-    return wrap(request).then(() => undefined);
-}
+//# sourceMappingURL=index.js.map
 
 export { openDB, deleteDB, unwrap, wrap };

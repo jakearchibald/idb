@@ -1,6 +1,6 @@
 import {
   IDBPCursor, IDBPCursorWithValue, IDBPDatabase, IDBPIndex, IDBPObjectStore, IDBPTransaction,
-} from '.';
+} from './entry';
 import { Constructor, Func, instanceOfAny } from './util';
 
 let idbProxyableTypes: Constructor[];

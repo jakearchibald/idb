@@ -16,7 +16,7 @@ import {
   IDBPCursorWithValue,
   IDBPCursor,
   IDBPCursorWithValueIteratorValue,
-} from '../lib';
+} from '../lib/';
 import { assert as typeAssert, IsExactType } from 'conditional-type-checks';
 
 interface ObjectStoreValue {
@@ -1592,6 +1592,8 @@ suite('IDBPObjectStore', () => {
       const keys = [];
       const values = [];
 
+      assert.isTrue(Symbol.asyncIterator in store);
+
       for await (const cursor of store) {
         typeAssert<IsExactType<
           typeof cursor,
@@ -1646,6 +1648,37 @@ suite('IDBPObjectStore', () => {
 
       assert.deepEqual(values, [456, 123, 789], 'Correct values');
       assert.deepEqual(keys, ['bar', 'foo', 'hello'], 'Correct keys');
+    }
+  });
+
+  test('iterate', async () => {
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const store = schemaDB.transaction('key-val-store').store;
+      assert.property(store, 'iterate');
+
+      typeAssert<IsExactType<
+        Parameters<typeof store.iterate>[0],
+        string | IDBKeyRange | undefined
+      >>(true);
+
+      for await (const _ of store.iterate('blah')) {
+        assert.fail('This should not be called');
+      }
+    }
+    {
+      const store = db.transaction('key-val-store').store;
+
+      typeAssert<IsExactType<
+        Parameters<typeof store.iterate>[0],
+        IDBValidKey | IDBKeyRange | undefined
+      >>(true);
+
+      for await (const _ of store.iterate('blah')) {
+        assert.fail('This should not be called');
+      }
     }
   });
 
@@ -1836,6 +1869,10 @@ suite('IDBPIndex', () => {
   });
 
   test('async iterator', async () => {
+    assert.fail('TODO');
+  });
+
+  test('iterate', async () => {
     assert.fail('TODO');
   });
 

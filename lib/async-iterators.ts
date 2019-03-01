@@ -1,6 +1,6 @@
 import { instanceOfAny, Func } from './util';
 import { addTraps } from './wrap-idb-value';
-import { IDBPObjectStore, IDBPIndex, IDBPCursor } from '.';
+import { IDBPObjectStore, IDBPIndex, IDBPCursor } from './entry';
 
 const advanceMethodProps = ['continue', 'continuePrimaryKey', 'advance'];
 const methodMap: { [s: string]: Func } = {};
@@ -26,14 +26,16 @@ const cursorIteratorTraps: ProxyHandler<any> = {
   },
 };
 
-async function* iterate(this: IDBPObjectStore | IDBPIndex | IDBPCursor):
+async function* iterate(this: IDBPObjectStore | IDBPIndex | IDBPCursor, ...args: any[]):
   AsyncIterableIterator<any> {
   // tslint:disable-next-line:no-this-assignment
   let cursor: typeof this | null = this;
 
   if (!(cursor instanceof IDBCursor)) {
-    cursor = await (cursor as IDBPObjectStore | IDBPIndex).openCursor();
+    cursor = await (cursor as IDBPObjectStore | IDBPIndex).openCursor(...args);
   }
+
+  if (!cursor) return;
 
   cursor = cursor as IDBPCursor;
   const proxiedCursor = new Proxy(cursor, cursorIteratorTraps);
@@ -48,8 +50,13 @@ async function* iterate(this: IDBPObjectStore | IDBPIndex | IDBPCursor):
 }
 
 function isIteratorProp(target: any, prop: number | string | symbol) {
-  return prop === Symbol.asyncIterator &&
-    instanceOfAny(target, [IDBCursor, IDBObjectStore, IDBIndex]);
+  return (
+    prop === Symbol.asyncIterator &&
+    instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor])
+  ) || (
+    prop === 'iterate' &&
+    instanceOfAny(target, [IDBIndex, IDBObjectStore])
+  );
 }
 
 addTraps(oldTraps => ({
