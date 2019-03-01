@@ -15,6 +15,7 @@ import {
   IDBPObjectStore,
   IDBPCursorWithValue,
   IDBPCursor,
+  IDBPCursorWithValueIteratorValue,
 } from '../lib';
 import { assert as typeAssert, IsExactType } from 'conditional-type-checks';
 
@@ -1582,6 +1583,72 @@ suite('IDBPObjectStore', () => {
     );
   });
 
+  test('async iterator', async () => {
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const store = schemaDB.transaction('key-val-store').store;
+      const keys = [];
+      const values = [];
+
+      for await (const cursor of store) {
+        typeAssert<IsExactType<
+          typeof cursor,
+          IDBPCursorWithValueIteratorValue<
+            TestDBSchema, ['key-val-store'], 'key-val-store', unknown
+          >
+        >>(true);
+
+        typeAssert<IsExactType<
+          typeof cursor.key,
+          string
+        >>(true);
+
+        typeAssert<IsExactType<
+          typeof cursor.value,
+          number
+        >>(true);
+
+        keys.push(cursor.key);
+        values.push(cursor.value);
+      }
+
+      assert.deepEqual(values, [456, 123, 789], 'Correct values');
+      assert.deepEqual(keys, ['bar', 'foo', 'hello'], 'Correct keys');
+    }
+    {
+      const store = db.transaction('key-val-store').store;
+      const keys = [];
+      const values = [];
+
+      for await (const cursor of store) {
+        typeAssert<IsExactType<
+          typeof cursor,
+          IDBPCursorWithValueIteratorValue<
+            unknown, ['key-val-store'], 'key-val-store', unknown
+          >
+        >>(true);
+
+        typeAssert<IsExactType<
+          typeof cursor.key,
+          IDBValidKey
+        >>(true);
+
+        typeAssert<IsExactType<
+          typeof cursor.value,
+          any
+        >>(true);
+
+        keys.push(cursor.key);
+        values.push(cursor.value);
+      }
+
+      assert.deepEqual(values, [456, 123, 789], 'Correct values');
+      assert.deepEqual(keys, ['bar', 'foo', 'hello'], 'Correct keys');
+    }
+  });
+
   test('wrap', async () => {
     const schemaDB = await openDBWithSchema();
     db = schemaDB as IDBPDatabase;
@@ -1768,6 +1835,10 @@ suite('IDBPIndex', () => {
     assert.fail('TODO');
   });
 
+  test('async iterator', async () => {
+    assert.fail('TODO');
+  });
+
   test('wrap', async () => {
     assert.fail('TODO');
   });
@@ -1802,6 +1873,9 @@ suite('IDBPCursor', () => {
   test('update', async () => {
     assert.fail('TODO');
   });
+  test('async iterator', async () => {
+    assert.fail('TODO');
+  });
   test('wrap', async () => {
     assert.fail('TODO');
   });
@@ -1812,6 +1886,9 @@ suite('IDBPCursor', () => {
 
 suite('IDBPCursorWithValue', () => {
   test('value', async () => {
+    assert.fail('TODO');
+  });
+  test('async iterator', async () => {
     assert.fail('TODO');
   });
   test('wrap', async () => {

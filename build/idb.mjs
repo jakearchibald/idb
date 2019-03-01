@@ -221,6 +221,23 @@ addTraps(oldTraps => ({
     },
 }));
 
+const advanceMethodProps = ['continue', 'continuePrimaryKey', 'advance'];
+const methodMap = {};
+const advanceResults = new WeakMap();
+const proxiedCursorToOriginal = new WeakMap();
+const cursorIteratorTraps = {
+    get(target, prop) {
+        if (!advanceMethodProps.includes(prop))
+            return target[prop];
+        let cachedFunc = methodMap[prop];
+        if (!cachedFunc) {
+            cachedFunc = methodMap[prop] = function (...args) {
+                advanceResults.set(this, proxiedCursorToOriginal.get(this)[prop](...args));
+            };
+        }
+        return cachedFunc;
+    },
+};
 async function* iterate() {
     // tslint:disable-next-line:no-this-assignment
     let cursor = this;
@@ -228,12 +245,13 @@ async function* iterate() {
         cursor = await cursor.openCursor();
     }
     cursor = cursor;
+    const proxiedCursor = new Proxy(cursor, cursorIteratorTraps);
+    proxiedCursorToOriginal.set(proxiedCursor, cursor);
     while (cursor) {
-        if (cursor instanceof IDBCursorWithValue)
-            yield [cursor.key, cursor.value];
-        else
-            yield cursor.key;
-        cursor = await cursor.continue();
+        yield proxiedCursor;
+        // If one of the advancing methods was not called, call continue().
+        cursor = await (advanceResults.get(proxiedCursor) || cursor.continue());
+        advanceResults.delete(proxiedCursor);
     }
 }
 function isIteratorProp(target, prop) {

@@ -544,6 +544,11 @@ export interface IDBPObjectStore<
    */
   put(value: StoreValue<DBTypes, StoreName>, key?: StoreKey<DBTypes, StoreName> | IDBKeyRange):
     Promise<StoreKey<DBTypes, StoreName>>;
+  /**
+   * Iterate over the store.
+   */
+  [Symbol.asyncIterator]():
+    AsyncIterator<IDBPCursorWithValueIteratorValue<DBTypes, TxStores, StoreName>>;
 }
 
 type IDBPIndexExtends = Omit<
@@ -621,6 +626,11 @@ export interface IDBPIndex<
     query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
     direction?: IDBCursorDirection,
   ): Promise<IDBPCursor<DBTypes, TxStores, StoreName, IndexName> | null>;
+  /**
+   * Iterate over the index.
+   */
+  [Symbol.asyncIterator]():
+    AsyncIterator<IDBPCursorWithValueIteratorValue<DBTypes, TxStores, StoreName, IndexName>>;
 }
 
 type IDBPCursorExtends = Omit<
@@ -687,6 +697,54 @@ export interface IDBPCursor<
    * Updated the current record.
    */
   update(value: StoreValue<DBTypes, StoreName>): Promise<StoreKey<DBTypes, StoreName>>;
+  /**
+   * Iterate over the cursor.
+   */
+  [Symbol.asyncIterator]():
+    AsyncIterator<IDBPCursorIteratorValue<DBTypes, TxStores, StoreName, IndexName>>;
+}
+
+type IDBPCursorIteratorValueExtends<
+  DBTypes extends DBSchema | unknown = unknown,
+  TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
+  StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
+  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
+> = Omit<
+  IDBPCursor<DBTypes, TxStores, StoreName, IndexName>,
+  'advance' | 'continue' | 'continuePrimaryKey'
+>;
+
+export interface IDBPCursorIteratorValue<
+  DBTypes extends DBSchema | unknown = unknown,
+  TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
+  StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
+  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
+> extends IDBPCursorIteratorValueExtends<DBTypes, TxStores, StoreName, IndexName> {
+  /**
+   * Advances the cursor a given number of records.
+   */
+  advance<T>(this: T, count: number): void;
+  /**
+   * Advance the cursor by one record (unless 'key' is provided).
+   *
+   * @param key Advance to the index or object store with a key equal to or greater than this value.
+   */
+  continue<T>(this: T, key?: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange): void;
+  /**
+   * Advance the cursor by given keys.
+   *
+   * The operation is 'and' – both keys must be satisfied.
+   *
+   * @param key Advance to the index or object store with a key equal to or greater than this value.
+   * @param primaryKey and where the object store has a key equal to or greater than this value.
+   */
+  continuePrimaryKey<T>
+    (
+      this: T,
+      key: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
+      primaryKey: StoreKey<DBTypes, StoreName> | IDBKeyRange,
+    ):
+    void;
 }
 
 export interface IDBPCursorWithValue<
@@ -699,4 +757,53 @@ export interface IDBPCursorWithValue<
    * The value of the current item.
    */
   readonly value: StoreValue<DBTypes, StoreName>;
+  /**
+   * Iterate over the cursor.
+   */
+  [Symbol.asyncIterator]():
+    AsyncIterator<IDBPCursorWithValueIteratorValue<DBTypes, TxStores, StoreName, IndexName>>;
+}
+
+// Some of that sweeeeet Java-esque naming.
+type IDBPCursorWithValueIteratorValueExtends<
+  DBTypes extends DBSchema | unknown = unknown,
+  TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
+  StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
+  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
+> = Omit<
+  IDBPCursorWithValue<DBTypes, TxStores, StoreName, IndexName>,
+  'advance' | 'continue' | 'continuePrimaryKey'
+>;
+
+export interface IDBPCursorWithValueIteratorValue<
+  DBTypes extends DBSchema | unknown = unknown,
+  TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
+  StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
+  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
+> extends IDBPCursorWithValueIteratorValueExtends<DBTypes, TxStores, StoreName, IndexName> {
+  /**
+   * Advances the cursor a given number of records.
+   */
+  advance<T>(this: T, count: number): void;
+  /**
+   * Advance the cursor by one record (unless 'key' is provided).
+   *
+   * @param key Advance to the index or object store with a key equal to or greater than this value.
+   */
+  continue<T>(this: T, key?: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange): void;
+  /**
+   * Advance the cursor by given keys.
+   *
+   * The operation is 'and' – both keys must be satisfied.
+   *
+   * @param key Advance to the index or object store with a key equal to or greater than this value.
+   * @param primaryKey and where the object store has a key equal to or greater than this value.
+   */
+  continuePrimaryKey<T>
+    (
+      this: T,
+      key: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
+      primaryKey: StoreKey<DBTypes, StoreName> | IDBKeyRange,
+    ):
+    void;
 }

@@ -1,6 +1,30 @@
-import { instanceOfAny } from './util';
+import { instanceOfAny, Func } from './util';
 import { addTraps } from './wrap-idb-value';
 import { IDBPObjectStore, IDBPIndex, IDBPCursor } from '.';
+
+const advanceMethodProps = ['continue', 'continuePrimaryKey', 'advance'];
+const methodMap: { [s: string]: Func } = {};
+const advanceResults = new WeakMap<IDBPCursor, Promise<IDBPCursor | null>>();
+const proxiedCursorToOriginal = new WeakMap<IDBPCursor, IDBPCursor>();
+
+const cursorIteratorTraps: ProxyHandler<any> = {
+  get(target, prop) {
+    if (!advanceMethodProps.includes(prop as string)) return target[prop];
+
+    let cachedFunc = methodMap[prop as string];
+
+    if (!cachedFunc) {
+      cachedFunc = methodMap[prop as string] = function (this: IDBPCursor, ...args: any) {
+        advanceResults.set(
+          this,
+          (proxiedCursorToOriginal.get(this) as any)[prop](...args),
+        );
+      };
+    }
+
+    return cachedFunc;
+  },
+};
 
 async function* iterate(this: IDBPObjectStore | IDBPIndex | IDBPCursor):
   AsyncIterableIterator<any> {
@@ -12,11 +36,14 @@ async function* iterate(this: IDBPObjectStore | IDBPIndex | IDBPCursor):
   }
 
   cursor = cursor as IDBPCursor;
+  const proxiedCursor = new Proxy(cursor, cursorIteratorTraps);
+  proxiedCursorToOriginal.set(proxiedCursor, cursor);
 
   while (cursor) {
-    if (cursor instanceof IDBCursorWithValue) yield [cursor.key, cursor.value];
-    else yield cursor.key;
-    cursor = await cursor.continue();
+    yield proxiedCursor;
+    // If one of the advancing methods was not called, call continue().
+    cursor = await (advanceResults.get(proxiedCursor) || cursor.continue());
+    advanceResults.delete(proxiedCursor);
   }
 }
 
