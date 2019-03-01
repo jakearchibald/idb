@@ -203,7 +203,7 @@ export function unwrap(value: IDBPCursorWithValue): IDBCursorWithValue;
 export function unwrap(value: IDBPCursor): IDBCursor;
 export function unwrap(value: IDBPDatabase): IDBDatabase;
 export function unwrap(value: IDBPIndex): IDBIndex;
-export function unwrap(value: IDBPObjectStore): IDBObjectStore;
+export function unwrap(value: IDBPObjectStore<any, any, any>): IDBObjectStore;
 export function unwrap(value: IDBPTransaction<any, any>): IDBTransaction;
 export function unwrap<T extends any>(value: Promise<IDBPDatabase<T>>): IDBOpenDBRequest;
 export function unwrap(value: Promise<IDBPDatabase>): IDBOpenDBRequest;
