@@ -2,16 +2,17 @@ var idb = (function (exports) {
     'use strict';
 
     const instanceOfAny = (object, constructors) => constructors.some(c => object instanceof c);
-    //# sourceMappingURL=util.js.map
 
     let idbProxyableTypes;
     let cursorAdvanceMethods;
+    // This is a function to prevent it throwing up in node environments.
     function getIdbProxyableTypes() {
         if (!idbProxyableTypes) {
             idbProxyableTypes = [IDBDatabase, IDBObjectStore, IDBIndex, IDBCursor, IDBTransaction];
         }
         return idbProxyableTypes;
     }
+    // This is a function to prevent it throwing up in node environments.
     function getCursorAdvanceMethods() {
         if (!cursorAdvanceMethods) {
             cursorAdvanceMethods = [
@@ -81,7 +82,7 @@ var idb = (function (exports) {
         transactionDoneMap.set(tx, done);
     }
     let idbProxyTraps = {
-        get(target, prop) {
+        get(target, prop, receiver) {
             if (target instanceof IDBTransaction) {
                 // Special handling for transaction.done.
                 if (prop === 'done')
@@ -89,7 +90,7 @@ var idb = (function (exports) {
                 // Make tx.store return the only store in the transaction, or undefined if there are many.
                 if (prop === 'store') {
                     return target.objectStoreNames[1] ?
-                        undefined : target.objectStore(target.objectStoreNames[0]);
+                        undefined : receiver.objectStore(target.objectStoreNames[0]);
                 }
             }
             // Else transform whatever we get back.
@@ -163,7 +164,6 @@ var idb = (function (exports) {
     function unwrap(value) {
         return reverseTransformCache.get(value);
     }
-    //# sourceMappingURL=wrap-idb-value.js.map
 
     function potentialDatabaseExtra(target, prop) {
         return (target instanceof IDBDatabase) &&
@@ -186,7 +186,7 @@ var idb = (function (exports) {
                     targetFuncName = targetFuncName.slice(0, -9); // remove "FromIndex"
                 }
                 const tx = this.transaction(storeName);
-                let target = tx.objectStore(storeName);
+                let target = tx.store;
                 if (indexName)
                     target = target.index(indexName);
                 return target[targetFuncName](...args);
@@ -195,8 +195,7 @@ var idb = (function (exports) {
         if (writeMethods.includes(prop)) {
             return function (storeName, ...args) {
                 const tx = this.transaction(storeName, 'readwrite');
-                const store = tx.objectStore(storeName);
-                store[prop](...args);
+                tx.store[prop](...args);
                 return tx.done;
             };
         }
@@ -224,7 +223,6 @@ var idb = (function (exports) {
                 (readMethods.includes(prop) || writeMethods.includes(prop))) || oldTraps.has(target, prop);
         },
     }));
-    //# sourceMappingURL=database-extras.js.map
 
     async function* iterate() {
         // tslint:disable-next-line:no-this-assignment
@@ -255,7 +253,6 @@ var idb = (function (exports) {
             return isIteratorProp(target, prop) || oldTraps.has(target, prop);
         },
     }));
-    //# sourceMappingURL=async-iterators.js.map
 
     /**
      * Open a database.

@@ -28,7 +28,7 @@ function getMethod(prop: string): Func | undefined {
       }
 
       const tx = this.transaction(storeName);
-      let target: IDBPObjectStore | IDBPIndex = tx.objectStore(storeName);
+      let target: IDBPObjectStore | IDBPIndex = tx.store;
       if (indexName) target = target.index(indexName);
 
       return (target as any)[targetFuncName](...args);
@@ -37,8 +37,7 @@ function getMethod(prop: string): Func | undefined {
   if (writeMethods.includes(prop)) {
     return function (this: IDBPDatabase, storeName: string, ...args: any[]) {
       const tx = this.transaction(storeName, 'readwrite');
-      const store = tx.objectStore(storeName);
-      (store as any)[prop](...args);
+      (tx.store as any)[prop](...args);
       return tx.done;
     };
   }

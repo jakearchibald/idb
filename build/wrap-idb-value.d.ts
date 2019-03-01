@@ -1,4 +1,4 @@
-import { IDBPCursor, IDBPCursorWithValue, IDBPDatabase, IDBPIndex, IDBPObjectStore, IDBPTransaction, DBSchema } from '.';
+import { IDBPCursor, IDBPCursorWithValue, IDBPDatabase, IDBPIndex, IDBPObjectStore, IDBPTransaction } from '.';
 export declare function addTraps(callback: (currentTraps: ProxyHandler<any>) => ProxyHandler<any>): void;
 /**
  * Enhance an IDB object with helpers.
@@ -24,8 +24,8 @@ export declare function unwrap(value: IDBPCursorWithValue): IDBCursorWithValue;
 export declare function unwrap(value: IDBPCursor): IDBCursor;
 export declare function unwrap(value: IDBPDatabase): IDBDatabase;
 export declare function unwrap(value: IDBPIndex): IDBIndex;
-export declare function unwrap(value: IDBPObjectStore): IDBObjectStore;
-export declare function unwrap(value: IDBPTransaction): IDBTransaction;
-export declare function unwrap<T extends DBSchema>(value: Promise<IDBPDatabase<T>>): IDBOpenDBRequest;
+export declare function unwrap(value: IDBPObjectStore<any, any, any>): IDBObjectStore;
+export declare function unwrap(value: IDBPTransaction<any, any>): IDBTransaction;
+export declare function unwrap<T extends any>(value: Promise<IDBPDatabase<T>>): IDBOpenDBRequest;
 export declare function unwrap(value: Promise<IDBPDatabase>): IDBOpenDBRequest;
 export declare function unwrap<T>(value: Promise<T>): IDBRequest<T>;
