@@ -1,5 +1,4 @@
 const instanceOfAny = (object, constructors) => constructors.some(c => object instanceof c);
-//# sourceMappingURL=util.js.map
 
 let idbProxyableTypes;
 let cursorAdvanceMethods;
@@ -162,7 +161,6 @@ function wrap(value) {
 function unwrap(value) {
     return reverseTransformCache.get(value);
 }
-//# sourceMappingURL=wrap-idb-value.js.map
 
 /**
  * Open a database.
@@ -198,7 +196,6 @@ function deleteDB(name, callbacks = {}) {
         request.addEventListener('blocked', () => blocked());
     return wrap(request).then(() => undefined);
 }
-//# sourceMappingURL=entry.js.map
 
 function potentialDatabaseExtra(target, prop) {
     return (target instanceof IDBDatabase) &&
@@ -258,7 +255,6 @@ addTraps(oldTraps => ({
             (readMethods.includes(prop) || writeMethods.includes(prop))) || oldTraps.has(target, prop);
     },
 }));
-//# sourceMappingURL=database-extras.js.map
 
 const advanceMethodProps = ['continue', 'continuePrimaryKey', 'advance'];
 const methodMap = {};
@@ -310,8 +306,5 @@ addTraps(oldTraps => ({
         return isIteratorProp(target, prop) || oldTraps.has(target, prop);
     },
 }));
-//# sourceMappingURL=async-iterators.js.map
-
-//# sourceMappingURL=index.js.map
 
 export { openDB, deleteDB, unwrap, wrap };

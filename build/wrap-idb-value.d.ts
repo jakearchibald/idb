@@ -23,7 +23,7 @@ export declare function wrap<T>(value: IDBRequest<T>): Promise<T>;
 export declare function unwrap(value: IDBPCursorWithValue): IDBCursorWithValue;
 export declare function unwrap(value: IDBPCursor): IDBCursor;
 export declare function unwrap(value: IDBPDatabase): IDBDatabase;
-export declare function unwrap(value: IDBPIndex): IDBIndex;
+export declare function unwrap(value: IDBPIndex<any, any, any, any>): IDBIndex;
 export declare function unwrap(value: IDBPObjectStore<any, any, any>): IDBObjectStore;
 export declare function unwrap(value: IDBPTransaction<any, any>): IDBTransaction;
 export declare function unwrap<T extends any>(value: Promise<IDBPDatabase<T>>): IDBOpenDBRequest;

@@ -16,6 +16,7 @@ import {
   IDBPCursorWithValue,
   IDBPCursor,
   IDBPCursorWithValueIteratorValue,
+  IDBPIndex,
 } from '../lib/';
 import { assert as typeAssert, IsExactType } from 'conditional-type-checks';
 
@@ -1467,6 +1468,8 @@ suite('IDBPObjectStore', () => {
       IDBPCursorWithValue<TestDBSchema, ['key-val-store'], 'key-val-store', unknown> | null
     >>(true);
 
+    assert.instanceOf(cursor1, IDBCursorWithValue);
+
     const store2 = db.transaction('object-store').store;
 
     typeAssert<IsExactType<
@@ -1480,6 +1483,8 @@ suite('IDBPObjectStore', () => {
       typeof cursor2,
       IDBPCursorWithValue<unknown, ['object-store'], 'object-store', unknown> | null
     >>(true);
+
+    assert.instanceOf(cursor2, IDBCursorWithValue);
   });
 
   test('openKeyCursor', async () => {
@@ -1849,39 +1854,466 @@ suite('IDBPIndex', () => {
   });
 
   test('getAll', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const index = schemaDB.transaction('object-store').store.index('date');
+
+      typeAssert<IsExactType<
+      Parameters<typeof index.getAll>[0],
+        Date | IDBKeyRange | undefined
+      >>(true);
+
+      const val = await index.getAll();
+
+      typeAssert<IsExactType<
+        typeof val,
+        ObjectStoreValue[]
+      >>(true);
+
+      assert.deepStrictEqual(
+        val,
+        [
+          {
+            id: 4,
+            title: 'Article 4',
+            date: new Date('2019-01-01'),
+          },
+          {
+            id: 3,
+            title: 'Article 3',
+            date: new Date('2019-01-02'),
+          },
+          {
+            id: 2,
+            title: 'Article 2',
+            date: new Date('2019-01-03'),
+          },
+          {
+            id: 1,
+            title: 'Article 1',
+            date: new Date('2019-01-04'),
+          },
+        ],
+        'Correct values from store',
+      );
+    }
+
+    {
+      const index = db.transaction('object-store').store.index('title');
+
+      typeAssert<IsExactType<
+      Parameters<typeof index.getAll>[0],
+        IDBValidKey | IDBKeyRange | undefined
+      >>(true);
+
+      const val = await index.getAll();
+
+      typeAssert<IsExactType<
+        typeof val,
+        any[]
+      >>(true);
+
+      assert.deepStrictEqual(
+        val,
+        [
+          {
+            id: 1,
+            title: 'Article 1',
+            date: new Date('2019-01-04'),
+          },
+          {
+            id: 2,
+            title: 'Article 2',
+            date: new Date('2019-01-03'),
+          },
+          {
+            id: 3,
+            title: 'Article 3',
+            date: new Date('2019-01-02'),
+          },
+          {
+            id: 4,
+            title: 'Article 4',
+            date: new Date('2019-01-01'),
+          },
+        ],
+        'Correct values from store',
+      );
+    }
   });
 
   test('getAllKeys', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const index = schemaDB.transaction('object-store').store.index('date');
+
+      typeAssert<IsExactType<
+      Parameters<typeof index.getAllKeys>[0],
+        Date | IDBKeyRange | undefined
+      >>(true);
+
+      const val = await index.getAllKeys();
+
+      typeAssert<IsExactType<
+        typeof val,
+        number[]
+      >>(true);
+
+      assert.deepStrictEqual(val, [4, 3, 2, 1], 'Correct values from store');
+    }
+
+    {
+      const index = db.transaction('object-store').store.index('title');
+
+      typeAssert<IsExactType<
+      Parameters<typeof index.getAllKeys>[0],
+        IDBValidKey | IDBKeyRange | undefined
+      >>(true);
+
+      const val = await index.getAllKeys();
+
+      typeAssert<IsExactType<
+        typeof val,
+        any[]
+      >>(true);
+
+      assert.deepStrictEqual(val, [1, 2, 3, 4], 'Correct values from store');
+    }
   });
 
   test('getKey', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const index = schemaDB.transaction('object-store').store.index('date');
+
+      typeAssert<IsExactType<
+      Parameters<typeof index.getKey>[0],
+        Date | IDBKeyRange
+      >>(true);
+
+      const val = await index.getKey(IDBKeyRange.lowerBound(new Date('1990-01-01')));
+
+      typeAssert<IsExactType<
+        typeof val,
+        number | undefined
+      >>(true);
+
+      assert.strictEqual(val, 4, 'Correct value');
+    }
+
+    {
+      const index = db.transaction('object-store').store.index('title');
+
+      typeAssert<IsExactType<
+      Parameters<typeof index.getKey>[0],
+        IDBValidKey | IDBKeyRange
+      >>(true);
+
+      const val = await index.getKey(IDBKeyRange.lowerBound('A'));
+
+      typeAssert<IsExactType<
+        typeof val,
+        IDBValidKey | undefined
+      >>(true);
+
+      assert.strictEqual(val, 1, 'Correct value');
+    }
   });
 
   test('openCursor', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const index = schemaDB.transaction('object-store').store.index('date');
+
+      typeAssert<IsExactType<
+        Parameters<typeof index.openCursor>[0],
+        Date | IDBKeyRange | undefined
+      >>(true);
+
+      const cursor = await index.openCursor();
+
+      typeAssert<IsExactType<
+        typeof cursor,
+        IDBPCursorWithValue<TestDBSchema, ['object-store'], 'object-store', 'date'> | null
+      >>(true);
+
+      assert.instanceOf(cursor, IDBCursorWithValue);
+    }
+
+    {
+      const index = db.transaction('object-store').store.index('title');
+
+      typeAssert<IsExactType<
+        Parameters<typeof index.openCursor>[0],
+        IDBValidKey | IDBKeyRange | undefined
+      >>(true);
+
+      const cursor = await index.openCursor();
+
+      typeAssert<IsExactType<
+        typeof cursor,
+        IDBPCursorWithValue<unknown, ['object-store'], 'object-store', 'title'> | null
+      >>(true);
+
+      assert.instanceOf(cursor, IDBCursorWithValue);
+    }
   });
 
   test('openKeyCursor', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const index = schemaDB.transaction('object-store').store.index('date');
+
+      typeAssert<IsExactType<
+        Parameters<typeof index.openKeyCursor>[0],
+        Date | IDBKeyRange | undefined
+      >>(true);
+
+      const cursor = await index.openKeyCursor();
+
+      typeAssert<IsExactType<
+        typeof cursor,
+        IDBPCursor<TestDBSchema, ['object-store'], 'object-store', 'date'> | null
+      >>(true);
+
+      assert.instanceOf(cursor, IDBCursor);
+    }
+
+    {
+      const index = db.transaction('object-store').store.index('title');
+
+      typeAssert<IsExactType<
+        Parameters<typeof index.openKeyCursor>[0],
+        IDBValidKey | IDBKeyRange | undefined
+      >>(true);
+
+      const cursor = await index.openKeyCursor();
+
+      typeAssert<IsExactType<
+        typeof cursor,
+        IDBPCursor<unknown, ['object-store'], 'object-store', 'title'> | null
+      >>(true);
+
+      assert.instanceOf(cursor, IDBCursor);
+    }
   });
 
   test('async iterator', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const index = schemaDB.transaction('object-store').store.index('date');
+      const keys = [];
+      const values = [];
+
+      assert.isTrue(Symbol.asyncIterator in index);
+
+      for await (const cursor of index) {
+        typeAssert<IsExactType<
+          typeof cursor,
+          IDBPCursorWithValueIteratorValue<
+            TestDBSchema, ['object-store'], 'object-store', 'date'
+          >
+        >>(true);
+
+        typeAssert<IsExactType<
+          typeof cursor.key,
+          Date
+        >>(true);
+
+        typeAssert<IsExactType<
+          typeof cursor.value,
+          ObjectStoreValue
+        >>(true);
+
+        keys.push(cursor.key);
+        values.push(cursor.value);
+      }
+
+      assert.deepEqual(
+        values,
+        [
+          {
+            id: 4,
+            title: 'Article 4',
+            date: new Date('2019-01-01'),
+          },
+          {
+            id: 3,
+            title: 'Article 3',
+            date: new Date('2019-01-02'),
+          },
+          {
+            id: 2,
+            title: 'Article 2',
+            date: new Date('2019-01-03'),
+          },
+          {
+            id: 1,
+            title: 'Article 1',
+            date: new Date('2019-01-04'),
+          },
+        ],
+        'Correct values',
+      );
+      assert.deepEqual(
+        keys,
+        [
+          new Date('2019-01-01'),
+          new Date('2019-01-02'),
+          new Date('2019-01-03'),
+          new Date('2019-01-04'),
+        ],
+        'Correct keys',
+      );
+    }
+    {
+      const index = db.transaction('object-store').store.index('title');
+      const keys = [];
+      const values = [];
+
+      assert.isTrue(Symbol.asyncIterator in index);
+
+      for await (const cursor of index) {
+        typeAssert<IsExactType<
+          typeof cursor,
+          IDBPCursorWithValueIteratorValue<
+            unknown, ['object-store'], 'object-store', 'title'
+          >
+        >>(true);
+
+        typeAssert<IsExactType<
+          typeof cursor.key,
+          IDBValidKey
+        >>(true);
+
+        typeAssert<IsExactType<
+          typeof cursor.value,
+          ObjectStoreValue
+        >>(true);
+
+        keys.push(cursor.key);
+        values.push(cursor.value);
+      }
+
+      assert.deepEqual(
+        values,
+        [
+          {
+            id: 1,
+            title: 'Article 1',
+            date: new Date('2019-01-04'),
+          },
+          {
+            id: 2,
+            title: 'Article 2',
+            date: new Date('2019-01-03'),
+          },
+          {
+            id: 3,
+            title: 'Article 3',
+            date: new Date('2019-01-02'),
+          },
+          {
+            id: 4,
+            title: 'Article 4',
+            date: new Date('2019-01-01'),
+          },
+        ],
+        'Correct values',
+      );
+      assert.deepEqual(
+        keys,
+        ['Article 1', 'Article 2', 'Article 3', 'Article 4'],
+        'Correct keys',
+      );
+    }
   });
 
   test('iterate', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const index = schemaDB.transaction('object-store').store.index('date');
+      assert.property(index, 'iterate');
+
+      typeAssert<IsExactType<
+        Parameters<typeof index.iterate>[0],
+        Date | IDBKeyRange | undefined
+      >>(true);
+
+      for await (const _ of index.iterate(new Date('2020-01-01'))) {
+        assert.fail('This should not be called');
+      }
+    }
+    {
+      const index = db.transaction('object-store').store.index('title');
+      assert.property(index, 'iterate');
+
+      typeAssert<IsExactType<
+        Parameters<typeof index.iterate>[0],
+        IDBValidKey | IDBKeyRange | undefined
+      >>(true);
+
+      for await (const _ of index.iterate('foo')) {
+        assert.fail('This should not be called');
+      }
+    }
   });
 
   test('wrap', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB as IDBPDatabase;
+
+    const tx = schemaDB.transaction('object-store');
+    const idbTx = unwrap(tx);
+    const index = idbTx.objectStore('object-store').index('date');
+
+    assert.instanceOf(index.get('blah'), IDBRequest);
+
+    const wrappedIndex = wrap(index);
+
+    typeAssert<IsExactType<
+      typeof wrappedIndex,
+      IDBPIndex
+    >>(true);
+
+    assert.instanceOf(wrappedIndex.get('blah'), Promise);
   });
 
   test('unwrap', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB as IDBPDatabase;
+
+    const index1 = schemaDB.transaction('object-store').store.index('date');
+    const index2 = db.transaction('object-store').store.index('title');
+    const unwrappedIndex1 = unwrap(index1);
+    const unwrappedIndex2 = unwrap(index2);
+
+    typeAssert<IsExactType<
+      typeof unwrappedIndex1,
+      IDBIndex
+    >>(true);
+
+    typeAssert<IsExactType<
+      typeof unwrappedIndex2,
+      IDBIndex
+    >>(true);
+
+    assert.instanceOf(unwrappedIndex1.get('foo'), IDBRequest);
+    assert.instanceOf(unwrappedIndex2.get('foo'), IDBRequest);
   });
 });
 
@@ -1935,5 +2367,7 @@ suite('IDBPCursorWithValue', () => {
     assert.fail('TODO');
   });
 });
+
+// TODO test async iterator skipping
 
 deleteDatabase().then(() => mocha.run());
