@@ -2710,7 +2710,7 @@ suite('IDBPCursor', () => {
   });
 
   test('unwrap', async () => {
-    const schemaDB = await openDBWithSchema();
+    const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
 
     {
@@ -2750,11 +2750,11 @@ suite('IDBPCursorWithValue', () => {
   });
 
   test('unwrap', async () => {
-    const schemaDB = await openDBWithSchema();
+    const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
 
     {
-      const cursor = await schemaDB.transaction('object-store').store.openCursor();
+      const cursor = await schemaDB.transaction('object-store', 'readwrite').store.openCursor();
       if (!cursor) throw Error('expected cursor');
       const unwrappedCursor = unwrap(cursor);
 
@@ -2763,11 +2763,11 @@ suite('IDBPCursorWithValue', () => {
         IDBCursorWithValue
       >>(true);
 
-      assert.instanceOf(unwrappedCursor.update('foo'), IDBRequest);
+      assert.instanceOf(unwrappedCursor.update(unwrappedCursor.value), IDBRequest);
     }
 
     {
-      const cursor = await db.transaction('object-store').store.openCursor();
+      const cursor = await db.transaction('object-store', 'readwrite').store.openCursor();
       if (!cursor) throw Error('expected cursor');
       const unwrappedCursor = unwrap(cursor);
 
@@ -2776,7 +2776,7 @@ suite('IDBPCursorWithValue', () => {
         IDBCursorWithValue
       >>(true);
 
-      assert.instanceOf(unwrappedCursor.update('foo'), IDBRequest);
+      assert.instanceOf(unwrappedCursor.update(unwrappedCursor.value), IDBRequest);
     }
   });
 });
