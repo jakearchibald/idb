@@ -164,8 +164,6 @@ function transformCachableValue(value: any): any {
  *
  * @param value The thing to enhance.
  */
-export function wrap(value: IDBCursorWithValue): IDBPCursorWithValue;
-export function wrap(value: IDBCursor): IDBPCursor;
 export function wrap(value: IDBDatabase): IDBPDatabase;
 export function wrap(value: IDBIndex): IDBPIndex;
 export function wrap(value: IDBObjectStore): IDBPObjectStore;
@@ -199,8 +197,8 @@ export function wrap(value: any): any {
  *
  * @param value The enhanced object to revert.
  */
-export function unwrap(value: IDBPCursorWithValue): IDBCursorWithValue;
-export function unwrap(value: IDBPCursor): IDBCursor;
+export function unwrap(value: IDBPCursorWithValue<any, any, any, any>): IDBCursorWithValue;
+export function unwrap(value: IDBPCursor<any, any, any, any>): IDBCursor;
 export function unwrap(value: IDBPDatabase): IDBDatabase;
 export function unwrap(value: IDBPIndex<any, any, any, any>): IDBIndex;
 export function unwrap(value: IDBPObjectStore<any, any, any>): IDBObjectStore;

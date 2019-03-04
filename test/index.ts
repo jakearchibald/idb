@@ -2318,56 +2318,467 @@ suite('IDBPIndex', () => {
 });
 
 suite('IDBPCursor', () => {
+  let db: IDBPDatabase;
+
+  teardown('Close DB', async () => {
+    if (db) db.close();
+    await deleteDatabase();
+  });
+
   test('key', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const index = schemaDB.transaction('object-store').store.index('date');
+      const cursor = await index.openCursor();
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      typeAssert<IsExactType<
+        typeof cursor.key,
+        Date
+      >>(true);
+
+      assert.instanceOf(cursor.key, Date);
+      assert.strictEqual(cursor.key.valueOf(), new Date('2019-01-01').valueOf());
+    }
+
+    {
+      const index = db.transaction('object-store').store.index('title');
+      const cursor = await index.openCursor();
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      typeAssert<IsExactType<
+        typeof cursor.key,
+        IDBValidKey
+      >>(true);
+
+      assert.strictEqual(cursor.key, 'Article 1');
+    }
   });
+
   test('primaryKey', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const index = schemaDB.transaction('object-store').store.index('date');
+      const cursor = await index.openCursor();
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      typeAssert<IsExactType<
+        typeof cursor.primaryKey,
+        number
+      >>(true);
+
+      assert.strictEqual(cursor.primaryKey, 4);
+    }
+
+    {
+      const index = db.transaction('object-store').store.index('title');
+      const cursor = await index.openCursor();
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      typeAssert<IsExactType<
+        typeof cursor.primaryKey,
+        IDBValidKey
+      >>(true);
+
+      assert.strictEqual(cursor.primaryKey, 1);
+    }
   });
+
   test('source', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const index = schemaDB.transaction('object-store').store.index('date');
+      const cursor = await index.openCursor();
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      typeAssert<IsExactType<
+        typeof cursor.source,
+        IDBPIndex<TestDBSchema, ['object-store'], 'object-store', 'date'>
+      >>(true);
+    }
+
+    {
+      const index = db.transaction('object-store').store.index('title');
+      const cursor = await index.openCursor();
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      typeAssert<IsExactType<
+        typeof cursor.source,
+        IDBPIndex<unknown, ['object-store'], 'object-store', 'title'>
+      >>(true);
+    }
   });
+
   test('advance', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const index = schemaDB.transaction('object-store').store.index('date');
+      let cursor = await index.openCursor();
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      cursor = await cursor.advance(2);
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      assert.strictEqual(cursor.primaryKey, 2);
+    }
+
+    {
+      const index = db.transaction('object-store').store.index('title');
+      let cursor = await index.openCursor();
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      cursor = await cursor.advance(2);
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      assert.strictEqual(cursor.primaryKey, 3);
+    }
   });
+
   test('continue', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const index = schemaDB.transaction('object-store').store.index('date');
+      let cursor = await index.openCursor();
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      typeAssert<IsExactType<
+        Parameters<typeof cursor.continue>[0],
+        Date | undefined
+      >>(true);
+
+      cursor = await cursor.continue(new Date('2019-01-02 05:00:00'));
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      assert.strictEqual(cursor.primaryKey, 2);
+    }
+
+    {
+      const index = db.transaction('object-store').store.index('title');
+      let cursor = await index.openCursor();
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      typeAssert<IsExactType<
+        Parameters<typeof cursor.continue>[0],
+        IDBValidKey | undefined
+      >>(true);
+
+      cursor = await cursor.continue('Article 20');
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      assert.strictEqual(cursor.primaryKey, 3);
+    }
   });
+
   test('continuePrimaryKey', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const index = schemaDB.transaction('object-store').store.index('date');
+      let cursor = await index.openCursor();
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      typeAssert<IsExactType<
+        Parameters<typeof cursor.continuePrimaryKey>[0],
+        Date
+      >>(true);
+
+      typeAssert<IsExactType<
+        Parameters<typeof cursor.continuePrimaryKey>[1],
+        number
+      >>(true);
+
+      cursor = await cursor.continuePrimaryKey(
+        new Date('2019-01-02 05:00:00'),
+        1.5,
+      );
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      assert.strictEqual(cursor.primaryKey, 2);
+    }
+
+    {
+      const index = db.transaction('object-store').store.index('title');
+      let cursor = await index.openCursor();
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      typeAssert<IsExactType<
+        Parameters<typeof cursor.continuePrimaryKey>[0],
+        IDBValidKey
+      >>(true);
+
+      typeAssert<IsExactType<
+        Parameters<typeof cursor.continuePrimaryKey>[1],
+        IDBValidKey
+      >>(true);
+
+      cursor = await cursor.continuePrimaryKey('Article 3', 3.5);
+
+      if (!cursor) {
+        assert.fail('Expected cursor');
+        return;
+      }
+
+      assert.strictEqual(cursor.primaryKey, 4);
+    }
   });
+
   test('delete', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const store = schemaDB.transaction('key-val-store', 'readwrite').store;
+      let cursor = await store.openCursor();
+
+      while (cursor) {
+        if (cursor.value === 456) cursor.delete();
+        cursor = await cursor.continue();
+      }
+
+      assert.deepEqual(await store.getAll(), [123, 789]);
+    }
+
+    {
+      const store = db.transaction('key-val-store', 'readwrite').store;
+      let cursor = await store.openCursor();
+
+      while (cursor) {
+        if (cursor.value === 789) cursor.delete();
+        cursor = await cursor.continue();
+      }
+
+      assert.deepEqual(await store.getAll(), [123]);
+    }
   });
+
   test('update', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const store = schemaDB.transaction('key-val-store', 'readwrite').store;
+      let cursor = await store.openCursor();
+
+      while (cursor) {
+        typeAssert<IsExactType<
+          Parameters<typeof cursor.update>[0],
+          number
+        >>(true);
+
+        cursor.update(cursor.value + 1);
+        cursor = await cursor.continue();
+      }
+
+      assert.deepEqual(await store.getAll(), [457, 124, 790]);
+    }
+
+    {
+      const store = db.transaction('key-val-store', 'readwrite').store;
+      let cursor = await store.openCursor();
+
+      while (cursor) {
+        typeAssert<IsExactType<
+          Parameters<typeof cursor.update>[0],
+          any
+        >>(true);
+
+        cursor.update(cursor.value + 1);
+        cursor = await cursor.continue();
+      }
+
+      assert.deepEqual(await store.getAll(), [458, 125, 791]);
+    }
   });
+
   test('async iterator', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    const store = schemaDB.transaction('key-val-store').store;
+    const cursor = await store.openCursor();
+
+    if (!cursor) throw Error('expected cursor');
+
+    const keys = [];
+    const values = [];
+
+    assert.isTrue(Symbol.asyncIterator in cursor);
+
+    for await (const cursorIter of cursor) {
+      typeAssert<IsExactType<
+        typeof cursorIter,
+        IDBPCursorWithValueIteratorValue<
+          TestDBSchema, ['key-val-store'], 'key-val-store', unknown
+        >
+      >>(true);
+
+      typeAssert<IsExactType<
+        typeof cursorIter.key,
+        string
+      >>(true);
+
+      typeAssert<IsExactType<
+        typeof cursorIter.value,
+        number
+      >>(true);
+
+      keys.push(cursorIter.key);
+      values.push(cursorIter.value);
+    }
+
+    assert.deepEqual(values, [456, 123, 789], 'Correct values');
+    assert.deepEqual(keys, ['bar', 'foo', 'hello'], 'Correct keys');
   });
-  test('wrap', async () => {
-    assert.fail('TODO');
-  });
+
   test('unwrap', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const cursor = await schemaDB.transaction('object-store').store.openKeyCursor();
+      if (!cursor) throw Error('expected cursor');
+      const unwrappedCursor = unwrap(cursor);
+
+      typeAssert<IsExactType<
+        typeof unwrappedCursor,
+        IDBCursor
+      >>(true);
+
+      assert.strictEqual(unwrappedCursor.continue(), undefined);
+    }
+
+    {
+      const cursor = await db.transaction('object-store').store.openKeyCursor();
+      if (!cursor) throw Error('expected cursor');
+      const unwrappedCursor = unwrap(cursor);
+
+      typeAssert<IsExactType<
+        typeof unwrappedCursor,
+        IDBCursor
+      >>(true);
+
+      assert.strictEqual(unwrappedCursor.continue(), undefined);
+    }
   });
 });
 
 suite('IDBPCursorWithValue', () => {
-  test('value', async () => {
-    assert.fail('TODO');
+  let db: IDBPDatabase;
+
+  teardown('Close DB', async () => {
+    if (db) db.close();
+    await deleteDatabase();
   });
-  test('async iterator', async () => {
-    assert.fail('TODO');
-  });
-  test('wrap', async () => {
-    assert.fail('TODO');
-  });
+
   test('unwrap', async () => {
-    assert.fail('TODO');
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB as IDBPDatabase;
+
+    {
+      const cursor = await schemaDB.transaction('object-store').store.openCursor();
+      if (!cursor) throw Error('expected cursor');
+      const unwrappedCursor = unwrap(cursor);
+
+      typeAssert<IsExactType<
+        typeof unwrappedCursor,
+        IDBCursorWithValue
+      >>(true);
+
+      assert.instanceOf(unwrappedCursor.update('foo'), IDBRequest);
+    }
+
+    {
+      const cursor = await db.transaction('object-store').store.openCursor();
+      if (!cursor) throw Error('expected cursor');
+      const unwrappedCursor = unwrap(cursor);
+
+      typeAssert<IsExactType<
+        typeof unwrappedCursor,
+        IDBCursorWithValue
+      >>(true);
+
+      assert.instanceOf(unwrappedCursor.update('foo'), IDBRequest);
+    }
   });
 });
-
-// TODO test async iterator skipping
 
 deleteDatabase().then(() => mocha.run());

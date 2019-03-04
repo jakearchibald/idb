@@ -476,7 +476,7 @@ export interface IDBPCursor<DBTypes extends DBSchema | unknown = unknown, TxStor
      *
      * @param key Advance to the index or object store with a key equal to or greater than this value.
      */
-    continue<T>(this: T, key?: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange): Promise<T | null>;
+    continue<T>(this: T, key?: CursorKey<DBTypes, StoreName, IndexName>): Promise<T | null>;
     /**
      * Advance the cursor by given keys.
      *
@@ -487,7 +487,7 @@ export interface IDBPCursor<DBTypes extends DBSchema | unknown = unknown, TxStor
      * @param key Advance to the index or object store with a key equal to or greater than this value.
      * @param primaryKey and where the object store has a key equal to or greater than this value.
      */
-    continuePrimaryKey<T>(this: T, key: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange, primaryKey: StoreKey<DBTypes, StoreName> | IDBKeyRange): Promise<T | null>;
+    continuePrimaryKey<T>(this: T, key: CursorKey<DBTypes, StoreName, IndexName>, primaryKey: StoreKey<DBTypes, StoreName>): Promise<T | null>;
     /**
      * Delete the current record.
      */
@@ -512,7 +512,7 @@ export interface IDBPCursorIteratorValue<DBTypes extends DBSchema | unknown = un
      *
      * @param key Advance to the index or object store with a key equal to or greater than this value.
      */
-    continue<T>(this: T, key?: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange): void;
+    continue<T>(this: T, key?: CursorKey<DBTypes, StoreName, IndexName>): void;
     /**
      * Advance the cursor by given keys.
      *
@@ -521,7 +521,7 @@ export interface IDBPCursorIteratorValue<DBTypes extends DBSchema | unknown = un
      * @param key Advance to the index or object store with a key equal to or greater than this value.
      * @param primaryKey and where the object store has a key equal to or greater than this value.
      */
-    continuePrimaryKey<T>(this: T, key: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange, primaryKey: StoreKey<DBTypes, StoreName> | IDBKeyRange): void;
+    continuePrimaryKey<T>(this: T, key: CursorKey<DBTypes, StoreName, IndexName>, primaryKey: StoreKey<DBTypes, StoreName>): void;
 }
 export interface IDBPCursorWithValue<DBTypes extends DBSchema | unknown = unknown, TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[], StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown> extends IDBPCursor<DBTypes, TxStores, StoreName, IndexName> {
     /**
@@ -544,7 +544,7 @@ export interface IDBPCursorWithValueIteratorValue<DBTypes extends DBSchema | unk
      *
      * @param key Advance to the index or object store with a key equal to or greater than this value.
      */
-    continue<T>(this: T, key?: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange): void;
+    continue<T>(this: T, key?: CursorKey<DBTypes, StoreName, IndexName>): void;
     /**
      * Advance the cursor by given keys.
      *
@@ -553,5 +553,5 @@ export interface IDBPCursorWithValueIteratorValue<DBTypes extends DBSchema | unk
      * @param key Advance to the index or object store with a key equal to or greater than this value.
      * @param primaryKey and where the object store has a key equal to or greater than this value.
      */
-    continuePrimaryKey<T>(this: T, key: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange, primaryKey: StoreKey<DBTypes, StoreName> | IDBKeyRange): void;
+    continuePrimaryKey<T>(this: T, key: CursorKey<DBTypes, StoreName, IndexName>, primaryKey: StoreKey<DBTypes, StoreName>): void;
 }

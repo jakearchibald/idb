@@ -691,7 +691,7 @@ export interface IDBPCursor<
    *
    * @param key Advance to the index or object store with a key equal to or greater than this value.
    */
-  continue<T>(this: T, key?: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange):
+  continue<T>(this: T, key?: CursorKey<DBTypes, StoreName, IndexName>):
     Promise<T | null>;
   /**
    * Advance the cursor by given keys.
@@ -706,8 +706,8 @@ export interface IDBPCursor<
   continuePrimaryKey<T>
     (
       this: T,
-      key: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
-      primaryKey: StoreKey<DBTypes, StoreName> | IDBKeyRange,
+      key: CursorKey<DBTypes, StoreName, IndexName>,
+      primaryKey: StoreKey<DBTypes, StoreName>,
     ):
     Promise<T | null>;
   /**
@@ -750,7 +750,7 @@ export interface IDBPCursorIteratorValue<
    *
    * @param key Advance to the index or object store with a key equal to or greater than this value.
    */
-  continue<T>(this: T, key?: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange): void;
+  continue<T>(this: T, key?: CursorKey<DBTypes, StoreName, IndexName>): void;
   /**
    * Advance the cursor by given keys.
    *
@@ -762,8 +762,8 @@ export interface IDBPCursorIteratorValue<
   continuePrimaryKey<T>
     (
       this: T,
-      key: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
-      primaryKey: StoreKey<DBTypes, StoreName> | IDBKeyRange,
+      key: CursorKey<DBTypes, StoreName, IndexName>,
+      primaryKey: StoreKey<DBTypes, StoreName>,
     ):
     void;
 }
@@ -812,7 +812,7 @@ export interface IDBPCursorWithValueIteratorValue<
    *
    * @param key Advance to the index or object store with a key equal to or greater than this value.
    */
-  continue<T>(this: T, key?: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange): void;
+  continue<T>(this: T, key?: CursorKey<DBTypes, StoreName, IndexName>): void;
   /**
    * Advance the cursor by given keys.
    *
@@ -824,8 +824,8 @@ export interface IDBPCursorWithValueIteratorValue<
   continuePrimaryKey<T>
     (
       this: T,
-      key: CursorKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
-      primaryKey: StoreKey<DBTypes, StoreName> | IDBKeyRange,
+      key: CursorKey<DBTypes, StoreName, IndexName>,
+      primaryKey: StoreKey<DBTypes, StoreName>,
     ):
     void;
 }

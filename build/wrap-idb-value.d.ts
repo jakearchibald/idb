@@ -5,8 +5,6 @@ export declare function addTraps(callback: (currentTraps: ProxyHandler<any>) => 
  *
  * @param value The thing to enhance.
  */
-export declare function wrap(value: IDBCursorWithValue): IDBPCursorWithValue;
-export declare function wrap(value: IDBCursor): IDBPCursor;
 export declare function wrap(value: IDBDatabase): IDBPDatabase;
 export declare function wrap(value: IDBIndex): IDBPIndex;
 export declare function wrap(value: IDBObjectStore): IDBPObjectStore;
@@ -20,8 +18,8 @@ export declare function wrap<T>(value: IDBRequest<T>): Promise<T>;
  *
  * @param value The enhanced object to revert.
  */
-export declare function unwrap(value: IDBPCursorWithValue): IDBCursorWithValue;
-export declare function unwrap(value: IDBPCursor): IDBCursor;
+export declare function unwrap(value: IDBPCursorWithValue<any, any, any, any>): IDBCursorWithValue;
+export declare function unwrap(value: IDBPCursor<any, any, any, any>): IDBCursor;
 export declare function unwrap(value: IDBPDatabase): IDBDatabase;
 export declare function unwrap(value: IDBPIndex<any, any, any, any>): IDBIndex;
 export declare function unwrap(value: IDBPObjectStore<any, any, any>): IDBObjectStore;
