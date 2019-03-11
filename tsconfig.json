@@ -7,7 +7,8 @@
     "noUnusedLocals": true,
     "sourceMap": true,
     "declaration": true,
-    "declarationDir": "build"
+    "declarationDir": "./build/esm/",
+    "outDir": "./build/esm/"
   },
-  "files": ["lib/index.ts"]
+  "files": ["lib/index.ts", "lib/async-iterators.ts"]
 }

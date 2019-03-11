@@ -25,35 +25,51 @@ const testBuild = {
 };
 
 const esm = {
-  plugins: [typescript()],
-  input: 'lib/index.ts',
-  output: {
-    file: 'build/idb.mjs',
-    format: 'esm'
-  },
+  plugins: [typescript({ useTsconfigDeclarationDir: true })],
+  input: ['lib/index.ts', 'lib/async-iterators.ts'],
+  output: [{
+    dir: 'build/esm/',
+    format: 'esm',
+    entryFileNames: '[name].mjs',
+    chunkFileNames: '[name].mjs',
+  }, {
+    dir: 'build/cjs/',
+    format: 'cjs',
+    entryFileNames: '[name].js',
+    chunkFileNames: '[name].js',
+  }],
 };
 
 const iffe = {
-  input: 'build/idb.mjs',
+  input: 'build/esm/index.mjs',
   output: {
-    file: 'build/idb.js',
+    file: 'build/iife/index.js',
     format: 'iife',
-    name: 'idb'
+    name: 'idb',
   },
 };
 
 const iffeMin = {
-  input: 'build/idb.mjs',
+  input: 'build/esm/index.mjs',
   plugins: [
     terser({
       compress: { ecma: 6 },
     })
   ],
   output: {
-    file: 'build/idb-min.js',
+    file: 'build/iife/index-min.js',
     format: 'iife',
     name: 'idb'
   },
 };
 
-export default [testBuild, esm, iffe, iffeMin];
+const cjsAsyncIttrEntry = {
+  input: './with-async-ittr.mjs',
+  external: ['./build/esm/index.mjs', './build/esm/async-iterators.mjs'],
+  output: {
+    file: './with-async-ittr.js',
+    format: 'cjs',
+  },
+};
+
+export default [testBuild, esm, iffe, iffeMin, cjsAsyncIttrEntry];

@@ -1,3 +1,5 @@
+'use strict';
+
 const instanceOfAny = (object, constructors) => constructors.some(c => object instanceof c);
 
 let idbProxyableTypes;
@@ -22,6 +24,7 @@ function getCursorAdvanceMethods() {
 }
 const cursorRequestMap = new WeakMap();
 const transactionDoneMap = new WeakMap();
+const transactionStoreNamesMap = new WeakMap();
 const transformCache = new WeakMap();
 const reverseTransformCache = new WeakMap();
 function promisifyRequest(request) {
@@ -84,6 +87,9 @@ let idbProxyTraps = {
             // Special handling for transaction.done.
             if (prop === 'done')
                 return transactionDoneMap.get(target);
+            // Polyfill for objectStoreNames because of Edge.
+            if (prop === 'objectStoreNames')
+                return transactionStoreNamesMap.get(target);
             // Make tx.store return the only store in the transaction, or undefined if there are many.
             if (prop === 'store') {
                 return target.objectStoreNames[1] ?
@@ -105,6 +111,15 @@ function addTraps(callback) {
 function wrapFunction(func) {
     // Due to expected object equality (which is enforced by the caching in `wrap`), we
     // only create one new func per func.
+    // Edge doesn't support objectStoreNames (booo), so we polyfill it here.
+    if (func === IDBDatabase.prototype.transaction) {
+        return function (storeNames, ...args) {
+            const originalDb = unwrap(this);
+            const tx = func.call(originalDb, storeNames, ...args);
+            transactionStoreNamesMap.set(tx, Array.isArray(storeNames) ? storeNames.sort() : [storeNames]);
+            return wrap(tx);
+        };
+    }
     // Cursor methods are special, as the behaviour is a little more different to standard IDB. In
     // IDB, you advance the cursor and wait for a new 'success' on the IDBRequest that gave you the
     // cursor. It's kinda like a promise that can resolve with many values. That doesn't make sense
@@ -162,149 +177,7 @@ function unwrap(value) {
     return reverseTransformCache.get(value);
 }
 
-/**
- * Open a database.
- *
- * @param name Name of the database.
- * @param version Schema version.
- * @param callbacks Additional callbacks.
- */
-function openDB(name, version, callbacks = {}) {
-    const { blocked, upgrade, blocking } = callbacks;
-    const request = indexedDB.open(name, version);
-    const openPromise = wrap(request);
-    if (upgrade) {
-        request.addEventListener('upgradeneeded', (event) => {
-            upgrade(wrap(request.result), event.oldVersion, event.newVersion, wrap(request.transaction));
-        });
-    }
-    if (blocked)
-        request.addEventListener('blocked', () => blocked());
-    if (blocking)
-        openPromise.then(db => db.addEventListener('versionchange', blocking));
-    return openPromise;
-}
-/**
- * Delete a database.
- *
- * @param name Name of the database.
- */
-function deleteDB(name, callbacks = {}) {
-    const { blocked } = callbacks;
-    const request = indexedDB.deleteDatabase(name);
-    if (blocked)
-        request.addEventListener('blocked', () => blocked());
-    return wrap(request).then(() => undefined);
-}
-
-function potentialDatabaseExtra(target, prop) {
-    return (target instanceof IDBDatabase) &&
-        !(prop in target) &&
-        typeof prop === 'string';
-}
-const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
-const writeMethods = ['put', 'add', 'delete', 'clear'];
-// Add index methods
-readMethods.push(...readMethods.map(n => n + 'FromIndex'));
-const cachedMethods = new Map();
-function getMethod(prop) {
-    if (readMethods.includes(prop)) {
-        return function (storeName, ...args) {
-            // Are we dealing with an index method?
-            let indexName = '';
-            let targetFuncName = prop;
-            if (targetFuncName.endsWith('FromIndex')) {
-                indexName = args.shift();
-                targetFuncName = targetFuncName.slice(0, -9); // remove "FromIndex"
-            }
-            const tx = this.transaction(storeName);
-            let target = tx.store;
-            if (indexName)
-                target = target.index(indexName);
-            return target[targetFuncName](...args);
-        };
-    }
-    if (writeMethods.includes(prop)) {
-        return function (storeName, ...args) {
-            const tx = this.transaction(storeName, 'readwrite');
-            tx.store[prop](...args);
-            return tx.done;
-        };
-    }
-}
-addTraps(oldTraps => ({
-    get(target, prop, receiver) {
-        // Quick bails
-        if (!potentialDatabaseExtra(target, prop)) {
-            return oldTraps.get(target, prop, receiver);
-        }
-        // tslint:disable-next-line:no-parameter-reassignment
-        prop = prop;
-        const cachedMethod = cachedMethods.get(prop);
-        if (cachedMethod)
-            return cachedMethod;
-        const method = getMethod(prop);
-        if (method) {
-            cachedMethods.set(prop, method);
-            return method;
-        }
-        return oldTraps.get(target, prop, receiver);
-    },
-    has(target, prop) {
-        return (potentialDatabaseExtra(target, prop) &&
-            (readMethods.includes(prop) || writeMethods.includes(prop))) || oldTraps.has(target, prop);
-    },
-}));
-
-const advanceMethodProps = ['continue', 'continuePrimaryKey', 'advance'];
-const methodMap = {};
-const advanceResults = new WeakMap();
-const proxiedCursorToOriginal = new WeakMap();
-const cursorIteratorTraps = {
-    get(target, prop) {
-        if (!advanceMethodProps.includes(prop))
-            return target[prop];
-        let cachedFunc = methodMap[prop];
-        if (!cachedFunc) {
-            cachedFunc = methodMap[prop] = function (...args) {
-                advanceResults.set(this, proxiedCursorToOriginal.get(this)[prop](...args));
-            };
-        }
-        return cachedFunc;
-    },
-};
-async function* iterate(...args) {
-    // tslint:disable-next-line:no-this-assignment
-    let cursor = this;
-    if (!(cursor instanceof IDBCursor)) {
-        cursor = await cursor.openCursor(...args);
-    }
-    if (!cursor)
-        return;
-    cursor = cursor;
-    const proxiedCursor = new Proxy(cursor, cursorIteratorTraps);
-    proxiedCursorToOriginal.set(proxiedCursor, cursor);
-    while (cursor) {
-        yield proxiedCursor;
-        // If one of the advancing methods was not called, call continue().
-        cursor = await (advanceResults.get(proxiedCursor) || cursor.continue());
-        advanceResults.delete(proxiedCursor);
-    }
-}
-function isIteratorProp(target, prop) {
-    return (prop === Symbol.asyncIterator &&
-        instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor])) || (prop === 'iterate' &&
-        instanceOfAny(target, [IDBIndex, IDBObjectStore]));
-}
-addTraps(oldTraps => ({
-    get(target, prop, receiver) {
-        if (isIteratorProp(target, prop))
-            return iterate;
-        return oldTraps.get(target, prop, receiver);
-    },
-    has(target, prop) {
-        return isIteratorProp(target, prop) || oldTraps.has(target, prop);
-    },
-}));
-
-export { openDB, deleteDB, unwrap, wrap };
+exports.wrap = wrap;
+exports.addTraps = addTraps;
+exports.instanceOfAny = instanceOfAny;
+exports.unwrap = unwrap;
