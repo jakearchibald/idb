@@ -90,8 +90,8 @@ let idbProxyTraps = {
                 return transactionStoreNamesMap.get(target);
             // Make tx.store return the only store in the transaction, or undefined if there are many.
             if (prop === 'store') {
-                return target.objectStoreNames[1] ?
-                    undefined : receiver.objectStore(target.objectStoreNames[0]);
+                return receiver.objectStoreNames[1] ?
+                    undefined : receiver.objectStore(receiver.objectStoreNames[0]);
             }
         }
         // Else transform whatever we get back.
