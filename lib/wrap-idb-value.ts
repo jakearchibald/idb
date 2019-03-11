@@ -28,6 +28,7 @@ function getCursorAdvanceMethods(): Func[] {
 
 const cursorRequestMap: WeakMap<IDBPCursor, IDBRequest<IDBCursor>> = new WeakMap();
 const transactionDoneMap: WeakMap<IDBTransaction, Promise<void>> = new WeakMap();
+const transactionStoreNamesMap: WeakMap<IDBTransaction, string[]> = new WeakMap();
 const transformCache = new WeakMap();
 const reverseTransformCache = new WeakMap();
 
@@ -98,6 +99,8 @@ let idbProxyTraps: ProxyHandler<any> = {
     if (target instanceof IDBTransaction) {
       // Special handling for transaction.done.
       if (prop === 'done') return transactionDoneMap.get(target);
+      // Polyfill for objectStoreNames because of Edge.
+      if (prop === 'objectStoreNames') return transactionStoreNamesMap.get(target);
       // Make tx.store return the only store in the transaction, or undefined if there are many.
       if (prop === 'store') {
         return target.objectStoreNames[1] ?
@@ -120,6 +123,19 @@ export function addTraps(callback: (currentTraps: ProxyHandler<any>) => ProxyHan
 function wrapFunction<T extends Func>(func: T): Function {
   // Due to expected object equality (which is enforced by the caching in `wrap`), we
   // only create one new func per func.
+
+  // Edge doesn't support objectStoreNames (booo), so we polyfill it here.
+  if (func === IDBDatabase.prototype.transaction) {
+    return function (this: IDBPDatabase, storeNames: string | string[], ...args: any[]) {
+      const originalDb = unwrap(this);
+      const tx = func.call(originalDb, storeNames, ...args);
+      transactionStoreNamesMap.set(
+        tx,
+        Array.isArray(storeNames) ? storeNames.sort() : [storeNames],
+      );
+      return wrap(tx);
+    };
+  }
 
   // Cursor methods are special, as the behaviour is a little more different to standard IDB. In
   // IDB, you advance the cursor and wait for a new 'success' on the IDBRequest that gave you the
