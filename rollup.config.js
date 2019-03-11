@@ -17,10 +17,10 @@ const testBuild = {
       'test/index.html': 'test-build/index.html',
     }),
   ],
-  input: 'test/index.ts',
+  input: ['test/index.ts', 'test/main.ts', 'test/open.ts', 'test/iterate.ts'],
   output: {
-    file: 'test-build/index.js',
-    format: 'iife'
+    dir: 'test-build',
+    format: 'esm'
   },
 };
 

@@ -6,8 +6,9 @@
   "module": "build/esm/index.mjs",
   "typings": "build/esm/index.d.ts",
   "scripts": {
-    "build": "rm -rf build && rollup -c && gzip-size build/iife/index-min.js",
-    "dev": "rm -rf build && rollup -c --watch"
+    "clean": "rm -r build test-build",
+    "build": "npm run clean && rollup -c && gzip-size build/iife/index-min.js",
+    "dev": "npm run clean && rollup -c --watch"
   },
   "repository": {
     "type": "git",
