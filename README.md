@@ -1,6 +1,21 @@
 # IndexedDB with promises.
 
-This is a tiny library that mostly mirrors the IndexedDB API, but with small improvements that make a big difference to usability.
+This is a tiny (1.17k) library that mostly mirrors the IndexedDB API, but with small improvements that make a big difference to usability.
+
+1. [Installation](#installation)
+1. [Changes](#changes)
+1. [API](#api)
+    1. [`openDB`](#opendb)
+    1. [`deleteDB`](#deletedb)
+    1. [`unwrap`](#unwrap)
+    1. [`wrap`](#wrap)
+    1. [General enhancements](#general-enhancements)
+    1. [`IDBDatabase` enhancements](#idbdatabase-enhancements)
+    1. [`IDBTransaction` enhancements](#idbtransaction-enhancements)
+    1. [`IDBCursor` enhancements](#idbcursor-enhancements)
+    1. [Async iterators](#async-iterators)
+1. [Examples](#examples)
+1. [TypeScript](#typescript)
 
 # Installation
 
@@ -11,19 +26,25 @@ npm install idb
 Then, assuming you're using a module-compatible system (like Webpack, Rollup etc):
 
 ```js
-import { openDb, deleteDb, unwrap } from 'idb';
+import { openDB, deleteDB, wrap, unwrap } from 'idb';
 
 async function doDatabaseStuff() {
-  const db = await openDb(…);
+  const db = await openDB(…);
 }
 ```
 
+# Changes
+
+TODO
+
 # API
 
-## `openDb`
+## `openDB`
+
+Create a new database connection.
 
 ```js
-const db = await openDb(name, version, {
+const db = await openDB(name, version, {
   upgrade(db, oldVersion, newVersion, transaction) {
     // …
   },
@@ -36,22 +57,24 @@ const db = await openDb(name, version, {
 });
 ```
 
-This method opens a database, and returns an object very similar to [`IDBDatabase`](https://w3c.github.io/IndexedDB/#database-interface) (see 'enhancements' below).
+This method opens a database, and returns an object very similar to [`IDBDatabase`](https://w3c.github.io/IndexedDB/#database-interface) (differences are detailed below).
 
 * `name`: Name of the database.
 * `version`: Schema version.
-* `upgrade`: Called if this version of the database has never been opened before. Use it to specify the schema for the database. This is similar to the `upgradeneeded` event in plain IndexedDB.
+* `upgrade` (optional): Called if this version of the database has never been opened before. Use it to specify the schema for the database. This is similar to the `upgradeneeded` event in plain IndexedDB.
     * `db`: Object similar to `IDBDatabase`.
     * `oldVersion`: Last version of the database opened by the user.
     * `newVersion`: Whatever new version you provided.
     * `transaction`: The transaction for this upgrade. This is useful if you need to get data from other stores as part of a migration.
-* `blocked`: Called if there are older versions of the database open on the origin, so this version cannot open.
-* `blocking`: Called if this connection is blocking a future version of the database from opening.
+* `blocked` (optional): Called if there are older versions of the database open on the origin, so this version cannot open.
+* `blocking` (optional): Called if this connection is blocking a future version of the database from opening.
 
-## `deleteDb`
+## `deleteDB`
+
+Delete a database.
 
 ```js
-await deleteDb(name);
+await deleteDB(name);
 ```
 
 * `name`: Name of the database.
@@ -66,9 +89,19 @@ If for some reason you want to drop back into plain IndexedDB, give one of the e
 
 Promises will also be converted back into `IDBRequest` objects.
 
-## Enhancements
+## `wrap`
 
-Once you've opened the database, the API is the same as IndexedDB, except for the following differences:
+```js
+const wrapped = wrap(unwrapped);
+```
+
+Use this to convert a plain IDB object to one enhanced by this library. This is useful if some third party code gives you an `IDBDatabase` object and you want it to have the features of this library.
+
+This doesn't work with `IDBCursor`, [due to missing primitives](https://github.com/w3c/IndexedDB/issues/255). Also, if you wrap an `IDBTransaction`, `tx.store` and `tx.objectStoreNames` will not work in Edge. To avoid these issues, wrap the `IDBDatabase` object, and use the wrapped object to create a new transaction.
+
+## General enhancements
+
+Once you've opened the database, the API is the same as IndexedDB, except for a few changes to make things easier.
 
 Any method that usually returns an `IDBRequest` object will now return a promise for the eventual value.
 
@@ -77,14 +110,58 @@ const store = db.transaction(storeName).objectStore(storeName);
 const value = await store.get(key);
 ```
 
+## `IDBDatabase` enhancements
+
+### Shortcuts to get/set from an object store
+
+It's common to create a transaction for a single action, so helper methods are included for this:
+
+```js
+// Get a value from a store:
+const value = await db.get(storeName, key);
+// Set a value in a store:
+await db.put(storeName, value, key);
+```
+
+This works for `get`, `getKey`, `getAll`, `getAllKeys`, `count`, `put`, `add`, `delete`, and `clear`. Each method takes a `storeName` argument, the name of the object store, and the rest of the arguments are the same as the equivalent `IDBObjectStore` method.
+
+These methods depend on the same methods on `IDBObjectStore`, so Edge does not support for `getKey`, `getAll`, or `getAllKeys`.
+
+### Shortcuts to get from an index
+
+Also included is `getFromIndex`, `getKeyFromIndex`, `getAllFromIndex`, `getAllKeysFromIndex`, and `countFromIndex`:
+
+```js
+// Get a value from an index:
+const value = await db.getFromIndex(storeName, indexName, key);
+```
+
+Each method takes `storeName` and `indexName` arguments, followed by the rest of the arguments from the equivalent `IDBIndex` method. Again, these methods depend on the equivalent methods on `IDBIndex`, so Edge does not support for `getKeyFromIndex`, `getAllFromIndex`, or `getAllKeysFromIndex`.
+
+## `IDBTransaction` enhancements
+
+### `tx.store`
+
+If a transaction involves a single store, the `store` property will reference that store.
+
+```js
+const tx = db.transaction('whatever');
+const store = tx.store;
+```
+
+If a transaction involves multiple stores, `tx.store` is undefined.
+
+### `tx.done`
+
 Transactions have a `.done` promise which resolves when the transaction completes successfully, and otherwise rejects.
 
 ```js
 const tx = db.transaction(storeName, 'readwrite');
-const store = tx.objectStore(storeName);
-store.put('foo', 'bar');
+tx.store.put('foo', 'bar');
 await tx.done;
 ```
+
+## `IDBCursor` enhancements
 
 Cursor advance methods (`advance`, `continue`, `continuePrimaryKey`) return a promise for the cursor, or null if there are no further values to provide.
 
@@ -98,6 +175,49 @@ while (cursor) {
 }
 ```
 
+## Async iterators
+
+Async iterator support isn't in the default bundle (Edge doesn't support them). To include them, import `idb/with-async-ittr.mjs` instead of `idb`:
+
+```js
+import { openDB } from 'idb/with-async-ittr.mjs';
+```
+
+Now you can iterate over stores, indexes, and cursors:
+
+```js
+const tx = db.transaction(storeName);
+
+for await (const cursor of tx.store) {
+  // …
+}
+```
+
+Each yielded object is an `IDBCursor`. You can optionally use the advance methods to skip items (within an async iterator they return void):
+
+```js
+const tx = db.transaction(storeName);
+
+for await (const cursor of tx.store) {
+  console.log(cursor.value);
+  // Skip the next item
+  cursor.advance(2);
+}
+```
+
+If you don't manually advance the cursor, `cursor.continue()` is called for you.
+
+Stores and indexes also have an `iterate` method which has the same signiture as `openCursor`, but returns an async iterator:
+
+```js
+const tx = db.transaction('books');
+const index = tx.store.index('author');
+
+for await (const cursor of index.iterate('Douglas Adams')) {
+  console.log(cursor.value);
+}
+```
+
 # Examples
 
 ## Keyval Store
@@ -105,7 +225,7 @@ while (cursor) {
 This is very similar to `localStorage`, but async. If this is *all* you need, you may be interested in [idb-keyval](https://www.npmjs.com/package/idb-keyval), you can always upgrade to this library later.
 
 ```js
-const dbPromise = openDb('keyval-store', 1, {
+const dbPromise = openDB('keyval-store', 1, {
   upgrade(db) {
     db.createObjectStore('keyval');
   }
@@ -113,42 +233,29 @@ const dbPromise = openDb('keyval-store', 1, {
 
 const idbKeyval = {
   async get(key) {
-    const db = await dbPromise;
-    return db.transaction('keyval').objectStore('keyval').get(key);
+    return (await dbPromise).get('keyval', key);
   },
   async set(key, val) {
-    const db = await dbPromise;
-    const tx = db.transaction('keyval', 'readwrite');
-    tx.objectStore('keyval').put(val, key);
-    return tx.done;
+    return (await dbPromise).put('keyval', val, key);
   },
   async delete(key) {
-    const db = await dbPromise;
-    const tx = db.transaction('keyval', 'readwrite');
-    tx.objectStore('keyval').delete(key);
-    return tx.done;
+    return (await dbPromise).delete('keyval', key);
   },
   async clear() {
-    const db = await dbPromise;
-    const tx = db.transaction('keyval', 'readwrite');
-    tx.objectStore('keyval').clear();
-    return tx.done;
+    return (await dbPromise).clear('keyval');
   },
   async keys() {
-    const db = await dbPromise;
-    return db.transaction('keyval').objectStore('keyval').getAllKeys();
+    return (await dbPromise).getAllKeys('keyval');
   },
 };
 ```
 
-TODO: more examples
-
 # TypeScript
 
-You can (and probably should) provide typings for your database:
+This library is fully typed, and you can improve things by providing types for your database:
 
 ```ts
-import { openDb, DBSchema } from 'idb';
+import { openDB, DBSchema } from 'idb';
 
 interface MyDB extends DBSchema {
   'favourite-numbers': {
@@ -166,57 +273,62 @@ interface MyDB extends DBSchema {
   }
 }
 
-const db = await openDb<MyDB>('my-db', 1, {
-  upgrade(db) {
-    db.createObjectStore('favourite-numbers');
+async function demo() {
+  const db = await openDB<MyDB>('my-db', 1, {
+    upgrade(db) {
+      db.createObjectStore('favourite-numbers');
 
-    const productStore = db.createObjectStore('products', { keyPath: 'productCode' });
-    productStore.createIndex('by-price', 'price');
-  }
-});
+      const productStore = db.createObjectStore('products', { keyPath: 'productCode' });
+      productStore.createIndex('by-price', 'price');
+    }
+  });
+
+  // This works
+  await db.put('favourite-numbers', [7, 95, 1023], 'Jen');
+  // This fails, as the 'favourite-numbers' store expects an array of numbers.
+  await db.put('favourite-numbers', ['Twelve'], 'Jake');
+}
 ```
 
-Objects you get from stores and indexes will now have the correct types, and items you put into stores will be checked.
+To define types for your database, extend `DBSchema` with an interface where the keys are the names of your object stores.
+
+For each value, provide an object where `value` is the type of values within the store, and `key` is the type of keys within the store.
+
+Optionally, `indexes` can contain a map of index names, to the type of key within that index.
+
+Provide this interface when calling `openDB`, and from then on your database will be strongly typed. This also allows your IDE to autocomplete the names of stores and indexes.
 
 ## Opting out of types
 
-If you call `openDb` without providing types, your database will return unknown types. However, sometimes you'll need to interact with stores that aren't in your schema, perhaps during upgrades. In that case you can cast.
+If you call `openDB` without providing types, your database will use basic types. However, sometimes you'll need to interact with stores that aren't in your schema, perhaps during upgrades. In that case you can cast.
 
 Let's say we were renaming the 'favourite-numbers' store to 'fave-nums':
 
 ```ts
-import { openDb, DBSchema, IDBPDatabase, IDBPTransaction } from 'idb';
+import { openDB, DBSchema, IDBPDatabase, IDBPTransaction } from 'idb';
 
-interface V1MyDB extends DBSchema {
+interface MyDBV1 extends DBSchema {
   'favourite-numbers': { key: string, value: number[] },
 }
 
-interface V2MyDB extends DBSchema {
+interface MyDBV2 extends DBSchema {
   'fave-nums': { key: string, value: number[] },
 }
 
-const db = await openDb<V2MyDB>('my-db', 2, {
-  async upgrade(db, oldVersion, newVersion, tx) {
+const db = await openDB<MyDBV2>('my-db', 2, {
+  async upgrade(db, oldVersion) {
     // Cast a reference of the database to the old schema.
-    const v1Db = db as unknown as IDBPDatabase<V1MyDB>;
+    const v1Db = db as unknown as IDBPDatabase<MyDBV1>;
 
     if (oldVersion < 1) {
       v1Db.createObjectStore('favourite-numbers');
     }
     if (oldVersion < 2) {
-      const store = db.createObjectStore('fav-nums');
-
-      // We'll need to copy the data, that means casting the transaction too:
-      const v1Tx = tx as unknown as IDBPTransaction<V1MyDB>;
-      let cursor = await tx.objectStore('favourite-numbers').openCursor();
-
-      while (cursor) {
-        store.add(cursor.value, cursor.key);
-        cursor = await cursor.continue();
-      }
+      const store = v1Db.createObjectStore('favourite-numbers');
+      store.name = 'fave-nums';
     }
   }
 });
 ```
 
-You can also cast to a typeless database/transaction by omiting the type, eg `db as IDBPDatabase`.
+You can also cast to a typeless database by omiting the type, eg `db as IDBPDatabase`.
