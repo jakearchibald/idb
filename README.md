@@ -35,7 +35,7 @@ async function doDatabaseStuff() {
 
 # Changes
 
-TODO
+This is a rewrite from 3.x. [See changes](changes.md).
 
 # API
 
