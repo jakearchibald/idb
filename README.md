@@ -1,4 +1,4 @@
-# IndexedDB with promises.
+# IndexedDB with usability.
 
 This is a tiny (1.17k) library that mostly mirrors the IndexedDB API, but with small improvements that make a big difference to usability.
 
