@@ -256,9 +256,9 @@ This library is fully typed, and you can improve things by providing types for y
 import { openDB, DBSchema } from 'idb';
 
 interface MyDB extends DBSchema {
-  'favourite-numbers': {
+  'favourite-number': {
     key: string,
-    value: number[],
+    value: number,
   },
   'products': {
     value: {
@@ -274,7 +274,7 @@ interface MyDB extends DBSchema {
 async function demo() {
   const db = await openDB<MyDB>('my-db', 1, {
     upgrade(db) {
-      db.createObjectStore('favourite-numbers');
+      db.createObjectStore('favourite-number');
 
       const productStore = db.createObjectStore('products', { keyPath: 'productCode' });
       productStore.createIndex('by-price', 'price');
@@ -282,9 +282,9 @@ async function demo() {
   });
 
   // This works
-  await db.put('favourite-numbers', [7, 95, 1023], 'Jen');
-  // This fails, as the 'favourite-numbers' store expects an array of numbers.
-  await db.put('favourite-numbers', ['Twelve'], 'Jake');
+  await db.put('favourite-number', 7, 'Jen');
+  // This fails at compile time, as the 'favourite-number' store expects a number.
+  await db.put('favourite-number', 'Twelve', 'Jake');
 }
 ```
 
@@ -300,17 +300,17 @@ Provide this interface when calling `openDB`, and from then on your database wil
 
 If you call `openDB` without providing types, your database will use basic types. However, sometimes you'll need to interact with stores that aren't in your schema, perhaps during upgrades. In that case you can cast.
 
-Let's say we were renaming the 'favourite-numbers' store to 'fave-nums':
+Let's say we were renaming the 'favourite-number' store to 'fave-nums':
 
 ```ts
 import { openDB, DBSchema, IDBPDatabase, IDBPTransaction } from 'idb';
 
 interface MyDBV1 extends DBSchema {
-  'favourite-numbers': { key: string, value: number[] },
+  'favourite-number': { key: string, value: number },
 }
 
 interface MyDBV2 extends DBSchema {
-  'fave-nums': { key: string, value: number[] },
+  'fave-num': { key: string, value: number },
 }
 
 const db = await openDB<MyDBV2>('my-db', 2, {
@@ -319,11 +319,11 @@ const db = await openDB<MyDBV2>('my-db', 2, {
     const v1Db = db as unknown as IDBPDatabase<MyDBV1>;
 
     if (oldVersion < 1) {
-      v1Db.createObjectStore('favourite-numbers');
+      v1Db.createObjectStore('favourite-number');
     }
     if (oldVersion < 2) {
-      const store = v1Db.createObjectStore('favourite-numbers');
-      store.name = 'fave-nums';
+      const store = v1Db.createObjectStore('favourite-number');
+      store.name = 'fave-num';
     }
   }
 });
