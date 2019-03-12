@@ -43,15 +43,6 @@ const esm = {
   }],
 };
 
-const iffe = {
-  input: 'build/esm/index.mjs',
-  output: {
-    file: 'build/iife/index.js',
-    format: 'iife',
-    name: 'idb',
-  },
-};
-
 const iffeMin = {
   input: 'build/esm/index.mjs',
   plugins: [
@@ -66,6 +57,20 @@ const iffeMin = {
   },
 };
 
+const iffeIttrMin = {
+  input: './with-async-ittr.mjs',
+  plugins: [
+    terser({
+      compress: { ecma: 6 },
+    })
+  ],
+  output: {
+    file: 'build/iife/with-async-ittr-min.js',
+    format: 'iife',
+    name: 'idb'
+  },
+};
+
 const cjsAsyncIttrEntry = {
   input: './with-async-ittr.mjs',
   external: ['./build/esm/index.mjs', './build/esm/async-iterators.mjs'],
@@ -75,4 +80,4 @@ const cjsAsyncIttrEntry = {
   },
 };
 
-export default [testBuild, esm, iffe, iffeMin, cjsAsyncIttrEntry];
+export default [testBuild, esm, iffeMin, iffeIttrMin, cjsAsyncIttrEntry];

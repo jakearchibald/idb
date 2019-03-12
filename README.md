@@ -1,6 +1,6 @@
 # IndexedDB with usability.
 
-This is a tiny (1.17k) library that mostly mirrors the IndexedDB API, but with small improvements that make a big difference to usability.
+This is a tiny (~1.17k) library that mostly mirrors the IndexedDB API, but with small improvements that make a big difference to usability.
 
 1. [Installation](#installation)
 1. [Changes](#changes)
@@ -41,7 +41,7 @@ TODO
 
 ## `openDB`
 
-Create a new database connection.
+This method opens a database, and returns a promise for an enhanced [`IDBDatabase`](https://w3c.github.io/IndexedDB/#database-interface).
 
 ```js
 const db = await openDB(name, version, {
@@ -57,12 +57,10 @@ const db = await openDB(name, version, {
 });
 ```
 
-This method opens a database, and returns an object very similar to [`IDBDatabase`](https://w3c.github.io/IndexedDB/#database-interface) (differences are detailed below).
-
 * `name`: Name of the database.
 * `version`: Schema version.
 * `upgrade` (optional): Called if this version of the database has never been opened before. Use it to specify the schema for the database. This is similar to the `upgradeneeded` event in plain IndexedDB.
-    * `db`: Object similar to `IDBDatabase`.
+    * `db`: An enhanced `IDBDatabase`.
     * `oldVersion`: Last version of the database opened by the user.
     * `newVersion`: Whatever new version you provided.
     * `transaction`: The transaction for this upgrade. This is useful if you need to get data from other stores as part of a migration.
@@ -101,9 +99,9 @@ This doesn't work with `IDBCursor`, [due to missing primitives](https://github.c
 
 ## General enhancements
 
-Once you've opened the database, the API is the same as IndexedDB, except for a few changes to make things easier.
+Once you've opened the database the API is the same as IndexedDB, except for a few changes to make things easier.
 
-Any method that usually returns an `IDBRequest` object will now return a promise for the eventual value.
+Any method that usually returns an `IDBRequest` object will now return a promise for the result.
 
 ```js
 const store = db.transaction(storeName).objectStore(storeName);
@@ -123,20 +121,20 @@ const value = await db.get(storeName, key);
 await db.put(storeName, value, key);
 ```
 
-This works for `get`, `getKey`, `getAll`, `getAllKeys`, `count`, `put`, `add`, `delete`, and `clear`. Each method takes a `storeName` argument, the name of the object store, and the rest of the arguments are the same as the equivalent `IDBObjectStore` method.
+The shortcuts are: `get`, `getKey`, `getAll`, `getAllKeys`, `count`, `put`, `add`, `delete`, and `clear`. Each method takes a `storeName` argument, the name of the object store, and the rest of the arguments are the same as the equivalent `IDBObjectStore` method.
 
-These methods depend on the same methods on `IDBObjectStore`, so Edge does not support for `getKey`, `getAll`, or `getAllKeys`.
+These methods depend on the same methods on `IDBObjectStore`, therefore `getKey`, `getAll`, and `getAllKeys` are missing in Edge as it lacks support.
 
 ### Shortcuts to get from an index
 
-Also included is `getFromIndex`, `getKeyFromIndex`, `getAllFromIndex`, `getAllKeysFromIndex`, and `countFromIndex`:
+The shortcuts are: `getFromIndex`, `getKeyFromIndex`, `getAllFromIndex`, `getAllKeysFromIndex`, and `countFromIndex`.
 
 ```js
 // Get a value from an index:
 const value = await db.getFromIndex(storeName, indexName, key);
 ```
 
-Each method takes `storeName` and `indexName` arguments, followed by the rest of the arguments from the equivalent `IDBIndex` method. Again, these methods depend on the equivalent methods on `IDBIndex`, so Edge does not support for `getKeyFromIndex`, `getAllFromIndex`, or `getAllKeysFromIndex`.
+Each method takes `storeName` and `indexName` arguments, followed by the rest of the arguments from the equivalent `IDBIndex` method. Again, these methods depend on the equivalent methods on `IDBIndex`, so Edge does not support `getKeyFromIndex`, `getAllFromIndex`, or `getAllKeysFromIndex`.
 
 ## `IDBTransaction` enhancements
 
@@ -177,7 +175,7 @@ while (cursor) {
 
 ## Async iterators
 
-Async iterator support isn't in the default bundle (Edge doesn't support them). To include them, import `idb/with-async-ittr.mjs` instead of `idb`:
+Async iterator support isn't included by default (Edge doesn't support them). To include them, import `idb/with-async-ittr.mjs` (~1.39k) instead of `idb`:
 
 ```js
 import { openDB } from 'idb/with-async-ittr.mjs';

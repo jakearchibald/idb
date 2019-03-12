@@ -7,7 +7,7 @@
   "typings": "build/esm/index.d.ts",
   "scripts": {
     "clean": "rm -r build test-build",
-    "build": "npm run clean && rollup -c && gzip-size build/iife/index-min.js",
+    "build": "npm run clean && rollup -c && gzip-size build/iife/index-min.js && gzip-size build/iife/with-async-ittr-min.js",
     "dev": "npm run clean && rollup -c --watch"
   },
   "repository": {
