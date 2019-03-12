@@ -39,62 +39,50 @@ function deleteDB(name, callbacks = {}) {
     return __chunk_1.wrap(request).then(() => undefined);
 }
 
-function potentialDatabaseExtra(target, prop) {
-    return (target instanceof IDBDatabase) &&
-        !(prop in target) &&
-        typeof prop === 'string';
-}
 const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
 const writeMethods = ['put', 'add', 'delete', 'clear'];
-// Add index methods
-readMethods.push(...readMethods.map(n => n + 'FromIndex'));
 const cachedMethods = new Map();
-function getMethod(prop) {
-    if (readMethods.includes(prop)) {
-        return function (storeName, ...args) {
-            // Are we dealing with an index method?
-            let indexName = '';
-            let targetFuncName = prop;
-            if (targetFuncName.endsWith('FromIndex')) {
-                indexName = args.shift();
-                targetFuncName = targetFuncName.slice(0, -9); // remove "FromIndex"
-            }
+function getMethod(target, prop) {
+    if (!(target instanceof IDBDatabase &&
+        !(prop in target) &&
+        typeof prop === 'string'))
+        return;
+    const cachedMethod = cachedMethods.get(prop);
+    if (cachedMethod)
+        return cachedMethod;
+    const targetFuncName = prop.replace(/FromIndex$/, '');
+    const useIndex = prop !== targetFuncName;
+    // Bail if the target doesn't exist on the target. Eg, getAll isn't in Edge.
+    if (!(targetFuncName in (useIndex ? IDBIndex : IDBObjectStore).prototype)) {
+        return;
+    }
+    let method;
+    if (readMethods.includes(targetFuncName)) {
+        method = function (storeName, ...args) {
             const tx = this.transaction(storeName);
             let target = tx.store;
-            if (indexName)
-                target = target.index(indexName);
+            if (useIndex)
+                target = target.index(args.shift());
             return target[targetFuncName](...args);
         };
     }
-    if (writeMethods.includes(prop)) {
-        return function (storeName, ...args) {
+    if (writeMethods.includes(targetFuncName)) {
+        method = function (storeName, ...args) {
             const tx = this.transaction(storeName, 'readwrite');
-            tx.store[prop](...args);
+            tx.store[targetFuncName](...args);
             return tx.done;
         };
     }
+    if (method)
+        cachedMethods.set(prop, method);
+    return method;
 }
 __chunk_1.addTraps(oldTraps => ({
     get(target, prop, receiver) {
-        // Quick bails
-        if (!potentialDatabaseExtra(target, prop)) {
-            return oldTraps.get(target, prop, receiver);
-        }
-        // tslint:disable-next-line:no-parameter-reassignment
-        prop = prop;
-        const cachedMethod = cachedMethods.get(prop);
-        if (cachedMethod)
-            return cachedMethod;
-        const method = getMethod(prop);
-        if (method) {
-            cachedMethods.set(prop, method);
-            return method;
-        }
-        return oldTraps.get(target, prop, receiver);
+        return getMethod(target, prop) || oldTraps.get(target, prop, receiver);
     },
     has(target, prop) {
-        return (potentialDatabaseExtra(target, prop) &&
-            (readMethods.includes(prop) || writeMethods.includes(prop))) || oldTraps.has(target, prop);
+        return !!getMethod(target, prop) || oldTraps.has(target, prop);
     },
 }));
 

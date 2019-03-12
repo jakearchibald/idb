@@ -86,8 +86,9 @@ let idbProxyTraps = {
             if (prop === 'done')
                 return transactionDoneMap.get(target);
             // Polyfill for objectStoreNames because of Edge.
-            if (prop === 'objectStoreNames')
-                return transactionStoreNamesMap.get(target);
+            if (prop === 'objectStoreNames') {
+                return target.objectStoreNames || transactionStoreNamesMap.get(target);
+            }
             // Make tx.store return the only store in the transaction, or undefined if there are many.
             if (prop === 'store') {
                 return receiver.objectStoreNames[1] ?
@@ -110,7 +111,8 @@ function wrapFunction(func) {
     // Due to expected object equality (which is enforced by the caching in `wrap`), we
     // only create one new func per func.
     // Edge doesn't support objectStoreNames (booo), so we polyfill it here.
-    if (func === IDBDatabase.prototype.transaction) {
+    if (func === IDBDatabase.prototype.transaction &&
+        !('objectStoreNames' in IDBTransaction.prototype)) {
         return function (storeNames, ...args) {
             const originalDb = unwrap(this);
             const tx = func.call(originalDb, storeNames, ...args);

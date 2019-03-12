@@ -12,7 +12,10 @@ const testBuild = {
         'chai': ['assert'],
       },
     }),
-    typescript(),
+    typescript({
+      tsconfig: 'test/tsconfig.json',
+      useTsconfigDeclarationDir: true
+    }),
     copy({
       'test/index.html': 'test-build/index.html',
     }),
