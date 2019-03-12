@@ -175,10 +175,10 @@ while (cursor) {
 
 ## Async iterators
 
-Async iterator support isn't included by default (Edge doesn't support them). To include them, import `idb/with-async-ittr.mjs` (~1.39k) instead of `idb`:
+Async iterator support isn't included by default (Edge doesn't support them). To include them, import `idb/with-async-ittr.js` (~1.39k) instead of `idb`:
 
 ```js
-import { openDB } from 'idb/with-async-ittr.mjs';
+import { openDB } from 'idb/with-async-ittr.js';
 ```
 
 Now you can iterate over stores, indexes, and cursors:

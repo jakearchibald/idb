@@ -33,8 +33,8 @@ const esm = {
   output: [{
     dir: 'build/esm/',
     format: 'esm',
-    entryFileNames: '[name].mjs',
-    chunkFileNames: '[name].mjs',
+    entryFileNames: '[name].js',
+    chunkFileNames: '[name].js',
   }, {
     dir: 'build/cjs/',
     format: 'cjs',
@@ -44,7 +44,7 @@ const esm = {
 };
 
 const iffeMin = {
-  input: 'build/esm/index.mjs',
+  input: 'build/esm/index.js',
   plugins: [
     terser({
       compress: { ecma: 6 },
@@ -58,7 +58,7 @@ const iffeMin = {
 };
 
 const iffeIttrMin = {
-  input: './with-async-ittr.mjs',
+  input: './with-async-ittr.js',
   plugins: [
     terser({
       compress: { ecma: 6 },
@@ -72,10 +72,10 @@ const iffeIttrMin = {
 };
 
 const cjsAsyncIttrEntry = {
-  input: './with-async-ittr.mjs',
-  external: ['./build/esm/index.mjs', './build/esm/async-iterators.mjs'],
+  input: './with-async-ittr.js',
+  external: ['./build/esm/index.js', './build/esm/async-iterators.js'],
   output: {
-    file: './with-async-ittr.js',
+    file: './with-async-ittr-cjs.js',
     format: 'cjs',
   },
 };

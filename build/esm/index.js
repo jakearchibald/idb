@@ -1,5 +1,5 @@
-import { a as wrap, b as addTraps } from './chunk.mjs';
-export { d as unwrap, a as wrap } from './chunk.mjs';
+import { a as wrap, b as addTraps } from './chunk.js';
+export { d as unwrap, a as wrap } from './chunk.js';
 
 /**
  * Open a database.

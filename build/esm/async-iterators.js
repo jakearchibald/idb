@@ -1,4 +1,4 @@
-import { b as addTraps, c as instanceOfAny } from './chunk.mjs';
+import { b as addTraps, c as instanceOfAny } from './chunk.js';
 
 const advanceMethodProps = ['continue', 'continuePrimaryKey', 'advance'];
 const methodMap = {};
