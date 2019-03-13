@@ -118,6 +118,19 @@ suite('Async iterators', () => {
     }
   });
 
+  test('Can delete during iteration', async () => {
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    const tx = schemaDB.transaction('key-val-store', 'readwrite');
+
+    for await (const cursor of tx.store) {
+      cursor.delete();
+    }
+
+    assert.strictEqual(await schemaDB.count('key-val-store'), 0);
+  });
+
   test('index', async () => {
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
