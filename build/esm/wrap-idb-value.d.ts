@@ -1,4 +1,5 @@
 import { IDBPCursor, IDBPCursorWithValue, IDBPDatabase, IDBPIndex, IDBPObjectStore, IDBPTransaction } from './entry';
+export declare const reverseTransformCache: WeakMap<object, any>;
 export declare function addTraps(callback: (currentTraps: ProxyHandler<any>) => ProxyHandler<any>): void;
 /**
  * Enhance an IDB object with helpers.

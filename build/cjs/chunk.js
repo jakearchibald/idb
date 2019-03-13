@@ -51,8 +51,8 @@ function promisifyRequest(request) {
             cursorRequestMap.set(value, request);
         }
     });
-    // This is the only mapping that exists in reverseTransformCache where the reverse doesn't exist
-    // in transformCache. This is because we create many promises from a single IDBRequest.
+    // This mapping exists in reverseTransformCache but doesn't doesn't exist in transformCache. This
+    // is because we create many promises from a single IDBRequest.
     reverseTransformCache.set(promise, request);
     return promise;
 }
@@ -182,4 +182,5 @@ function unwrap(value) {
 exports.wrap = wrap;
 exports.addTraps = addTraps;
 exports.instanceOfAny = instanceOfAny;
+exports.reverseTransformCache = reverseTransformCache;
 exports.unwrap = unwrap;

@@ -1,9 +1,9 @@
-import { b as addTraps, c as instanceOfAny } from './chunk.js';
+import { b as addTraps, c as instanceOfAny, d as reverseTransformCache, e as unwrap } from './chunk.js';
 
 const advanceMethodProps = ['continue', 'continuePrimaryKey', 'advance'];
 const methodMap = {};
 const advanceResults = new WeakMap();
-const proxiedCursorToOriginal = new WeakMap();
+const ittrProxiedCursorToOriginalProxy = new WeakMap();
 const cursorIteratorTraps = {
     get(target, prop) {
         if (!advanceMethodProps.includes(prop))
@@ -11,7 +11,7 @@ const cursorIteratorTraps = {
         let cachedFunc = methodMap[prop];
         if (!cachedFunc) {
             cachedFunc = methodMap[prop] = function (...args) {
-                advanceResults.set(this, proxiedCursorToOriginal.get(this)[prop](...args));
+                advanceResults.set(this, ittrProxiedCursorToOriginalProxy.get(this)[prop](...args));
             };
         }
         return cachedFunc;
@@ -27,7 +27,9 @@ async function* iterate(...args) {
         return;
     cursor = cursor;
     const proxiedCursor = new Proxy(cursor, cursorIteratorTraps);
-    proxiedCursorToOriginal.set(proxiedCursor, cursor);
+    ittrProxiedCursorToOriginalProxy.set(proxiedCursor, cursor);
+    // Map this double-proxy back to the original, so other cursor methods work.
+    reverseTransformCache.set(proxiedCursor, unwrap(cursor));
     while (cursor) {
         yield proxiedCursor;
         // If one of the advancing methods was not called, call continue().
