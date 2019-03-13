@@ -8,8 +8,7 @@ export { e as unwrap, a as wrap } from './chunk.js';
  * @param version Schema version.
  * @param callbacks Additional callbacks.
  */
-function openDB(name, version, callbacks = {}) {
-    const { blocked, upgrade, blocking } = callbacks;
+function openDB(name, version, { blocked, upgrade, blocking } = {}) {
     const request = indexedDB.open(name, version);
     const openPromise = wrap(request);
     if (upgrade) {
@@ -28,8 +27,7 @@ function openDB(name, version, callbacks = {}) {
  *
  * @param name Name of the database.
  */
-function deleteDB(name, callbacks = {}) {
-    const { blocked } = callbacks;
+function deleteDB(name, { blocked } = {}) {
     const request = indexedDB.deleteDatabase(name);
     if (blocked)
         request.addEventListener('blocked', () => blocked());
@@ -44,9 +42,8 @@ function getMethod(target, prop) {
         !(prop in target) &&
         typeof prop === 'string'))
         return;
-    const cachedMethod = cachedMethods.get(prop);
-    if (cachedMethod)
-        return cachedMethod;
+    if (cachedMethods.get(prop))
+        return cachedMethods.get(prop);
     const targetFuncName = prop.replace(/FromIndex$/, '');
     const useIndex = prop !== targetFuncName;
     // Bail if the target doesn't exist on the target. Eg, getAll isn't in Edge.
@@ -56,8 +53,7 @@ function getMethod(target, prop) {
     let method;
     if (readMethods.includes(targetFuncName)) {
         method = function (storeName, ...args) {
-            const tx = this.transaction(storeName);
-            let target = tx.store;
+            let target = this.transaction(storeName).store;
             if (useIndex)
                 target = target.index(args.shift());
             return target[targetFuncName](...args);
@@ -75,12 +71,8 @@ function getMethod(target, prop) {
     return method;
 }
 addTraps(oldTraps => ({
-    get(target, prop, receiver) {
-        return getMethod(target, prop) || oldTraps.get(target, prop, receiver);
-    },
-    has(target, prop) {
-        return !!getMethod(target, prop) || oldTraps.has(target, prop);
-    },
+    get: (target, prop, receiver) => getMethod(target, prop) || oldTraps.get(target, prop, receiver),
+    has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop),
 }));
 
 export { openDB, deleteDB };

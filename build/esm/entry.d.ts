@@ -27,7 +27,7 @@ export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
  * @param version Schema version.
  * @param callbacks Additional callbacks.
  */
-export declare function openDB<DBTypes extends DBSchema | unknown = unknown>(name: string, version: number, callbacks?: OpenDBCallbacks<DBTypes>): Promise<IDBPDatabase<DBTypes>>;
+export declare function openDB<DBTypes extends DBSchema | unknown = unknown>(name: string, version: number, { blocked, upgrade, blocking }?: OpenDBCallbacks<DBTypes>): Promise<IDBPDatabase<DBTypes>>;
 export interface DeleteDBCallbacks {
     /**
      * Called if there are connections to this database open, so it cannot be deleted.
@@ -39,7 +39,7 @@ export interface DeleteDBCallbacks {
  *
  * @param name Name of the database.
  */
-export declare function deleteDB(name: string, callbacks?: DeleteDBCallbacks): Promise<void>;
+export declare function deleteDB(name: string, { blocked }?: DeleteDBCallbacks): Promise<void>;
 export { unwrap, wrap } from './wrap-idb-value';
 declare type KnownKeys<T> = {
     [K in keyof T]: string extends K ? never : number extends K ? never : K;

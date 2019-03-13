@@ -4,7 +4,6 @@ import { IDBPDatabase, IDBPObjectStore, IDBPIndex } from './entry';
 
 const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
 const writeMethods = ['put', 'add', 'delete', 'clear'];
-
 const cachedMethods = new Map<string, Func>();
 
 function getMethod(target: any, prop: string | number | symbol): Func | undefined {
@@ -14,8 +13,7 @@ function getMethod(target: any, prop: string | number | symbol): Func | undefine
     typeof prop === 'string'
   )) return;
 
-  const cachedMethod = cachedMethods.get(prop);
-  if (cachedMethod) return cachedMethod;
+  if (cachedMethods.get(prop)) return cachedMethods.get(prop);
 
   const targetFuncName: string = prop.replace(/FromIndex$/, '');
   const useIndex = prop !== targetFuncName;
@@ -29,10 +27,8 @@ function getMethod(target: any, prop: string | number | symbol): Func | undefine
 
   if (readMethods.includes(targetFuncName)) {
     method = function (this: IDBPDatabase, storeName: string, ...args: any[]) {
-      const tx = this.transaction(storeName);
-      let target: IDBPObjectStore | IDBPIndex = tx.store;
+      let target: IDBPObjectStore | IDBPIndex = this.transaction(storeName).store;
       if (useIndex) target = target.index(args.shift());
-
       return (target as any)[targetFuncName](...args);
     };
   }
@@ -49,10 +45,6 @@ function getMethod(target: any, prop: string | number | symbol): Func | undefine
 }
 
 addTraps(oldTraps => ({
-  get(target, prop, receiver) {
-    return getMethod(target, prop) || oldTraps.get!(target, prop, receiver);
-  },
-  has(target, prop) {
-    return !!getMethod(target, prop) || oldTraps.has!(target, prop);
-  },
+  get: (target, prop, receiver) => getMethod(target, prop) || oldTraps.get!(target, prop, receiver),
+  has: (target, prop) => !!getMethod(target, prop) || oldTraps.has!(target, prop),
 }));

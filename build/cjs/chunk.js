@@ -6,21 +6,16 @@ let idbProxyableTypes;
 let cursorAdvanceMethods;
 // This is a function to prevent it throwing up in node environments.
 function getIdbProxyableTypes() {
-    if (!idbProxyableTypes) {
-        idbProxyableTypes = [IDBDatabase, IDBObjectStore, IDBIndex, IDBCursor, IDBTransaction];
-    }
-    return idbProxyableTypes;
+    return idbProxyableTypes ||
+        (idbProxyableTypes = [IDBDatabase, IDBObjectStore, IDBIndex, IDBCursor, IDBTransaction]);
 }
 // This is a function to prevent it throwing up in node environments.
 function getCursorAdvanceMethods() {
-    if (!cursorAdvanceMethods) {
-        cursorAdvanceMethods = [
-            IDBCursor.prototype.advance,
-            IDBCursor.prototype.continue,
-            IDBCursor.prototype.continuePrimaryKey,
-        ];
-    }
-    return cursorAdvanceMethods;
+    return cursorAdvanceMethods || (cursorAdvanceMethods = [
+        IDBCursor.prototype.advance,
+        IDBCursor.prototype.continue,
+        IDBCursor.prototype.continuePrimaryKey,
+    ]);
 }
 const cursorRequestMap = new WeakMap();
 const transactionDoneMap = new WeakMap();
@@ -114,11 +109,10 @@ function wrapFunction(func) {
     // only create one new func per func.
     // Edge doesn't support objectStoreNames (booo), so we polyfill it here.
     if (func === IDBDatabase.prototype.transaction &&
-        !('objectStoreNames' in IDBTransaction.prototype)) {
+        'objectStoreNames' in IDBTransaction.prototype) {
         return function (storeNames, ...args) {
-            const originalDb = unwrap(this);
-            const tx = func.call(originalDb, storeNames, ...args);
-            transactionStoreNamesMap.set(tx, Array.isArray(storeNames) ? storeNames.sort() : [storeNames]);
+            const tx = func.call(unwrap(this), storeNames, ...args);
+            transactionStoreNamesMap.set(tx, storeNames.sort ? storeNames.sort() : [storeNames]);
             return wrap(tx);
         };
     }
@@ -131,18 +125,14 @@ function wrapFunction(func) {
         return function (...args) {
             // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
             // the original object.
-            const originalCursor = unwrap(this);
-            func.apply(originalCursor, args);
-            const request = cursorRequestMap.get(this);
-            return wrap(request);
+            func.apply(unwrap(this), args);
+            return wrap(cursorRequestMap.get(this));
         };
     }
     return function (...args) {
         // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
         // the original object.
-        const originalParent = unwrap(this);
-        const value = func.apply(originalParent, args);
-        return wrap(value);
+        return wrap(func.apply(unwrap(this), args));
     };
 }
 function transformCachableValue(value) {
@@ -175,9 +165,7 @@ function wrap(value) {
     }
     return newValue;
 }
-function unwrap(value) {
-    return reverseTransformCache.get(value);
-}
+const unwrap = (value) => reverseTransformCache.get(value);
 
 exports.wrap = wrap;
 exports.addTraps = addTraps;

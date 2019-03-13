@@ -80,4 +80,7 @@ const cjsAsyncIttrEntry = {
   },
 };
 
-export default [testBuild, esm, iffeMin, iffeIttrMin, cjsAsyncIttrEntry];
+export default [
+  testBuild,
+  esm, iffeMin, iffeIttrMin, cjsAsyncIttrEntry
+];

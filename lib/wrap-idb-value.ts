@@ -8,22 +8,17 @@ let cursorAdvanceMethods: Func[];
 
 // This is a function to prevent it throwing up in node environments.
 function getIdbProxyableTypes(): Constructor[] {
-  if (!idbProxyableTypes) {
-    idbProxyableTypes = [IDBDatabase, IDBObjectStore, IDBIndex, IDBCursor, IDBTransaction];
-  }
-  return idbProxyableTypes;
+  return idbProxyableTypes ||
+    (idbProxyableTypes = [IDBDatabase, IDBObjectStore, IDBIndex, IDBCursor, IDBTransaction]);
 }
 
 // This is a function to prevent it throwing up in node environments.
 function getCursorAdvanceMethods(): Func[] {
-  if (!cursorAdvanceMethods) {
-    cursorAdvanceMethods = [
-      IDBCursor.prototype.advance,
-      IDBCursor.prototype.continue,
-      IDBCursor.prototype.continuePrimaryKey,
-    ];
-  }
-  return cursorAdvanceMethods;
+  return cursorAdvanceMethods || (cursorAdvanceMethods = [
+    IDBCursor.prototype.advance,
+    IDBCursor.prototype.continue,
+    IDBCursor.prototype.continuePrimaryKey,
+  ]);
 }
 
 const cursorRequestMap: WeakMap<IDBPCursor, IDBRequest<IDBCursor>> = new WeakMap();
@@ -129,14 +124,13 @@ function wrapFunction<T extends Func>(func: T): Function {
   // Edge doesn't support objectStoreNames (booo), so we polyfill it here.
   if (
     func === IDBDatabase.prototype.transaction &&
-    !('objectStoreNames' in IDBTransaction.prototype)
+    'objectStoreNames' in IDBTransaction.prototype
   ) {
     return function (this: IDBPDatabase, storeNames: string | string[], ...args: any[]) {
-      const originalDb = unwrap(this);
-      const tx = func.call(originalDb, storeNames, ...args);
+      const tx = func.call(unwrap(this), storeNames, ...args);
       transactionStoreNamesMap.set(
         tx,
-        Array.isArray(storeNames) ? storeNames.sort() : [storeNames],
+        (storeNames as any).sort ? (storeNames as any[]).sort() : [storeNames],
       );
       return wrap(tx);
     };
@@ -151,19 +145,15 @@ function wrapFunction<T extends Func>(func: T): Function {
     return function (this: IDBPCursor, ...args: Parameters<T>) {
       // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
       // the original object.
-      const originalCursor = unwrap(this);
-      func.apply(originalCursor, args);
-      const request = cursorRequestMap.get(this)!;
-      return wrap(request);
+      func.apply(unwrap(this), args);
+      return wrap(cursorRequestMap.get(this)!);
     };
   }
 
   return function (this: any, ...args: Parameters<T>) {
     // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
     // the original object.
-    const originalParent = unwrap(this);
-    const value = func.apply(originalParent, args);
-    return wrap(value);
+    return wrap(func.apply(unwrap(this), args));
   };
 }
 
@@ -218,15 +208,15 @@ export function wrap(value: any): any {
  *
  * @param value The enhanced object to revert.
  */
-export function unwrap(value: IDBPCursorWithValue<any, any, any, any>): IDBCursorWithValue;
-export function unwrap(value: IDBPCursor<any, any, any, any>): IDBCursor;
-export function unwrap(value: IDBPDatabase): IDBDatabase;
-export function unwrap(value: IDBPIndex<any, any, any, any>): IDBIndex;
-export function unwrap(value: IDBPObjectStore<any, any, any>): IDBObjectStore;
-export function unwrap(value: IDBPTransaction<any, any>): IDBTransaction;
-export function unwrap<T extends any>(value: Promise<IDBPDatabase<T>>): IDBOpenDBRequest;
-export function unwrap(value: Promise<IDBPDatabase>): IDBOpenDBRequest;
-export function unwrap<T>(value: Promise<T>): IDBRequest<T>;
-export function unwrap(value: any): any {
-  return reverseTransformCache.get(value);
+interface Unwrap {
+  (value: IDBPCursorWithValue<any, any, any, any>): IDBCursorWithValue;
+  (value: IDBPCursor<any, any, any, any>): IDBCursor;
+  (value: IDBPDatabase): IDBDatabase;
+  (value: IDBPIndex<any, any, any, any>): IDBIndex;
+  (value: IDBPObjectStore<any, any, any>): IDBObjectStore;
+  (value: IDBPTransaction<any, any>): IDBTransaction;
+  <T extends any>(value: Promise<IDBPDatabase<T>>): IDBOpenDBRequest;
+  (value: Promise<IDBPDatabase>): IDBOpenDBRequest;
+  <T>(value: Promise<T>): IDBRequest<T>;
 }
+export const unwrap: Unwrap = (value: any): any => reverseTransformCache.get(value);

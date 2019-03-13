@@ -36,9 +36,8 @@ export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
  * @param callbacks Additional callbacks.
  */
 export function openDB<DBTypes extends DBSchema | unknown = unknown>(
-  name: string, version: number, callbacks: OpenDBCallbacks<DBTypes> = {},
+  name: string, version: number, { blocked, upgrade, blocking }: OpenDBCallbacks<DBTypes> = {},
 ): Promise<IDBPDatabase<DBTypes>> {
-  const { blocked, upgrade, blocking } = callbacks;
   const request = indexedDB.open(name, version);
   const openPromise = wrap(request) as Promise<IDBPDatabase<DBTypes>>;
 
@@ -71,8 +70,7 @@ export interface DeleteDBCallbacks {
  *
  * @param name Name of the database.
  */
-export function deleteDB(name: string, callbacks: DeleteDBCallbacks = {}): Promise<void> {
-  const { blocked } = callbacks;
+export function deleteDB(name: string, { blocked }: DeleteDBCallbacks = {}): Promise<void> {
   const request = indexedDB.deleteDatabase(name);
   if (blocked) request.addEventListener('blocked', () => blocked());
   return wrap(request).then(() => undefined);

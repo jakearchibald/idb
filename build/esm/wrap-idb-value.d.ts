@@ -19,12 +19,16 @@ export declare function wrap<T>(value: IDBRequest<T>): Promise<T>;
  *
  * @param value The enhanced object to revert.
  */
-export declare function unwrap(value: IDBPCursorWithValue<any, any, any, any>): IDBCursorWithValue;
-export declare function unwrap(value: IDBPCursor<any, any, any, any>): IDBCursor;
-export declare function unwrap(value: IDBPDatabase): IDBDatabase;
-export declare function unwrap(value: IDBPIndex<any, any, any, any>): IDBIndex;
-export declare function unwrap(value: IDBPObjectStore<any, any, any>): IDBObjectStore;
-export declare function unwrap(value: IDBPTransaction<any, any>): IDBTransaction;
-export declare function unwrap<T extends any>(value: Promise<IDBPDatabase<T>>): IDBOpenDBRequest;
-export declare function unwrap(value: Promise<IDBPDatabase>): IDBOpenDBRequest;
-export declare function unwrap<T>(value: Promise<T>): IDBRequest<T>;
+interface Unwrap {
+    (value: IDBPCursorWithValue<any, any, any, any>): IDBCursorWithValue;
+    (value: IDBPCursor<any, any, any, any>): IDBCursor;
+    (value: IDBPDatabase): IDBDatabase;
+    (value: IDBPIndex<any, any, any, any>): IDBIndex;
+    (value: IDBPObjectStore<any, any, any>): IDBObjectStore;
+    (value: IDBPTransaction<any, any>): IDBTransaction;
+    <T extends any>(value: Promise<IDBPDatabase<T>>): IDBOpenDBRequest;
+    (value: Promise<IDBPDatabase>): IDBOpenDBRequest;
+    <T>(value: Promise<T>): IDBRequest<T>;
+}
+export declare const unwrap: Unwrap;
+export {};
