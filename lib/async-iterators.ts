@@ -1,11 +1,11 @@
 import { instanceOfAny, Func } from './util';
-import { addTraps } from './wrap-idb-value';
+import { addTraps, reverseTransformCache, unwrap } from './wrap-idb-value';
 import { IDBPObjectStore, IDBPIndex, IDBPCursor } from './entry';
 
 const advanceMethodProps = ['continue', 'continuePrimaryKey', 'advance'];
 const methodMap: { [s: string]: Func } = {};
 const advanceResults = new WeakMap<IDBPCursor, Promise<IDBPCursor | null>>();
-const proxiedCursorToOriginal = new WeakMap<IDBPCursor, IDBPCursor>();
+const ittrProxiedCursorToOriginalProxy = new WeakMap<IDBPCursor, IDBPCursor>();
 
 const cursorIteratorTraps: ProxyHandler<any> = {
   get(target, prop) {
@@ -17,7 +17,7 @@ const cursorIteratorTraps: ProxyHandler<any> = {
       cachedFunc = methodMap[prop as string] = function (this: IDBPCursor, ...args: any) {
         advanceResults.set(
           this,
-          (proxiedCursorToOriginal.get(this) as any)[prop](...args),
+          (ittrProxiedCursorToOriginalProxy.get(this) as any)[prop](...args),
         );
       };
     }
@@ -39,7 +39,9 @@ async function* iterate(this: IDBPObjectStore | IDBPIndex | IDBPCursor, ...args:
 
   cursor = cursor as IDBPCursor;
   const proxiedCursor = new Proxy(cursor, cursorIteratorTraps);
-  proxiedCursorToOriginal.set(proxiedCursor, cursor);
+  ittrProxiedCursorToOriginalProxy.set(proxiedCursor, cursor);
+  // Map this double-proxy back to the original, so other cursor methods work.
+  reverseTransformCache.set(proxiedCursor, unwrap(cursor));
 
   while (cursor) {
     yield proxiedCursor;
