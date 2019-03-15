@@ -23,7 +23,7 @@ This is a tiny (~1.13k) library that mostly mirrors the IndexedDB API, but with 
 npm install idb
 ```
 
-Then, assuming you're using a module-compatible system (like Webpack, Rollup etc):
+Then, assuming you're using a module-compatible system (like webpack, Rollup etc):
 
 ```js
 import { openDB, deleteDB, wrap, unwrap } from 'idb';
@@ -33,9 +33,21 @@ async function doDatabaseStuff() {
 }
 ```
 
+Or, use it directly via unpkg:
+
+```html
+<script type="module">
+import { openDB, deleteDB, wrap, unwrap } from 'https://unpkg.com/idb?module';
+
+async function doDatabaseStuff() {
+  const db = await openDB(…);
+}
+</script>
+```
+
 # Changes
 
-This is a rewrite from 3.x. [See changes](changes.md).
+This is a rewrite from 3.x with substantial changes. [See details](changes.md).
 
 # API
 
@@ -63,7 +75,7 @@ const db = await openDB(name, version, {
     * `db`: An enhanced `IDBDatabase`.
     * `oldVersion`: Last version of the database opened by the user.
     * `newVersion`: Whatever new version you provided.
-    * `transaction`: The transaction for this upgrade. This is useful if you need to get data from other stores as part of a migration.
+    * `transaction`: An enhanced transaction for this upgrade. This is useful if you need to get data from other stores as part of a migration.
 * `blocked` (optional): Called if there are older versions of the database open on the origin, so this version cannot open.
 * `blocking` (optional): Called if this connection is blocking a future version of the database from opening.
 
@@ -95,13 +107,13 @@ const wrapped = wrap(unwrapped);
 
 Use this to convert a plain IDB object to one enhanced by this library. This is useful if some third party code gives you an `IDBDatabase` object and you want it to have the features of this library.
 
-This doesn't work with `IDBCursor`, [due to missing primitives](https://github.com/w3c/IndexedDB/issues/255). Also, if you wrap an `IDBTransaction`, `tx.store` and `tx.objectStoreNames` will not work in Edge. To avoid these issues, wrap the `IDBDatabase` object, and use the wrapped object to create a new transaction.
+This doesn't work with `IDBCursor`, [due to missing primitives](https://github.com/w3c/IndexedDB/issues/255). Also, if you wrap an `IDBTransaction`, `tx.store` and `tx.objectStoreNames` won't work in Edge. To avoid these issues, wrap the `IDBDatabase` object, and use the wrapped object to create a new transaction.
 
 ## General enhancements
 
 Once you've opened the database the API is the same as IndexedDB, except for a few changes to make things easier.
 
-Any method that usually returns an `IDBRequest` object will now return a promise for the result.
+Firstly, any method that usually returns an `IDBRequest` object will now return a promise for the result.
 
 ```js
 const store = db.transaction(storeName).objectStore(storeName);
@@ -123,7 +135,7 @@ await db.put(storeName, value, key);
 
 The shortcuts are: `get`, `getKey`, `getAll`, `getAllKeys`, `count`, `put`, `add`, `delete`, and `clear`. Each method takes a `storeName` argument, the name of the object store, and the rest of the arguments are the same as the equivalent `IDBObjectStore` method.
 
-These methods depend on the same methods on `IDBObjectStore`, therefore `getKey`, `getAll`, and `getAllKeys` are missing in Edge as it lacks support.
+These methods depend on the same methods on `IDBObjectStore`, therefore `getKey`, `getAll`, and `getAllKeys` are missing in Edge.
 
 ### Shortcuts to get from an index
 
@@ -147,11 +159,11 @@ const tx = db.transaction('whatever');
 const store = tx.store;
 ```
 
-If a transaction involves multiple stores, `tx.store` is undefined.
+If a transaction involves multiple stores, `tx.store` is undefined, you need to use `tx.objectStore(storeName)` to get the stores.
 
 ### `tx.done`
 
-Transactions have a `.done` promise which resolves when the transaction completes successfully, and otherwise rejects.
+Transactions have a `.done` promise which resolves when the transaction completes successfully, and otherwise rejects with the [transaction error](https://developer.mozilla.org/en-US/docs/Web/API/IDBTransaction/error).
 
 ```js
 const tx = db.transaction(storeName, 'readwrite');
@@ -164,8 +176,7 @@ await tx.done;
 Cursor advance methods (`advance`, `continue`, `continuePrimaryKey`) return a promise for the cursor, or null if there are no further values to provide.
 
 ```js
-const store = db.transaction(storeName).objectStore(storeName);
-let cursor = await store.openCursor();
+let cursor = await db.transaction(storeName).store.openCursor();
 
 while (cursor) {
   console.log(cursor.key, cursor.value);
@@ -175,7 +186,7 @@ while (cursor) {
 
 ## Async iterators
 
-Async iterator support isn't included by default (Edge doesn't support them). To include them, import `idb/with-async-ittr.js` (~1.37k) instead of `idb`:
+Async iterator support isn't included by default (Edge doesn't support them). To include them, import `idb/with-async-ittr.js` instead of `idb` (this increases the library size to ~1.37k):
 
 ```js
 import { openDB } from 'idb/with-async-ittr.js';
@@ -205,11 +216,10 @@ for await (const cursor of tx.store) {
 
 If you don't manually advance the cursor, `cursor.continue()` is called for you.
 
-Stores and indexes also have an `iterate` method which has the same signiture as `openCursor`, but returns an async iterator:
+Stores and indexes also have an `iterate` method which has the same signature as `openCursor`, but returns an async iterator:
 
 ```js
-const tx = db.transaction('books');
-const index = tx.store.index('author');
+const index = db.transaction('books').store.index('author');
 
 for await (const cursor of index.iterate('Douglas Adams')) {
   console.log(cursor.value);
@@ -218,9 +228,9 @@ for await (const cursor of index.iterate('Douglas Adams')) {
 
 # Examples
 
-## Keyval Store
+## Keyval store
 
-This is very similar to `localStorage`, but async. If this is *all* you need, you may be interested in [idb-keyval](https://www.npmjs.com/package/idb-keyval), you can always upgrade to this library later.
+This is very similar to `localStorage`, but async. If this is *all* you need, you may be interested in [idb-keyval](https://www.npmjs.com/package/idb-keyval). You can always upgrade to this library later.
 
 ```js
 const dbPromise = openDB('keyval-store', 1, {
@@ -246,6 +256,66 @@ const idbKeyval = {
     return (await dbPromise).getAllKeys('keyval');
   },
 };
+```
+
+## Article store
+
+```js
+async function demo() {
+  const db = await openDB('Articles', 1, {
+    upgrade(db) {
+      // Create a store of objects
+      const store = db.createObjectStore('articles', {
+        // The 'id' property of the object will be the key.
+        keyPath: 'id',
+        // If it isn't explicitly set, create a value by auto incrementing.
+        autoIncrement: true,
+      });
+      // Create an index on the 'date' property of the objects.
+      store.createIndex('date', 'date');
+    },
+  });
+
+  // Add an article:
+  await db.add('articles', {
+    title: 'Article 1',
+    date: new Date('2019-01-01'),
+    body: '…',
+  });
+
+  // Add multiple articles in one transaction:
+  {
+    const tx = db.transaction('articles', 'readwrite');
+    tx.store.add({
+      title: 'Article 2',
+      date: new Date('2019-01-01'),
+      body: '…',
+    });
+    tx.store.add({
+      title: 'Article 3',
+      date: new Date('2019-01-02'),
+      body: '…',
+    });
+    await tx.done;
+  }
+
+  // Get all the articles in date order:
+  console.log(await db.getAllFromIndex('articles', 'date'));
+
+  // Add 'And, happy new year!' to all articles on 2019-01-01:
+  {
+    const tx = db.transaction('articles', 'readwrite');
+    const index = tx.store.index('date');
+
+    for await (const cursor of index.iterate(new Date('2019-01-01'))) {
+      const article = { ...cursor.value };
+      article.body += ' And, happy new year!';
+      cursor.update(article);
+    }
+
+    await tx.done;
+  }
+}
 ```
 
 # TypeScript
@@ -303,7 +373,7 @@ If you call `openDB` without providing types, your database will use basic types
 Let's say we were renaming the 'favourite-number' store to 'fave-nums':
 
 ```ts
-import { openDB, DBSchema, IDBPDatabase, IDBPTransaction } from 'idb';
+import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
 interface MyDBV1 extends DBSchema {
   'favourite-number': { key: string, value: number },
@@ -330,3 +400,5 @@ const db = await openDB<MyDBV2>('my-db', 2, {
 ```
 
 You can also cast to a typeless database by omiting the type, eg `db as IDBPDatabase`.
+
+Note: Types like `IDBPDatabase` are used by TypeScript only. The implementation uses proxies under the hood.
