@@ -402,3 +402,26 @@ const db = await openDB<MyDBV2>('my-db', 2, {
 You can also cast to a typeless database by omiting the type, eg `db as IDBPDatabase`.
 
 Note: Types like `IDBPDatabase` are used by TypeScript only. The implementation uses proxies under the hood.
+
+# Transaction lifetime
+
+IDB transactions auto-close if it doesn't have anything left do once microtasks have been processed. As a result, this works fine:
+
+```js
+const tx = db.transaction('keyval', 'readwrite');
+const val = await tx.store.get('counter') || 0;
+tx.store.put(val + 1, 'counter');
+await tx.done;
+```
+
+But this doesn't:
+
+```js
+const tx = db.transaction('keyval', 'readwrite');
+const val = await tx.store.get('counter') || 0;
+const newVal = await fetch('/increment?val=' + val)
+tx.store.put(newVal, 'counter');
+await tx.done;
+```
+
+In this case, the transaction closes while the browser is fetching, so `tx.store.put` fails.
