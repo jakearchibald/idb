@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noUnusedLocals": true,
+    "sourceMap": true,
+    "declaration": true,
+    "declarationDir": "./build/esm/",
+    "outDir": "./build/esm/"
+  },
+  "files": ["lib/index.ts", "lib/async-iterators.ts"]
+}
