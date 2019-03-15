@@ -71,17 +71,17 @@ const db = await openDB(name, version, {
 
 * `name`: Name of the database.
 * `version`: Schema version.
-* `upgrade` (optional): Called if this version of the database has never been opened before. Use it to specify the schema for the database. This is similar to the `upgradeneeded` event in plain IndexedDB.
+* `upgrade` (optional): Called if this version of the database has never been opened before. Use it to specify the schema for the database. This is similar to the [`upgradeneeded` event](https://developer.mozilla.org/en-US/docs/Web/API/IDBOpenDBRequest/upgradeneeded_event) in plain IndexedDB.
     * `db`: An enhanced `IDBDatabase`.
     * `oldVersion`: Last version of the database opened by the user.
     * `newVersion`: Whatever new version you provided.
     * `transaction`: An enhanced transaction for this upgrade. This is useful if you need to get data from other stores as part of a migration.
-* `blocked` (optional): Called if there are older versions of the database open on the origin, so this version cannot open.
-* `blocking` (optional): Called if this connection is blocking a future version of the database from opening.
+* `blocked` (optional): Called if there are older versions of the database open on the origin, so this version cannot open. This is similar to the [`blocked` event](https://developer.mozilla.org/en-US/docs/Web/API/IDBOpenDBRequest/blocked_event) in plain IndexedDB.
+* `blocking` (optional): Called if this connection is blocking a future version of the database from opening. This is similar to the [`versionchange` event](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/versionchange_event) in plain IndexedDB.
 
 ## `deleteDB`
 
-Delete a database.
+Deletes a database.
 
 ```js
 await deleteDB(name);
@@ -91,21 +91,23 @@ await deleteDB(name);
 
 ## `unwrap`
 
+Takes an enhanced IndexedDB object and returns the plain unmodified one.
+
 ```js
 const unwrapped = unwrap(wrapped);
 ```
 
-If for some reason you want to drop back into plain IndexedDB, give one of the enhanced objects to `unwrap` and you'll get the unmodified version back.
-
-Promises will also be converted back into `IDBRequest` objects.
+This is useful if, for some reason, you want to drop back into plain IndexedDB. Promises will also be converted back into `IDBRequest` objects.
 
 ## `wrap`
+
+Takes an IDB object and returns a version enhanced by this library.
 
 ```js
 const wrapped = wrap(unwrapped);
 ```
 
-Use this to convert a plain IDB object to one enhanced by this library. This is useful if some third party code gives you an `IDBDatabase` object and you want it to have the features of this library.
+This is useful if some third party code gives you an `IDBDatabase` object and you want it to have the features of this library.
 
 This doesn't work with `IDBCursor`, [due to missing primitives](https://github.com/w3c/IndexedDB/issues/255). Also, if you wrap an `IDBTransaction`, `tx.store` and `tx.objectStoreNames` won't work in Edge. To avoid these issues, wrap the `IDBDatabase` object, and use the wrapped object to create a new transaction.
 
