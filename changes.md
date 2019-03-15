@@ -43,6 +43,7 @@ If you're using async functions, there isn't a difference.
 * `iterateCursor` and `iterateKeyCursor` have been removed. These existed to work around browsers microtask issues which have since been fixed. Async iterators provide similar functionality.
 * All pseudo-private properties (those beginning with an underscore) are gone. Use `unwrap()` to get access to bare IDB objects.
 * `transaction.complete` was renamed to `transaction.done` to be shorter and more consistent with the DOM.
+* `getAll` is no longer polyfilled on indexes and stores.
 * The library no longer officially supports IE11.
 
 ## New stuff
