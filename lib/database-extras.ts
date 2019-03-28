@@ -17,30 +17,24 @@ function getMethod(target: any, prop: string | number | symbol): Func | undefine
 
   const targetFuncName: string = prop.replace(/FromIndex$/, '');
   const useIndex = prop !== targetFuncName;
+  const isWrite = writeMethods.includes(targetFuncName);
 
-  // Bail if the target doesn't exist on the target. Eg, getAll isn't in Edge.
-  if (!(targetFuncName in (useIndex ? IDBIndex : IDBObjectStore).prototype)) {
-    return;
-  }
+  if (
+    // Bail if the target doesn't exist on the target. Eg, getAll isn't in Edge.
+    !(targetFuncName in (useIndex ? IDBIndex : IDBObjectStore).prototype) ||
+    !(isWrite || readMethods.includes(targetFuncName))
+  ) return;
 
-  let method: Func | undefined;
+  const method = async function (this: IDBPDatabase, storeName: string, ...args: any[]) {
+    const tx = this.transaction(storeName, isWrite ? 'readwrite' : undefined);
+    let target: IDBPObjectStore | IDBPIndex = tx.store;
+    if (useIndex) target = target.index(args.shift());
+    const returnVal = (target as any)[targetFuncName](...args);
+    if (isWrite) await tx.done;
+    return returnVal;
+  };
 
-  if (readMethods.includes(targetFuncName)) {
-    method = function (this: IDBPDatabase, storeName: string, ...args: any[]) {
-      let target: IDBPObjectStore | IDBPIndex = this.transaction(storeName).store;
-      if (useIndex) target = target.index(args.shift());
-      return (target as any)[targetFuncName](...args);
-    };
-  }
-  if (writeMethods.includes(targetFuncName)) {
-    method = function (this: IDBPDatabase, storeName: string, ...args: any[]) {
-      const tx = this.transaction(storeName, 'readwrite');
-      (tx.store as any)[targetFuncName](...args);
-      return tx.done;
-    };
-  }
-
-  if (method) cachedMethods.set(prop, method);
+  cachedMethods.set(prop, method);
   return method;
 }
 
