@@ -453,6 +453,8 @@ suite('IDBPDatabase', () => {
       string
     >>(true);
 
+    assert.strictEqual(key, 'new');
+
     const val = await schemaDB.get('key-val-store', 'new');
 
     assert.strictEqual(val, 234, 'Correct value from store');
@@ -467,6 +469,8 @@ suite('IDBPDatabase', () => {
       typeof key2,
       IDBValidKey
     >>(true);
+
+    assert.strictEqual(key2, 5);
 
     const val2 = await db.get('object-store', 5);
 
@@ -504,6 +508,8 @@ suite('IDBPDatabase', () => {
       string
     >>(true);
 
+    assert.strictEqual(key, 'new');
+
     const val = await schemaDB.get('key-val-store', 'new');
 
     assert.strictEqual(val, 234, 'Correct value from store');
@@ -518,6 +524,8 @@ suite('IDBPDatabase', () => {
       typeof key2,
       IDBValidKey
     >>(true);
+
+    assert.strictEqual(key2, 5);
 
     const val2 = await db.get('object-store', 5);
 
