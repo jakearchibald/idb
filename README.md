@@ -1,6 +1,6 @@
 # IndexedDB with usability.
 
-This is a tiny (~1.13k) library that mostly mirrors the IndexedDB API, but with small improvements that make a big difference to usability.
+This is a tiny (~1.14k) library that mostly mirrors the IndexedDB API, but with small improvements that make a big difference to usability.
 
 1. [Installation](#installation)
 1. [Changes](#changes)

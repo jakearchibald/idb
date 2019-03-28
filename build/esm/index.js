@@ -46,28 +46,23 @@ function getMethod(target, prop) {
         return cachedMethods.get(prop);
     const targetFuncName = prop.replace(/FromIndex$/, '');
     const useIndex = prop !== targetFuncName;
+    const isWrite = writeMethods.includes(targetFuncName);
+    if (
     // Bail if the target doesn't exist on the target. Eg, getAll isn't in Edge.
-    if (!(targetFuncName in (useIndex ? IDBIndex : IDBObjectStore).prototype)) {
+    !(targetFuncName in (useIndex ? IDBIndex : IDBObjectStore).prototype) ||
+        !(isWrite || readMethods.includes(targetFuncName)))
         return;
-    }
-    let method;
-    if (readMethods.includes(targetFuncName)) {
-        method = function (storeName, ...args) {
-            let target = this.transaction(storeName).store;
-            if (useIndex)
-                target = target.index(args.shift());
-            return target[targetFuncName](...args);
-        };
-    }
-    if (writeMethods.includes(targetFuncName)) {
-        method = function (storeName, ...args) {
-            const tx = this.transaction(storeName, 'readwrite');
-            tx.store[targetFuncName](...args);
-            return tx.done;
-        };
-    }
-    if (method)
-        cachedMethods.set(prop, method);
+    const method = async function (storeName, ...args) {
+        const tx = this.transaction(storeName, isWrite ? 'readwrite' : undefined);
+        let target = tx.store;
+        if (useIndex)
+            target = target.index(args.shift());
+        const returnVal = target[targetFuncName](...args);
+        if (isWrite)
+            await tx.done;
+        return returnVal;
+    };
+    cachedMethods.set(prop, method);
     return method;
 }
 addTraps(oldTraps => ({

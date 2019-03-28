@@ -1992,7 +1992,7 @@ suite('IDBPCursor', () => {
         Date | undefined
       >>(true);
 
-      cursor = await cursor.continue(new Date('2019-01-02T05:00:00'));
+      cursor = await cursor.continue(new Date('2019-01-02T05:00:00+0000'));
 
       if (!cursor) {
         assert.fail('Expected cursor');
@@ -2052,7 +2052,7 @@ suite('IDBPCursor', () => {
       >>(true);
 
       cursor = await cursor.continuePrimaryKey(
-        new Date('2019-01-02T05:00:00'),
+        new Date('2019-01-02T05:00:00+0000'),
         1.5,
       );
 
