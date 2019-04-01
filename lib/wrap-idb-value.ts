@@ -124,7 +124,7 @@ function wrapFunction<T extends Func>(func: T): Function {
   // Edge doesn't support objectStoreNames (booo), so we polyfill it here.
   if (
     func === IDBDatabase.prototype.transaction &&
-    'objectStoreNames' in IDBTransaction.prototype
+    !('objectStoreNames' in IDBTransaction.prototype)
   ) {
     return function (this: IDBPDatabase, storeNames: string | string[], ...args: any[]) {
       const tx = func.call(unwrap(this), storeNames, ...args);
