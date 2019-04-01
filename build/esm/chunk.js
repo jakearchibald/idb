@@ -107,7 +107,7 @@ function wrapFunction(func) {
     // only create one new func per func.
     // Edge doesn't support objectStoreNames (booo), so we polyfill it here.
     if (func === IDBDatabase.prototype.transaction &&
-        'objectStoreNames' in IDBTransaction.prototype) {
+        !('objectStoreNames' in IDBTransaction.prototype)) {
         return function (storeNames, ...args) {
             const tx = func.call(unwrap(this), storeNames, ...args);
             transactionStoreNamesMap.set(tx, storeNames.sort ? storeNames.sort() : [storeNames]);

@@ -56,7 +56,7 @@ function getMethod(target, prop) {
         !(isWrite || readMethods.includes(targetFuncName)))
         return;
     const method = async function (storeName, ...args) {
-        const tx = this.transaction(storeName, isWrite ? 'readwrite' : undefined);
+        const tx = this.transaction(storeName, isWrite ? 'readwrite' : 'readonly');
         let target = tx.store;
         if (useIndex)
             target = target.index(args.shift());
