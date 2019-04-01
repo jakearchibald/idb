@@ -26,7 +26,8 @@ function getMethod(target: any, prop: string | number | symbol): Func | undefine
   ) return;
 
   const method = async function (this: IDBPDatabase, storeName: string, ...args: any[]) {
-    const tx = this.transaction(storeName, isWrite ? 'readwrite' : undefined);
+    // isWrite ? 'readwrite' : undefined gzipps better, but fails in Edge :(
+    const tx = this.transaction(storeName, isWrite ? 'readwrite' : 'readonly');
     let target: IDBPObjectStore | IDBPIndex = tx.store;
     if (useIndex) target = target.index(args.shift());
     const returnVal = (target as any)[targetFuncName](...args);
