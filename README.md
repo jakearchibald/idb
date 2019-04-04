@@ -16,7 +16,6 @@ This is a tiny (~1.15k) library that mostly mirrors the IndexedDB API, but with 
     1. [Async iterators](#async-iterators)
 1. [Examples](#examples)
 1. [TypeScript](#typescript)
-1. [Transaction lifetime](#transaction-lifetime)
 
 # Installation
 
@@ -122,6 +121,41 @@ Firstly, any method that usually returns an `IDBRequest` object will now return 
 const store = db.transaction(storeName).objectStore(storeName);
 const value = await store.get(key);
 ```
+
+### Promises & throwing
+
+The library turns all `IDBRequest` objects into promises, but it doesn't know in advance which methods may return promises.
+
+As a result, methods such as `store.put` may throw instead of returning a promise.
+
+If you're using async functions, there's no observable difference.
+
+### Transaction lifetime
+
+IDB transactions auto-close if it doesn't have anything left do once microtasks have been processed. As a result, this works fine:
+
+```js
+const tx = db.transaction('keyval', 'readwrite');
+const store = tx.objectStore('keyval');
+const val = await store.get('counter') || 0;
+store.put(val + 1, 'counter');
+await tx.done;
+```
+
+But this doesn't:
+
+```js
+const tx = db.transaction('keyval', 'readwrite');
+const store = tx.objectStore('keyval');
+const val = await store.get('counter') || 0;
+// This is where things go wrong:
+const newVal = await fetch('/increment?val=' + val);
+// And this throws an error:
+store.put(newVal, 'counter');
+await tx.done;
+```
+
+In this case, the transaction closes while the browser is fetching, so `store.put` fails.
 
 ## `IDBDatabase` enhancements
 
@@ -405,26 +439,3 @@ const db = await openDB<MyDBV2>('my-db', 2, {
 You can also cast to a typeless database by omiting the type, eg `db as IDBPDatabase`.
 
 Note: Types like `IDBPDatabase` are used by TypeScript only. The implementation uses proxies under the hood.
-
-# Transaction lifetime
-
-IDB transactions auto-close if it doesn't have anything left do once microtasks have been processed. As a result, this works fine:
-
-```js
-const tx = db.transaction('keyval', 'readwrite');
-const val = await tx.store.get('counter') || 0;
-tx.store.put(val + 1, 'counter');
-await tx.done;
-```
-
-But this doesn't:
-
-```js
-const tx = db.transaction('keyval', 'readwrite');
-const val = await tx.store.get('counter') || 0;
-const newVal = await fetch('/increment?val=' + val)
-tx.store.put(newVal, 'counter');
-await tx.done;
-```
-
-In this case, the transaction closes while the browser is fetching, so `tx.store.put` fails.
