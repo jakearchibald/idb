@@ -16,6 +16,7 @@ This is a tiny (~1.15k) library that mostly mirrors the IndexedDB API, but with 
     1. [Async iterators](#async-iterators)
 1. [Examples](#examples)
 1. [TypeScript](#typescript)
+1. [Transaction lifetime](#transaction-lifetime)
 
 # Installation
 
