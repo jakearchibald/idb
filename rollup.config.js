@@ -71,16 +71,6 @@ const iffeIttrMin = {
   },
 };
 
-const cjsAsyncIttrEntry = {
-  input: './with-async-ittr.js',
-  external: ['./build/esm/index.js', './build/esm/async-iterators.js'],
-  output: {
-    file: './with-async-ittr-cjs.js',
-    format: 'cjs',
-  },
-};
-
 export default [
-  testBuild,
-  esm, iffeMin, iffeIttrMin, cjsAsyncIttrEntry
+  testBuild, esm, iffeMin, iffeIttrMin,
 ];
