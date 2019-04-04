@@ -134,7 +134,7 @@ If you're using async functions, there's no observable difference.
 
 TL;DR: **Do not `await` other things between the start and end of your transaction**, otherwise the transaction will close before you're done.
 
-IDB transactions auto-close if it doesn't have anything left do once microtasks have been processed. As a result, this works fine:
+An IDB transaction auto-closes if it doesn't have anything left do once microtasks have been processed. As a result, this works fine:
 
 ```js
 const tx = db.transaction('keyval', 'readwrite');
