@@ -146,7 +146,6 @@ type IDBPDatabaseExtends = Omit<
 export interface TypedDOMStringList<
   T extends string
 > extends DOMStringList {
-    readonly length: number;
     contains(string: T): boolean;
     item(index: number): T | null;
     [index: number]: T;
