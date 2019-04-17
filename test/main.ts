@@ -9,6 +9,7 @@ import {
   IDBPCursorWithValue,
   IDBPCursor,
   IDBPIndex,
+  TypedDOMStringList,
 } from '../lib/';
 import { assert as typeAssert, IsExact } from 'conditional-type-checks';
 import {
@@ -29,12 +30,12 @@ suite('IDBPDatabase', () => {
 
     typeAssert<IsExact<
       typeof schemaDB.objectStoreNames,
-      ('key-val-store' | 'object-store')[]
+      TypedDOMStringList<'key-val-store' | 'object-store'>
     >>(true);
 
     typeAssert<IsExact<
       typeof db.objectStoreNames,
-      string[]
+      DOMStringList
     >>(true);
   });
 
