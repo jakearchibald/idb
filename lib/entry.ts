@@ -140,13 +140,25 @@ type IDBPDatabaseExtends = Omit<
   'createObjectStore' | 'deleteObjectStore' | 'transaction' | 'objectStoreNames'
 >;
 
+/**
+ * A variation of DOMStringList with precise string types
+ */
+export interface TypedDOMStringList<
+  T extends string
+> extends DOMStringList {
+    contains(string: T): boolean;
+    item(index: number): T | null;
+    [index: number]: T;
+    [Symbol.iterator](): IterableIterator<T>;
+}
+
 export interface IDBPDatabase<
   DBTypes extends DBSchema | unknown = unknown,
 > extends IDBPDatabaseExtends {
   /**
    * The names of stores in the database.
    */
-  readonly objectStoreNames: StoreNames<DBTypes>[];
+  readonly objectStoreNames: TypedDOMStringList<StoreNames<DBTypes>>;
   /**
    * Creates a new object store.
    *
