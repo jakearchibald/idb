@@ -58,11 +58,41 @@ interface DBSchemaValue {
     value: any;
     indexes?: IndexKeys;
 }
-declare type StoreNames<DBTypes extends DBSchema | unknown> = DBTypes extends DBSchema ? KnownKeys<DBTypes> : string;
-declare type StoreValue<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>> = DBTypes extends DBSchema ? DBTypes[StoreName]['value'] : any;
-declare type StoreKey<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>> = DBTypes extends DBSchema ? DBTypes[StoreName]['key'] : IDBValidKey;
-declare type IndexNames<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>> = DBTypes extends DBSchema ? keyof DBTypes[StoreName]['indexes'] : string;
-declare type IndexKey<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName>> = DBTypes extends DBSchema ? IndexName extends keyof DBTypes[StoreName]['indexes'] ? DBTypes[StoreName]['indexes'][IndexName] : IDBValidKey : IDBValidKey;
+/**
+ * Extract known object store names from the DB schema type.
+ *
+ * @template DBTypes DB schema type, or unknown if the DB isn't typed.
+ */
+export declare type StoreNames<DBTypes extends DBSchema | unknown> = DBTypes extends DBSchema ? KnownKeys<DBTypes> : string;
+/**
+ * Extract database value types from the DB schema type.
+ *
+ * @template DBTypes DB schema type, or unknown if the DB isn't typed.
+ * @template StoreName Names of the object stores to get the types of.
+ */
+export declare type StoreValue<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>> = DBTypes extends DBSchema ? DBTypes[StoreName]['value'] : any;
+/**
+ * Extract database key types from the DB schema type.
+ *
+ * @template DBTypes DB schema type, or unknown if the DB isn't typed.
+ * @template StoreName Names of the object stores to get the types of.
+ */
+export declare type StoreKey<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>> = DBTypes extends DBSchema ? DBTypes[StoreName]['key'] : IDBValidKey;
+/**
+ * Extract the names of indexes in certain object stores from the DB schema type.
+ *
+ * @template DBTypes DB schema type, or unknown if the DB isn't typed.
+ * @template StoreName Names of the object stores to get the types of.
+ */
+export declare type IndexNames<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>> = DBTypes extends DBSchema ? keyof DBTypes[StoreName]['indexes'] : string;
+/**
+ * Extract the types of indexes in certain object stores from the DB schema type.
+ *
+ * @template DBTypes DB schema type, or unknown if the DB isn't typed.
+ * @template StoreName Names of the object stores to get the types of.
+ * @template IndexName Names of the indexes to get the types of.
+ */
+export declare type IndexKey<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName>> = DBTypes extends DBSchema ? IndexName extends keyof DBTypes[StoreName]['indexes'] ? DBTypes[StoreName]['indexes'][IndexName] : IDBValidKey : IDBValidKey;
 declare type CursorSource<DBTypes extends DBSchema | unknown, TxStores extends StoreNames<DBTypes>[], StoreName extends StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName> | unknown> = IndexName extends IndexNames<DBTypes, StoreName> ? IDBPIndex<DBTypes, TxStores, StoreName, IndexName> : IDBPObjectStore<DBTypes, TxStores, StoreName>;
 declare type CursorKey<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName> | unknown> = IndexName extends IndexNames<DBTypes, StoreName> ? IndexKey<DBTypes, StoreName, IndexName> : StoreKey<DBTypes, StoreName>;
 declare type IDBPDatabaseExtends = Omit<IDBDatabase, 'createObjectStore' | 'deleteObjectStore' | 'transaction' | 'objectStoreNames'>;

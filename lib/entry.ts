@@ -99,19 +99,49 @@ interface DBSchemaValue {
   indexes?: IndexKeys;
 }
 
-type StoreNames<DBTypes extends DBSchema | unknown> =
+/**
+ * Extract known object store names from the DB schema type.
+ *
+ * @template DBTypes DB schema type, or unknown if the DB isn't typed.
+ */
+export type StoreNames<DBTypes extends DBSchema | unknown> =
   DBTypes extends DBSchema ? KnownKeys<DBTypes> : string;
 
-type StoreValue<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>> =
+/**
+ * Extract database value types from the DB schema type.
+ *
+ * @template DBTypes DB schema type, or unknown if the DB isn't typed.
+ * @template StoreName Names of the object stores to get the types of.
+ */
+export type StoreValue<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>> =
   DBTypes extends DBSchema ? DBTypes[StoreName]['value'] : any;
 
-type StoreKey<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>> =
+/**
+ * Extract database key types from the DB schema type.
+ *
+ * @template DBTypes DB schema type, or unknown if the DB isn't typed.
+ * @template StoreName Names of the object stores to get the types of.
+ */
+export type StoreKey<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>> =
   DBTypes extends DBSchema ? DBTypes[StoreName]['key'] : IDBValidKey;
 
-type IndexNames<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>> =
+/**
+ * Extract the names of indexes in certain object stores from the DB schema type.
+ *
+ * @template DBTypes DB schema type, or unknown if the DB isn't typed.
+ * @template StoreName Names of the object stores to get the types of.
+ */
+export type IndexNames<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>> =
   DBTypes extends DBSchema ? keyof DBTypes[StoreName]['indexes'] : string;
 
-type IndexKey<
+/**
+ * Extract the types of indexes in certain object stores from the DB schema type.
+ *
+ * @template DBTypes DB schema type, or unknown if the DB isn't typed.
+ * @template StoreName Names of the object stores to get the types of.
+ * @template IndexName Names of the indexes to get the types of.
+ */
+export type IndexKey<
   DBTypes extends DBSchema | unknown,
   StoreName extends StoreNames<DBTypes>,
   IndexName extends IndexNames<DBTypes, StoreName>,

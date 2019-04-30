@@ -56,6 +56,7 @@ function getMethod(target, prop) {
         !(isWrite || readMethods.includes(targetFuncName)))
         return;
     const method = async function (storeName, ...args) {
+        // isWrite ? 'readwrite' : undefined gzipps better, but fails in Edge :(
         const tx = this.transaction(storeName, isWrite ? 'readwrite' : 'readonly');
         let target = tx.store;
         if (useIndex)
