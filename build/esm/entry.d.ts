@@ -96,11 +96,20 @@ export declare type IndexKey<DBTypes extends DBSchema | unknown, StoreName exten
 declare type CursorSource<DBTypes extends DBSchema | unknown, TxStores extends StoreNames<DBTypes>[], StoreName extends StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName> | unknown> = IndexName extends IndexNames<DBTypes, StoreName> ? IDBPIndex<DBTypes, TxStores, StoreName, IndexName> : IDBPObjectStore<DBTypes, TxStores, StoreName>;
 declare type CursorKey<DBTypes extends DBSchema | unknown, StoreName extends StoreNames<DBTypes>, IndexName extends IndexNames<DBTypes, StoreName> | unknown> = IndexName extends IndexNames<DBTypes, StoreName> ? IndexKey<DBTypes, StoreName, IndexName> : StoreKey<DBTypes, StoreName>;
 declare type IDBPDatabaseExtends = Omit<IDBDatabase, 'createObjectStore' | 'deleteObjectStore' | 'transaction' | 'objectStoreNames'>;
+/**
+ * A variation of DOMStringList with precise string types
+ */
+export interface TypedDOMStringList<T extends string> extends DOMStringList {
+    contains(string: T): boolean;
+    item(index: number): T | null;
+    [index: number]: T;
+    [Symbol.iterator](): IterableIterator<T>;
+}
 export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown> extends IDBPDatabaseExtends {
     /**
      * The names of stores in the database.
      */
-    readonly objectStoreNames: StoreNames<DBTypes>[];
+    readonly objectStoreNames: TypedDOMStringList<StoreNames<DBTypes>>;
     /**
      * Creates a new object store.
      *

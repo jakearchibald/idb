@@ -54,7 +54,8 @@ function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
         request as unknown as IDBRequest<IDBCursor>,
       );
     }
-  });
+    // Catching to avoid "Uncaught Promise exceptions"
+  }).catch(() => {});
 
   // This mapping exists in reverseTransformCache but doesn't doesn't exist in transformCache. This
   // is because we create many promises from a single IDBRequest.
