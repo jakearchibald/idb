@@ -84,10 +84,15 @@ const db = await openDB(name, version, {
 Deletes a database.
 
 ```js
-await deleteDB(name);
+await deleteDB(name, {
+  blocked() {
+    // …
+  }
+});
 ```
 
 * `name`: Name of the database.
+* `blocked` (optional): Called if the database already exists and there are open connections that don’t close in response to a versionchange event, the request will be blocked until all they close.
 
 ## `unwrap`
 
