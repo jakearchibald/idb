@@ -1,5 +1,9 @@
 import {
-  DBSchema, IDBPDatabase, openDB, DeleteDBCallbacks, deleteDB,
+  DBSchema,
+  IDBPDatabase,
+  openDB,
+  DeleteDBCallbacks,
+  deleteDB,
 } from '../lib/';
 
 export interface ObjectStoreValue {
@@ -10,13 +14,13 @@ export interface ObjectStoreValue {
 
 export interface TestDBSchema extends DBSchema {
   'key-val-store': {
-    key: string,
-    value: number,
+    key: string;
+    value: number;
   };
   'object-store': {
-    value: ObjectStoreValue,
-    key: number,
-    indexes: { date: Date, title: string },
+    value: ObjectStoreValue;
+    key: number;
+    indexes: { date: Date; title: string };
   };
 }
 

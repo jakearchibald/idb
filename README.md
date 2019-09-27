@@ -5,15 +5,15 @@ This is a tiny (~1.16k) library that mostly mirrors the IndexedDB API, but with 
 1. [Installation](#installation)
 1. [Changes](#changes)
 1. [API](#api)
-    1. [`openDB`](#opendb)
-    1. [`deleteDB`](#deletedb)
-    1. [`unwrap`](#unwrap)
-    1. [`wrap`](#wrap)
-    1. [General enhancements](#general-enhancements)
-    1. [`IDBDatabase` enhancements](#idbdatabase-enhancements)
-    1. [`IDBTransaction` enhancements](#idbtransaction-enhancements)
-    1. [`IDBCursor` enhancements](#idbcursor-enhancements)
-    1. [Async iterators](#async-iterators)
+   1. [`openDB`](#opendb)
+   1. [`deleteDB`](#deletedb)
+   1. [`unwrap`](#unwrap)
+   1. [`wrap`](#wrap)
+   1. [General enhancements](#general-enhancements)
+   1. [`IDBDatabase` enhancements](#idbdatabase-enhancements)
+   1. [`IDBTransaction` enhancements](#idbtransaction-enhancements)
+   1. [`IDBCursor` enhancements](#idbcursor-enhancements)
+   1. [Async iterators](#async-iterators)
 1. [Examples](#examples)
 1. [TypeScript](#typescript)
 
@@ -37,11 +37,11 @@ Or, use it directly via unpkg:
 
 ```html
 <script type="module">
-import { openDB, deleteDB, wrap, unwrap } from 'https://unpkg.com/idb?module';
+  import { openDB, deleteDB, wrap, unwrap } from 'https://unpkg.com/idb?module';
 
-async function doDatabaseStuff() {
-  const db = await openDB(…);
-}
+  async function doDatabaseStuff() {
+    const db = await openDB(…);
+  }
 </script>
 ```
 
@@ -65,19 +65,19 @@ const db = await openDB(name, version, {
   },
   blocking() {
     // …
-  }
+  },
 });
 ```
 
-* `name`: Name of the database.
-* `version`: Schema version.
-* `upgrade` (optional): Called if this version of the database has never been opened before. Use it to specify the schema for the database. This is similar to the [`upgradeneeded` event](https://developer.mozilla.org/en-US/docs/Web/API/IDBOpenDBRequest/upgradeneeded_event) in plain IndexedDB.
-    * `db`: An enhanced `IDBDatabase`.
-    * `oldVersion`: Last version of the database opened by the user.
-    * `newVersion`: Whatever new version you provided.
-    * `transaction`: An enhanced transaction for this upgrade. This is useful if you need to get data from other stores as part of a migration.
-* `blocked` (optional): Called if there are older versions of the database open on the origin, so this version cannot open. This is similar to the [`blocked` event](https://developer.mozilla.org/en-US/docs/Web/API/IDBOpenDBRequest/blocked_event) in plain IndexedDB.
-* `blocking` (optional): Called if this connection is blocking a future version of the database from opening. This is similar to the [`versionchange` event](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/versionchange_event) in plain IndexedDB.
+- `name`: Name of the database.
+- `version`: Schema version.
+- `upgrade` (optional): Called if this version of the database has never been opened before. Use it to specify the schema for the database. This is similar to the [`upgradeneeded` event](https://developer.mozilla.org/en-US/docs/Web/API/IDBOpenDBRequest/upgradeneeded_event) in plain IndexedDB.
+  - `db`: An enhanced `IDBDatabase`.
+  - `oldVersion`: Last version of the database opened by the user.
+  - `newVersion`: Whatever new version you provided.
+  - `transaction`: An enhanced transaction for this upgrade. This is useful if you need to get data from other stores as part of a migration.
+- `blocked` (optional): Called if there are older versions of the database open on the origin, so this version cannot open. This is similar to the [`blocked` event](https://developer.mozilla.org/en-US/docs/Web/API/IDBOpenDBRequest/blocked_event) in plain IndexedDB.
+- `blocking` (optional): Called if this connection is blocking a future version of the database from opening. This is similar to the [`versionchange` event](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/versionchange_event) in plain IndexedDB.
 
 ## `deleteDB`
 
@@ -87,12 +87,12 @@ Deletes a database.
 await deleteDB(name, {
   blocked() {
     // …
-  }
+  },
 });
 ```
 
-* `name`: Name of the database.
-* `blocked` (optional): Called if the database already exists and there are open connections that don’t close in response to a versionchange event, the request will be blocked until all they close.
+- `name`: Name of the database.
+- `blocked` (optional): Called if the database already exists and there are open connections that don’t close in response to a versionchange event, the request will be blocked until all they close.
 
 ## `unwrap`
 
@@ -144,7 +144,7 @@ An IDB transaction auto-closes if it doesn't have anything left do once microtas
 ```js
 const tx = db.transaction('keyval', 'readwrite');
 const store = tx.objectStore('keyval');
-const val = await store.get('counter') || 0;
+const val = (await store.get('counter')) || 0;
 store.put(val + 1, 'counter');
 await tx.done;
 ```
@@ -154,7 +154,7 @@ But this doesn't:
 ```js
 const tx = db.transaction('keyval', 'readwrite');
 const store = tx.objectStore('keyval');
-const val = await store.get('counter') || 0;
+const val = (await store.get('counter')) || 0;
 // This is where things go wrong:
 const newVal = await fetch('/increment?val=' + val);
 // And this throws an error:
@@ -274,13 +274,13 @@ for await (const cursor of index.iterate('Douglas Adams')) {
 
 ## Keyval store
 
-This is very similar to `localStorage`, but async. If this is *all* you need, you may be interested in [idb-keyval](https://www.npmjs.com/package/idb-keyval). You can always upgrade to this library later.
+This is very similar to `localStorage`, but async. If this is _all_ you need, you may be interested in [idb-keyval](https://www.npmjs.com/package/idb-keyval). You can always upgrade to this library later.
 
 ```js
 const dbPromise = openDB('keyval-store', 1, {
   upgrade(db) {
     db.createObjectStore('keyval');
-  }
+  },
 });
 
 const idbKeyval = {
@@ -371,18 +371,18 @@ import { openDB, DBSchema } from 'idb';
 
 interface MyDB extends DBSchema {
   'favourite-number': {
-    key: string,
-    value: number,
-  },
-  'products': {
+    key: string;
+    value: number;
+  };
+  products: {
     value: {
-      name: string,
-      price: number,
-      productCode: string,
-    },
-    key: string,
-    indexes: { 'by-price': number },
-  }
+      name: string;
+      price: number;
+      productCode: string;
+    };
+    key: string;
+    indexes: { 'by-price': number };
+  };
 }
 
 async function demo() {
@@ -390,9 +390,11 @@ async function demo() {
     upgrade(db) {
       db.createObjectStore('favourite-number');
 
-      const productStore = db.createObjectStore('products', { keyPath: 'productCode' });
+      const productStore = db.createObjectStore('products', {
+        keyPath: 'productCode',
+      });
       productStore.createIndex('by-price', 'price');
-    }
+    },
   });
 
   // This works
@@ -420,17 +422,17 @@ Let's say we were renaming the 'favourite-number' store to 'fave-nums':
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
 interface MyDBV1 extends DBSchema {
-  'favourite-number': { key: string, value: number },
+  'favourite-number': { key: string; value: number };
 }
 
 interface MyDBV2 extends DBSchema {
-  'fave-num': { key: string, value: number },
+  'fave-num': { key: string; value: number };
 }
 
 const db = await openDB<MyDBV2>('my-db', 2, {
   async upgrade(db, oldVersion) {
     // Cast a reference of the database to the old schema.
-    const v1Db = db as unknown as IDBPDatabase<MyDBV1>;
+    const v1Db = (db as unknown) as IDBPDatabase<MyDBV1>;
 
     if (oldVersion < 1) {
       v1Db.createObjectStore('favourite-number');
@@ -439,10 +441,10 @@ const db = await openDB<MyDBV2>('my-db', 2, {
       const store = v1Db.createObjectStore('favourite-number');
       store.name = 'fave-num';
     }
-  }
+  },
 });
 ```
 
-You can also cast to a typeless database by omiting the type, eg `db as IDBPDatabase`.
+You can also cast to a typeless database by omitting the type, eg `db as IDBPDatabase`.
 
 Note: Types like `IDBPDatabase` are used by TypeScript only. The implementation uses proxies under the hood.

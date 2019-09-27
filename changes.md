@@ -8,7 +8,7 @@
 // Old 3.x way
 import { openDb } from 'idb';
 
-openDb('db-name', 1, (upgradeDb) => {
+openDb('db-name', 1, upgradeDb => {
   console.log(upgradeDb.oldVersion);
   console.log(upgradeDb.transaction);
 });
@@ -26,9 +26,9 @@ openDB('db-name', 1, {
 });
 ```
 
-* `openDb` and `deleteDb` were renamed `openDB` and `deleteDB` to be more consistent with DOM naming.
-* The signature of `openDB` changed. The third parameter used to be the upgrade callback, it's now an option object which can include an `upgrade` method.
-* There's no `UpgradeDB` anymore. You get the same database `openDB` resolves with. Versions numbers and the upgrade transaction are included as additional parameters.
+- `openDb` and `deleteDb` were renamed `openDB` and `deleteDB` to be more consistent with DOM naming.
+- The signature of `openDB` changed. The third parameter used to be the upgrade callback, it's now an option object which can include an `upgrade` method.
+- There's no `UpgradeDB` anymore. You get the same database `openDB` resolves with. Versions numbers and the upgrade transaction are included as additional parameters.
 
 ### Promises & throwing
 
@@ -40,20 +40,20 @@ If you're using async functions, there isn't a difference.
 
 ### Other breaking changes
 
-* `iterateCursor` and `iterateKeyCursor` have been removed. These existed to work around browsers microtask issues which have since been fixed. Async iterators provide similar functionality.
-* All pseudo-private properties (those beginning with an underscore) are gone. Use `unwrap()` to get access to bare IDB objects.
-* `transaction.complete` was renamed to `transaction.done` to be shorter and more consistent with the DOM.
-* `getAll` is no longer polyfilled on indexes and stores.
-* The library no longer officially supports IE11.
+- `iterateCursor` and `iterateKeyCursor` have been removed. These existed to work around browsers microtask issues which have since been fixed. Async iterators provide similar functionality.
+- All pseudo-private properties (those beginning with an underscore) are gone. Use `unwrap()` to get access to bare IDB objects.
+- `transaction.complete` was renamed to `transaction.done` to be shorter and more consistent with the DOM.
+- `getAll` is no longer polyfilled on indexes and stores.
+- The library no longer officially supports IE11.
 
 ## New stuff
 
-* The library now uses proxies, so objects will include everything from their plain-IDB equivalents.
-* TypeScript support has massively improved, including the ability to provide types for your database.
-* Optional support for async iterators, which makes handling cursors much easier.
-* Database objects now have shortcuts for single actions (like `get`, `put`, `add`, `getAll` etc etc).
-* For transactions that cover a single store `transaction.store` is a reference to that store.
-* `openDB` lets you add callbacks for when your database is blocking another connection, or when you're blocked by another connection.
+- The library now uses proxies, so objects will include everything from their plain-IDB equivalents.
+- TypeScript support has massively improved, including the ability to provide types for your database.
+- Optional support for async iterators, which makes handling cursors much easier.
+- Database objects now have shortcuts for single actions (like `get`, `put`, `add`, `getAll` etc etc).
+- For transactions that cover a single store `transaction.store` is a reference to that store.
+- `openDB` lets you add callbacks for when your database is blocking another connection, or when you're blocked by another connection.
 
 # Changes in 3.x
 

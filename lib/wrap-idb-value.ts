@@ -1,5 +1,10 @@
 import {
-  IDBPCursor, IDBPCursorWithValue, IDBPDatabase, IDBPIndex, IDBPObjectStore, IDBPTransaction,
+  IDBPCursor,
+  IDBPCursorWithValue,
+  IDBPDatabase,
+  IDBPIndex,
+  IDBPObjectStore,
+  IDBPTransaction,
 } from './entry';
 import { Constructor, Func, instanceOfAny } from './util';
 
@@ -8,22 +13,42 @@ let cursorAdvanceMethods: Func[];
 
 // This is a function to prevent it throwing up in node environments.
 function getIdbProxyableTypes(): Constructor[] {
-  return idbProxyableTypes ||
-    (idbProxyableTypes = [IDBDatabase, IDBObjectStore, IDBIndex, IDBCursor, IDBTransaction]);
+  return (
+    idbProxyableTypes ||
+    (idbProxyableTypes = [
+      IDBDatabase,
+      IDBObjectStore,
+      IDBIndex,
+      IDBCursor,
+      IDBTransaction,
+    ])
+  );
 }
 
 // This is a function to prevent it throwing up in node environments.
 function getCursorAdvanceMethods(): Func[] {
-  return cursorAdvanceMethods || (cursorAdvanceMethods = [
-    IDBCursor.prototype.advance,
-    IDBCursor.prototype.continue,
-    IDBCursor.prototype.continuePrimaryKey,
-  ]);
+  return (
+    cursorAdvanceMethods ||
+    (cursorAdvanceMethods = [
+      IDBCursor.prototype.advance,
+      IDBCursor.prototype.continue,
+      IDBCursor.prototype.continuePrimaryKey,
+    ])
+  );
 }
 
-const cursorRequestMap: WeakMap<IDBPCursor, IDBRequest<IDBCursor>> = new WeakMap();
-const transactionDoneMap: WeakMap<IDBTransaction, Promise<void>> = new WeakMap();
-const transactionStoreNamesMap: WeakMap<IDBTransaction, string[]> = new WeakMap();
+const cursorRequestMap: WeakMap<
+  IDBPCursor,
+  IDBRequest<IDBCursor>
+> = new WeakMap();
+const transactionDoneMap: WeakMap<
+  IDBTransaction,
+  Promise<void>
+> = new WeakMap();
+const transactionStoreNamesMap: WeakMap<
+  IDBTransaction,
+  string[]
+> = new WeakMap();
 const transformCache = new WeakMap();
 export const reverseTransformCache = new WeakMap();
 
@@ -45,17 +70,19 @@ function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
     request.addEventListener('error', error);
   });
 
-  promise.then((value) => {
-    // Since cursoring reuses the IDBRequest (*sigh*), we cache it for later retrieval
-    // (see wrapFunction).
-    if (value instanceof IDBCursor) {
-      cursorRequestMap.set(
-        value as unknown as IDBPCursor,
-        request as unknown as IDBRequest<IDBCursor>,
-      );
-    }
-    // Catching to avoid "Uncaught Promise exceptions"
-  }).catch(() => {});
+  promise
+    .then(value => {
+      // Since cursoring reuses the IDBRequest (*sigh*), we cache it for later retrieval
+      // (see wrapFunction).
+      if (value instanceof IDBCursor) {
+        cursorRequestMap.set(
+          (value as unknown) as IDBPCursor,
+          (request as unknown) as IDBRequest<IDBCursor>,
+        );
+      }
+      // Catching to avoid "Uncaught Promise exceptions"
+    })
+    .catch(() => {});
 
   // This mapping exists in reverseTransformCache but doesn't doesn't exist in transformCache. This
   // is because we create many promises from a single IDBRequest.
@@ -101,20 +128,28 @@ let idbProxyTraps: ProxyHandler<any> = {
       }
       // Make tx.store return the only store in the transaction, or undefined if there are many.
       if (prop === 'store') {
-        return receiver.objectStoreNames[1] ?
-          undefined : receiver.objectStore(receiver.objectStoreNames[0]);
+        return receiver.objectStoreNames[1]
+          ? undefined
+          : receiver.objectStore(receiver.objectStoreNames[0]);
       }
     }
     // Else transform whatever we get back.
     return wrap(target[prop]);
   },
   has(target, prop) {
-    if (target instanceof IDBTransaction && (prop === 'done' || prop === 'store')) return true;
+    if (
+      target instanceof IDBTransaction &&
+      (prop === 'done' || prop === 'store')
+    ) {
+      return true;
+    }
     return prop in target;
   },
 };
 
-export function addTraps(callback: (currentTraps: ProxyHandler<any>) => ProxyHandler<any>): void {
+export function addTraps(
+  callback: (currentTraps: ProxyHandler<any>) => ProxyHandler<any>,
+): void {
   idbProxyTraps = callback(idbProxyTraps);
 }
 
@@ -127,7 +162,11 @@ function wrapFunction<T extends Func>(func: T): Function {
     func === IDBDatabase.prototype.transaction &&
     !('objectStoreNames' in IDBTransaction.prototype)
   ) {
-    return function (this: IDBPDatabase, storeNames: string | string[], ...args: any[]) {
+    return function(
+      this: IDBPDatabase,
+      storeNames: string | string[],
+      ...args: any[]
+    ) {
       const tx = func.call(unwrap(this), storeNames, ...args);
       transactionStoreNamesMap.set(
         tx,
@@ -143,7 +182,7 @@ function wrapFunction<T extends Func>(func: T): Function {
   // with real promises, so each advance methods returns a new promise for the cursor object, or
   // undefined if the end of the cursor has been reached.
   if (getCursorAdvanceMethods().includes(func)) {
-    return function (this: IDBPCursor, ...args: Parameters<T>) {
+    return function(this: IDBPCursor, ...args: Parameters<T>) {
       // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
       // the original object.
       func.apply(unwrap(this), args);
@@ -151,7 +190,7 @@ function wrapFunction<T extends Func>(func: T): Function {
     };
   }
 
-  return function (this: any, ...args: Parameters<T>) {
+  return function(this: any, ...args: Parameters<T>) {
     // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
     // the original object.
     return wrap(func.apply(unwrap(this), args));
@@ -165,7 +204,8 @@ function transformCachableValue(value: any): any {
   // which is later returned for transaction.done (see idbObjectHandler).
   if (value instanceof IDBTransaction) cacheDonePromiseForTransaction(value);
 
-  if (instanceOfAny(value, getIdbProxyableTypes())) return new Proxy(value, idbProxyTraps);
+  if (instanceOfAny(value, getIdbProxyableTypes()))
+    return new Proxy(value, idbProxyTraps);
 
   // Return the same value back if we're not going to transform it.
   return value;
@@ -180,7 +220,9 @@ export function wrap(value: IDBDatabase): IDBPDatabase;
 export function wrap(value: IDBIndex): IDBPIndex;
 export function wrap(value: IDBObjectStore): IDBPObjectStore;
 export function wrap(value: IDBTransaction): IDBPTransaction;
-export function wrap(value: IDBOpenDBRequest): Promise<IDBPDatabase | undefined>;
+export function wrap(
+  value: IDBOpenDBRequest,
+): Promise<IDBPDatabase | undefined>;
 export function wrap<T>(value: IDBRequest<T>): Promise<T>;
 export function wrap(value: any): any {
   // We sometimes generate multiple promises from a single IDBRequest (eg when cursoring), because
@@ -220,4 +262,5 @@ interface Unwrap {
   (value: Promise<IDBPDatabase>): IDBOpenDBRequest;
   <T>(value: Promise<T>): IDBRequest<T>;
 }
-export const unwrap: Unwrap = (value: any): any => reverseTransformCache.get(value);
+export const unwrap: Unwrap = (value: any): any =>
+  reverseTransformCache.get(value);

@@ -6,12 +6,19 @@ const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
 const writeMethods = ['put', 'add', 'delete', 'clear'];
 const cachedMethods = new Map<string, Func>();
 
-function getMethod(target: any, prop: string | number | symbol): Func | undefined {
-  if (!(
-    target instanceof IDBDatabase &&
-    !(prop in target) &&
-    typeof prop === 'string'
-  )) return;
+function getMethod(
+  target: any,
+  prop: string | number | symbol,
+): Func | undefined {
+  if (
+    !(
+      target instanceof IDBDatabase &&
+      !(prop in target) &&
+      typeof prop === 'string'
+    )
+  ) {
+    return;
+  }
 
   if (cachedMethods.get(prop)) return cachedMethods.get(prop);
 
@@ -23,9 +30,15 @@ function getMethod(target: any, prop: string | number | symbol): Func | undefine
     // Bail if the target doesn't exist on the target. Eg, getAll isn't in Edge.
     !(targetFuncName in (useIndex ? IDBIndex : IDBObjectStore).prototype) ||
     !(isWrite || readMethods.includes(targetFuncName))
-  ) return;
+  ) {
+    return;
+  }
 
-  const method = async function (this: IDBPDatabase, storeName: string, ...args: any[]) {
+  const method = async function(
+    this: IDBPDatabase,
+    storeName: string,
+    ...args: any[]
+  ) {
     // isWrite ? 'readwrite' : undefined gzipps better, but fails in Edge :(
     const tx = this.transaction(storeName, isWrite ? 'readwrite' : 'readonly');
     let target: IDBPObjectStore | IDBPIndex = tx.store;
@@ -40,6 +53,8 @@ function getMethod(target: any, prop: string | number | symbol): Func | undefine
 }
 
 addTraps(oldTraps => ({
-  get: (target, prop, receiver) => getMethod(target, prop) || oldTraps.get!(target, prop, receiver),
-  has: (target, prop) => !!getMethod(target, prop) || oldTraps.has!(target, prop),
+  get: (target, prop, receiver) =>
+    getMethod(target, prop) || oldTraps.get!(target, prop, receiver),
+  has: (target, prop) =>
+    !!getMethod(target, prop) || oldTraps.has!(target, prop),
 }));

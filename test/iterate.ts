@@ -3,13 +3,15 @@
 
 import 'mocha/mocha';
 import { assert } from 'chai';
-import {
-  IDBPDatabase,
-  IDBPCursorWithValueIteratorValue,
-} from '../lib/';
+import { IDBPDatabase, IDBPCursorWithValueIteratorValue } from '../lib/';
 import '../lib/async-iterators';
 import { assert as typeAssert, IsExact } from 'conditional-type-checks';
-import { deleteDatabase, openDBWithData, TestDBSchema, ObjectStoreValue } from './utils';
+import {
+  deleteDatabase,
+  openDBWithData,
+  TestDBSchema,
+  ObjectStoreValue,
+} from './utils';
 
 suite('Async iterators', () => {
   let db: IDBPDatabase;
@@ -31,22 +33,21 @@ suite('Async iterators', () => {
       assert.isTrue(Symbol.asyncIterator in store);
 
       for await (const cursor of store) {
-        typeAssert<IsExact<
-          typeof cursor,
-          IDBPCursorWithValueIteratorValue<
-            TestDBSchema, ['key-val-store'], 'key-val-store', unknown
+        typeAssert<
+          IsExact<
+            typeof cursor,
+            IDBPCursorWithValueIteratorValue<
+              TestDBSchema,
+              ['key-val-store'],
+              'key-val-store',
+              unknown
+            >
           >
-        >>(true);
+        >(true);
 
-        typeAssert<IsExact<
-          typeof cursor.key,
-          string
-        >>(true);
+        typeAssert<IsExact<typeof cursor.key, string>>(true);
 
-        typeAssert<IsExact<
-          typeof cursor.value,
-          number
-        >>(true);
+        typeAssert<IsExact<typeof cursor.value, number>>(true);
 
         keys.push(cursor.key);
         values.push(cursor.value);
@@ -61,22 +62,21 @@ suite('Async iterators', () => {
       const values = [];
 
       for await (const cursor of store) {
-        typeAssert<IsExact<
-          typeof cursor,
-          IDBPCursorWithValueIteratorValue<
-            unknown, ['key-val-store'], 'key-val-store', unknown
+        typeAssert<
+          IsExact<
+            typeof cursor,
+            IDBPCursorWithValueIteratorValue<
+              unknown,
+              ['key-val-store'],
+              'key-val-store',
+              unknown
+            >
           >
-        >>(true);
+        >(true);
 
-        typeAssert<IsExact<
-          typeof cursor.key,
-          IDBValidKey
-        >>(true);
+        typeAssert<IsExact<typeof cursor.key, IDBValidKey>>(true);
 
-        typeAssert<IsExact<
-          typeof cursor.value,
-          any
-        >>(true);
+        typeAssert<IsExact<typeof cursor.value, any>>(true);
 
         keys.push(cursor.key);
         values.push(cursor.value);
@@ -95,10 +95,12 @@ suite('Async iterators', () => {
       const store = schemaDB.transaction('key-val-store').store;
       assert.property(store, 'iterate');
 
-      typeAssert<IsExact<
-        Parameters<typeof store.iterate>[0],
-        string | IDBKeyRange | undefined
-      >>(true);
+      typeAssert<
+        IsExact<
+          Parameters<typeof store.iterate>[0],
+          string | IDBKeyRange | undefined
+        >
+      >(true);
 
       for await (const _ of store.iterate('blah')) {
         assert.fail('This should not be called');
@@ -107,10 +109,12 @@ suite('Async iterators', () => {
     {
       const store = db.transaction('key-val-store').store;
 
-      typeAssert<IsExact<
-        Parameters<typeof store.iterate>[0],
-        IDBValidKey | IDBKeyRange | undefined
-      >>(true);
+      typeAssert<
+        IsExact<
+          Parameters<typeof store.iterate>[0],
+          IDBValidKey | IDBKeyRange | undefined
+        >
+      >(true);
 
       for await (const _ of store.iterate('blah')) {
         assert.fail('This should not be called');
@@ -143,22 +147,21 @@ suite('Async iterators', () => {
       assert.isTrue(Symbol.asyncIterator in index);
 
       for await (const cursor of index) {
-        typeAssert<IsExact<
-          typeof cursor,
-          IDBPCursorWithValueIteratorValue<
-            TestDBSchema, ['object-store'], 'object-store', 'date'
+        typeAssert<
+          IsExact<
+            typeof cursor,
+            IDBPCursorWithValueIteratorValue<
+              TestDBSchema,
+              ['object-store'],
+              'object-store',
+              'date'
+            >
           >
-        >>(true);
+        >(true);
 
-        typeAssert<IsExact<
-          typeof cursor.key,
-          Date
-        >>(true);
+        typeAssert<IsExact<typeof cursor.key, Date>>(true);
 
-        typeAssert<IsExact<
-          typeof cursor.value,
-          ObjectStoreValue
-        >>(true);
+        typeAssert<IsExact<typeof cursor.value, ObjectStoreValue>>(true);
 
         keys.push(cursor.key);
         values.push(cursor.value);
@@ -209,22 +212,21 @@ suite('Async iterators', () => {
       assert.isTrue(Symbol.asyncIterator in index);
 
       for await (const cursor of index) {
-        typeAssert<IsExact<
-          typeof cursor,
-          IDBPCursorWithValueIteratorValue<
-            unknown, ['object-store'], 'object-store', 'title'
+        typeAssert<
+          IsExact<
+            typeof cursor,
+            IDBPCursorWithValueIteratorValue<
+              unknown,
+              ['object-store'],
+              'object-store',
+              'title'
+            >
           >
-        >>(true);
+        >(true);
 
-        typeAssert<IsExact<
-          typeof cursor.key,
-          IDBValidKey
-        >>(true);
+        typeAssert<IsExact<typeof cursor.key, IDBValidKey>>(true);
 
-        typeAssert<IsExact<
-          typeof cursor.value,
-          any
-        >>(true);
+        typeAssert<IsExact<typeof cursor.value, any>>(true);
 
         keys.push(cursor.key);
         values.push(cursor.value);
@@ -272,10 +274,12 @@ suite('Async iterators', () => {
       const index = schemaDB.transaction('object-store').store.index('date');
       assert.property(index, 'iterate');
 
-      typeAssert<IsExact<
-        Parameters<typeof index.iterate>[0],
-        Date | IDBKeyRange | undefined
-      >>(true);
+      typeAssert<
+        IsExact<
+          Parameters<typeof index.iterate>[0],
+          Date | IDBKeyRange | undefined
+        >
+      >(true);
 
       for await (const _ of index.iterate(new Date('2020-01-01'))) {
         assert.fail('This should not be called');
@@ -285,10 +289,12 @@ suite('Async iterators', () => {
       const index = db.transaction('object-store').store.index('title');
       assert.property(index, 'iterate');
 
-      typeAssert<IsExact<
-        Parameters<typeof index.iterate>[0],
-        IDBValidKey | IDBKeyRange | undefined
-      >>(true);
+      typeAssert<
+        IsExact<
+          Parameters<typeof index.iterate>[0],
+          IDBValidKey | IDBKeyRange | undefined
+        >
+      >(true);
 
       for await (const _ of index.iterate('foo')) {
         assert.fail('This should not be called');
@@ -311,22 +317,21 @@ suite('Async iterators', () => {
     assert.isTrue(Symbol.asyncIterator in cursor);
 
     for await (const cursorIter of cursor) {
-      typeAssert<IsExact<
-        typeof cursorIter,
-        IDBPCursorWithValueIteratorValue<
-          TestDBSchema, ['key-val-store'], 'key-val-store', unknown
+      typeAssert<
+        IsExact<
+          typeof cursorIter,
+          IDBPCursorWithValueIteratorValue<
+            TestDBSchema,
+            ['key-val-store'],
+            'key-val-store',
+            unknown
+          >
         >
-      >>(true);
+      >(true);
 
-      typeAssert<IsExact<
-        typeof cursorIter.key,
-        string
-      >>(true);
+      typeAssert<IsExact<typeof cursorIter.key, string>>(true);
 
-      typeAssert<IsExact<
-        typeof cursorIter.value,
-        number
-      >>(true);
+      typeAssert<IsExact<typeof cursorIter.value, number>>(true);
 
       keys.push(cursorIter.key);
       values.push(cursorIter.value);

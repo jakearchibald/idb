@@ -14,7 +14,10 @@ const cursorIteratorTraps: ProxyHandler<any> = {
     let cachedFunc = methodMap[prop as string];
 
     if (!cachedFunc) {
-      cachedFunc = methodMap[prop as string] = function (this: IDBPCursor, ...args: any) {
+      cachedFunc = methodMap[prop as string] = function(
+        this: IDBPCursor,
+        ...args: any
+      ) {
         advanceResults.set(
           this,
           (ittrProxiedCursorToOriginalProxy.get(this) as any)[prop](...args),
@@ -26,8 +29,10 @@ const cursorIteratorTraps: ProxyHandler<any> = {
   },
 };
 
-async function* iterate(this: IDBPObjectStore | IDBPIndex | IDBPCursor, ...args: any[]):
-  AsyncIterableIterator<any> {
+async function* iterate(
+  this: IDBPObjectStore | IDBPIndex | IDBPCursor,
+  ...args: any[]
+): AsyncIterableIterator<any> {
   // tslint:disable-next-line:no-this-assignment
   let cursor: typeof this | null = this;
 
@@ -53,11 +58,9 @@ async function* iterate(this: IDBPObjectStore | IDBPIndex | IDBPCursor, ...args:
 
 function isIteratorProp(target: any, prop: number | string | symbol) {
   return (
-    prop === Symbol.asyncIterator &&
-    instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor])
-  ) || (
-    prop === 'iterate' &&
-    instanceOfAny(target, [IDBIndex, IDBObjectStore])
+    (prop === Symbol.asyncIterator &&
+      instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor])) ||
+    (prop === 'iterate' && instanceOfAny(target, [IDBIndex, IDBObjectStore]))
   );
 }
 
