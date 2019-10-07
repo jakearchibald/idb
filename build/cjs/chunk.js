@@ -6,16 +6,23 @@ let idbProxyableTypes;
 let cursorAdvanceMethods;
 // This is a function to prevent it throwing up in node environments.
 function getIdbProxyableTypes() {
-    return idbProxyableTypes ||
-        (idbProxyableTypes = [IDBDatabase, IDBObjectStore, IDBIndex, IDBCursor, IDBTransaction]);
+    return (idbProxyableTypes ||
+        (idbProxyableTypes = [
+            IDBDatabase,
+            IDBObjectStore,
+            IDBIndex,
+            IDBCursor,
+            IDBTransaction,
+        ]));
 }
 // This is a function to prevent it throwing up in node environments.
 function getCursorAdvanceMethods() {
-    return cursorAdvanceMethods || (cursorAdvanceMethods = [
-        IDBCursor.prototype.advance,
-        IDBCursor.prototype.continue,
-        IDBCursor.prototype.continuePrimaryKey,
-    ]);
+    return (cursorAdvanceMethods ||
+        (cursorAdvanceMethods = [
+            IDBCursor.prototype.advance,
+            IDBCursor.prototype.continue,
+            IDBCursor.prototype.continuePrimaryKey,
+        ]));
 }
 const cursorRequestMap = new WeakMap();
 const transactionDoneMap = new WeakMap();
@@ -39,14 +46,16 @@ function promisifyRequest(request) {
         request.addEventListener('success', success);
         request.addEventListener('error', error);
     });
-    promise.then((value) => {
+    promise
+        .then(value => {
         // Since cursoring reuses the IDBRequest (*sigh*), we cache it for later retrieval
         // (see wrapFunction).
         if (value instanceof IDBCursor) {
             cursorRequestMap.set(value, request);
         }
         // Catching to avoid "Uncaught Promise exceptions"
-    }).catch(() => { });
+    })
+        .catch(() => { });
     // This mapping exists in reverseTransformCache but doesn't doesn't exist in transformCache. This
     // is because we create many promises from a single IDBRequest.
     reverseTransformCache.set(promise, request);
@@ -89,16 +98,19 @@ let idbProxyTraps = {
             }
             // Make tx.store return the only store in the transaction, or undefined if there are many.
             if (prop === 'store') {
-                return receiver.objectStoreNames[1] ?
-                    undefined : receiver.objectStore(receiver.objectStoreNames[0]);
+                return receiver.objectStoreNames[1]
+                    ? undefined
+                    : receiver.objectStore(receiver.objectStoreNames[0]);
             }
         }
         // Else transform whatever we get back.
         return wrap(target[prop]);
     },
     has(target, prop) {
-        if (target instanceof IDBTransaction && (prop === 'done' || prop === 'store'))
+        if (target instanceof IDBTransaction &&
+            (prop === 'done' || prop === 'store')) {
             return true;
+        }
         return prop in target;
     },
 };

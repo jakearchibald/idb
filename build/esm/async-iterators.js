@@ -38,9 +38,9 @@ async function* iterate(...args) {
     }
 }
 function isIteratorProp(target, prop) {
-    return (prop === Symbol.asyncIterator &&
-        instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor])) || (prop === 'iterate' &&
-        instanceOfAny(target, [IDBIndex, IDBObjectStore]));
+    return ((prop === Symbol.asyncIterator &&
+        instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor])) ||
+        (prop === 'iterate' && instanceOfAny(target, [IDBIndex, IDBObjectStore])));
 }
 addTraps(oldTraps => ({
     get(target, prop, receiver) {

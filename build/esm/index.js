@@ -12,14 +12,15 @@ function openDB(name, version, { blocked, upgrade, blocking } = {}) {
     const request = indexedDB.open(name, version);
     const openPromise = wrap(request);
     if (upgrade) {
-        request.addEventListener('upgradeneeded', (event) => {
+        request.addEventListener('upgradeneeded', event => {
             upgrade(wrap(request.result), event.oldVersion, event.newVersion, wrap(request.transaction));
         });
     }
     if (blocked)
         request.addEventListener('blocked', () => blocked());
-    if (blocking)
-        openPromise.then(db => db.addEventListener('versionchange', blocking));
+    if (blocking) {
+        openPromise.then(db => db.addEventListener('versionchange', blocking)).catch(() => { });
+    }
     return openPromise;
 }
 /**
@@ -40,8 +41,9 @@ const cachedMethods = new Map();
 function getMethod(target, prop) {
     if (!(target instanceof IDBDatabase &&
         !(prop in target) &&
-        typeof prop === 'string'))
+        typeof prop === 'string')) {
         return;
+    }
     if (cachedMethods.get(prop))
         return cachedMethods.get(prop);
     const targetFuncName = prop.replace(/FromIndex$/, '');
@@ -50,8 +52,9 @@ function getMethod(target, prop) {
     if (
     // Bail if the target doesn't exist on the target. Eg, getAll isn't in Edge.
     !(targetFuncName in (useIndex ? IDBIndex : IDBObjectStore).prototype) ||
-        !(isWrite || readMethods.includes(targetFuncName)))
+        !(isWrite || readMethods.includes(targetFuncName))) {
         return;
+    }
     const method = async function (storeName, ...args) {
         // isWrite ? 'readwrite' : undefined gzipps better, but fails in Edge :(
         const tx = this.transaction(storeName, isWrite ? 'readwrite' : 'readonly');

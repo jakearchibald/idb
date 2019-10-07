@@ -56,7 +56,7 @@ export function openDB<DBTypes extends DBSchema | unknown = unknown>(
 
   if (blocked) request.addEventListener('blocked', () => blocked());
   if (blocking) {
-    openPromise.then(db => db.addEventListener('versionchange', blocking));
+    openPromise.then(db => db.addEventListener('versionchange', blocking)).catch(() => {});
   }
 
   return openPromise;

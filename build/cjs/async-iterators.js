@@ -40,9 +40,9 @@ async function* iterate(...args) {
     }
 }
 function isIteratorProp(target, prop) {
-    return (prop === Symbol.asyncIterator &&
-        __chunk_1.instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor])) || (prop === 'iterate' &&
-        __chunk_1.instanceOfAny(target, [IDBIndex, IDBObjectStore]));
+    return ((prop === Symbol.asyncIterator &&
+        __chunk_1.instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor])) ||
+        (prop === 'iterate' && __chunk_1.instanceOfAny(target, [IDBIndex, IDBObjectStore])));
 }
 __chunk_1.addTraps(oldTraps => ({
     get(target, prop, receiver) {
