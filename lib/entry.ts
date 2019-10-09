@@ -262,7 +262,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    *
    * @param storeName Name of the store.
    */
-  clear(name: StoreNames<DBTypes>): Promise<undefined>;
+  clear(name: StoreNames<DBTypes>): Promise<void>;
   /**
    * Retrieves the number of records matching the given query in a store.
    *
@@ -306,7 +306,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
   delete<Name extends StoreNames<DBTypes>>(
     storeName: Name,
     key: StoreKey<DBTypes, Name> | IDBKeyRange,
-  ): Promise<undefined>;
+  ): Promise<void>;
   /**
    * Retrieves the value of the first record in a store matching the query.
    *
@@ -486,7 +486,7 @@ export interface IDBPTransaction<
   /**
    * Promise for the completion of this transaction.
    */
-  readonly done: Promise<undefined>;
+  readonly done: Promise<void>;
   /**
    * The associated object store, if the transaction covers a single store, otherwise undefined.
    */
@@ -550,7 +550,7 @@ export interface IDBPObjectStore<
   /**
    * Deletes all records in store.
    */
-  clear(): Promise<undefined>;
+  clear(): Promise<void>;
   /**
    * Retrieves the number of records matching the given query.
    */
@@ -568,7 +568,7 @@ export interface IDBPObjectStore<
   /**
    * Deletes records in store matching the given query.
    */
-  delete(key: StoreKey<DBTypes, StoreName> | IDBKeyRange): Promise<undefined>;
+  delete(key: StoreKey<DBTypes, StoreName> | IDBKeyRange): Promise<void>;
   /**
    * Retrieves the value of the first record matching the query.
    *
@@ -848,7 +848,7 @@ export interface IDBPCursor<
   /**
    * Delete the current record.
    */
-  delete(): Promise<undefined>;
+  delete(): Promise<void>;
   /**
    * Updated the current record.
    */
