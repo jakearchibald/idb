@@ -1,7 +1,6 @@
 'use strict';
 
 const instanceOfAny = (object, constructors) => constructors.some(c => object instanceof c);
-//# sourceMappingURL=util.js.map
 
 let idbProxyableTypes;
 let cursorAdvanceMethods;
@@ -184,7 +183,6 @@ function wrap(value) {
     return newValue;
 }
 const unwrap = (value) => reverseTransformCache.get(value);
-//# sourceMappingURL=wrap-idb-value.js.map
 
 exports.instanceOfAny = instanceOfAny;
 exports.replaceTraps = replaceTraps;

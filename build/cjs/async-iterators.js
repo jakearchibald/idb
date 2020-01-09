@@ -55,4 +55,3 @@ wrapIdbValue.replaceTraps(oldTraps => ({
         return isIteratorProp(target, prop) || oldTraps.has(target, prop);
     },
 }));
-//# sourceMappingURL=async-iterators.js.map

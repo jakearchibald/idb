@@ -41,7 +41,6 @@ function deleteDB(name, { blocked } = {}) {
         request.addEventListener('blocked', () => blocked());
     return wrapIdbValue.wrap(request).then(() => undefined);
 }
-//# sourceMappingURL=entry.js.map
 
 const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
 const writeMethods = ['put', 'add', 'delete', 'clear'];
@@ -82,7 +81,6 @@ wrapIdbValue.replaceTraps(oldTraps => ({
     get: (target, prop, receiver) => getMethod(target, prop) || oldTraps.get(target, prop, receiver),
     has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop),
 }));
-//# sourceMappingURL=database-extras.js.map
 
 exports.unwrap = wrapIdbValue.unwrap;
 exports.wrap = wrapIdbValue.wrap;

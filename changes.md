@@ -1,3 +1,7 @@
+# Changes in 5.x
+
+I moved some files around, so I bumped the major version for safety.
+
 # Changes in 4.x
 
 ## Breaking changes

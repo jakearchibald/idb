@@ -1,5 +1,4 @@
 const instanceOfAny = (object, constructors) => constructors.some(c => object instanceof c);
-//# sourceMappingURL=util.js.map
 
 let idbProxyableTypes;
 let cursorAdvanceMethods;
@@ -182,6 +181,5 @@ function wrap(value) {
     return newValue;
 }
 const unwrap = (value) => reverseTransformCache.get(value);
-//# sourceMappingURL=wrap-idb-value.js.map
 
 export { reverseTransformCache as a, instanceOfAny as i, replaceTraps as r, unwrap as u, wrap as w };
