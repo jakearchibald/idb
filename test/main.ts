@@ -10,7 +10,7 @@ import {
   IDBPCursor,
   IDBPIndex,
   TypedDOMStringList,
-} from '../lib/';
+} from '../src/';
 import { assert as typeAssert, IsExact } from 'conditional-type-checks';
 import {
   deleteDatabase,
@@ -39,7 +39,7 @@ suite('IDBPDatabase', () => {
       >
     >(true);
 
-    typeAssert<IsExact<typeof db.objectStoreNames, DOMStringList>>(true);
+    typeAssert<IsExact<typeof db.objectStoreNames, TypedDOMStringList<string>>>(true);
   });
 
   test('createObjectStore', async () => {
@@ -335,7 +335,7 @@ suite('IDBPDatabase', () => {
 
     const val2 = await db.getAllKeys('key-val-store');
 
-    typeAssert<IsExact<typeof val2, any[]>>(true);
+    typeAssert<IsExact<typeof val2, IDBValidKey[]>>(true);
 
     assert.deepStrictEqual(
       val2,
@@ -358,7 +358,7 @@ suite('IDBPDatabase', () => {
 
     const val2 = await db.getAllKeysFromIndex('object-store', 'title');
 
-    typeAssert<IsExact<typeof val2, any[]>>(true);
+    typeAssert<IsExact<typeof val2, IDBValidKey[]>>(true);
 
     assert.deepStrictEqual(val2, [1, 2, 3, 4], 'Correct values from store');
   });
@@ -688,7 +688,7 @@ suite('IDBPTransaction', () => {
     typeAssert<
       IsExact<
         typeof schemalessStore,
-        IDBPObjectStore<any, ['object-store'], 'object-store'>
+        IDBPObjectStore<unknown, ['object-store'], 'object-store'>
       >
     >(true);
 
@@ -1052,7 +1052,7 @@ suite('IDBPObjectStore', () => {
 
     const val2 = await store2.getAllKeys();
 
-    typeAssert<IsExact<typeof val2, any[]>>(true);
+    typeAssert<IsExact<typeof val2, IDBValidKey[]>>(true);
 
     assert.deepStrictEqual(
       val2,
@@ -1548,7 +1548,7 @@ suite('IDBPIndex', () => {
 
       const val = await index.getAllKeys();
 
-      typeAssert<IsExact<typeof val, any[]>>(true);
+      typeAssert<IsExact<typeof val, IDBValidKey[]>>(true);
 
       assert.deepStrictEqual(val, [1, 2, 3, 4], 'Correct values from store');
     }

@@ -1,6 +1,6 @@
 # IndexedDB with usability.
 
-This is a tiny (~1.16k) library that mostly mirrors the IndexedDB API, but with small improvements that make a big difference to usability.
+This is a tiny (~1.03k brotli'd) library that mostly mirrors the IndexedDB API, but with small improvements that make a big difference to usability.
 
 1. [Installation](#installation)
 1. [Changes](#changes)
@@ -47,7 +47,7 @@ Or, use it directly via unpkg:
 
 # Changes
 
-This is a rewrite from 3.x with substantial changes. [See details](changes.md).
+[See details of (potentially) breaking changes](changes.md).
 
 # API
 
@@ -230,7 +230,7 @@ while (cursor) {
 
 ## Async iterators
 
-Async iterator support isn't included by default (Edge doesn't support them). To include them, import `idb/with-async-ittr.js` instead of `idb` (this increases the library size to ~1.38k):
+Async iterator support isn't included by default (Edge doesn't support them). To include them, import `idb/with-async-ittr.js` instead of `idb` (this increases the library size to ~1.25k brotli'd):
 
 ```js
 import { openDB } from 'idb/with-async-ittr.js';

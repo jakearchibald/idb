@@ -1,6 +1,6 @@
 'use strict';
 
-var __chunk_1 = require('./chunk.js');
+var wrapIdbValue = require('./wrap-idb-value.js');
 
 const advanceMethodProps = ['continue', 'continuePrimaryKey', 'advance'];
 const methodMap = {};
@@ -31,7 +31,7 @@ async function* iterate(...args) {
     const proxiedCursor = new Proxy(cursor, cursorIteratorTraps);
     ittrProxiedCursorToOriginalProxy.set(proxiedCursor, cursor);
     // Map this double-proxy back to the original, so other cursor methods work.
-    __chunk_1.reverseTransformCache.set(proxiedCursor, __chunk_1.unwrap(cursor));
+    wrapIdbValue.reverseTransformCache.set(proxiedCursor, wrapIdbValue.unwrap(cursor));
     while (cursor) {
         yield proxiedCursor;
         // If one of the advancing methods was not called, call continue().
@@ -41,10 +41,10 @@ async function* iterate(...args) {
 }
 function isIteratorProp(target, prop) {
     return ((prop === Symbol.asyncIterator &&
-        __chunk_1.instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor])) ||
-        (prop === 'iterate' && __chunk_1.instanceOfAny(target, [IDBIndex, IDBObjectStore])));
+        wrapIdbValue.instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor])) ||
+        (prop === 'iterate' && wrapIdbValue.instanceOfAny(target, [IDBIndex, IDBObjectStore])));
 }
-__chunk_1.addTraps(oldTraps => ({
+wrapIdbValue.addTraps(oldTraps => ({
     get(target, prop, receiver) {
         if (isIteratorProp(target, prop))
             return iterate;

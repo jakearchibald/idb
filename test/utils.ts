@@ -4,7 +4,7 @@ import {
   openDB,
   DeleteDBCallbacks,
   deleteDB,
-} from '../lib/';
+} from '../src/';
 
 export interface ObjectStoreValue {
   id: number;

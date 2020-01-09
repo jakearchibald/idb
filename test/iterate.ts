@@ -3,8 +3,8 @@
 
 import 'mocha/mocha';
 import { assert } from 'chai';
-import { IDBPDatabase, IDBPCursorWithValueIteratorValue } from '../lib/';
-import '../lib/async-iterators';
+import { IDBPDatabase, IDBPCursorWithValueIteratorValue } from '../src/';
+import '../src/async-iterators';
 import { assert as typeAssert, IsExact } from 'conditional-type-checks';
 import {
   deleteDatabase,

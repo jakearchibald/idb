@@ -1,6 +1,6 @@
 import 'mocha/mocha';
 import { assert } from 'chai';
-import { openDB, IDBPDatabase, IDBPTransaction, wrap, unwrap } from '../lib/';
+import { openDB, IDBPDatabase, IDBPTransaction, wrap, unwrap } from '../src/';
 import { assert as typeAssert, IsExact } from 'conditional-type-checks';
 import {
   getNextVersion,

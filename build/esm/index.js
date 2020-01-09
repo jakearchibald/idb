@@ -1,5 +1,5 @@
-import { a as wrap, b as addTraps } from './chunk.js';
-export { e as unwrap, a as wrap } from './chunk.js';
+import { w as wrap, a as addTraps } from './wrap-idb-value.js';
+export { u as unwrap, w as wrap } from './wrap-idb-value.js';
 
 /**
  * Open a database.
@@ -74,4 +74,4 @@ addTraps(oldTraps => ({
     has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop),
 }));
 
-export { openDB, deleteDB };
+export { deleteDB, openDB };

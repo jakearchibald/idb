@@ -2,7 +2,7 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var __chunk_1 = require('./chunk.js');
+var wrapIdbValue = require('./wrap-idb-value.js');
 
 /**
  * Open a database.
@@ -13,10 +13,10 @@ var __chunk_1 = require('./chunk.js');
  */
 function openDB(name, version, { blocked, upgrade, blocking } = {}) {
     const request = indexedDB.open(name, version);
-    const openPromise = __chunk_1.wrap(request);
+    const openPromise = wrapIdbValue.wrap(request);
     if (upgrade) {
         request.addEventListener('upgradeneeded', event => {
-            upgrade(__chunk_1.wrap(request.result), event.oldVersion, event.newVersion, __chunk_1.wrap(request.transaction));
+            upgrade(wrapIdbValue.wrap(request.result), event.oldVersion, event.newVersion, wrapIdbValue.wrap(request.transaction));
         });
     }
     if (blocked)
@@ -35,7 +35,7 @@ function deleteDB(name, { blocked } = {}) {
     const request = indexedDB.deleteDatabase(name);
     if (blocked)
         request.addEventListener('blocked', () => blocked());
-    return __chunk_1.wrap(request).then(() => undefined);
+    return wrapIdbValue.wrap(request).then(() => undefined);
 }
 
 const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
@@ -72,12 +72,12 @@ function getMethod(target, prop) {
     cachedMethods.set(prop, method);
     return method;
 }
-__chunk_1.addTraps(oldTraps => ({
+wrapIdbValue.addTraps(oldTraps => ({
     get: (target, prop, receiver) => getMethod(target, prop) || oldTraps.get(target, prop, receiver),
     has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop),
 }));
 
-exports.unwrap = __chunk_1.unwrap;
-exports.wrap = __chunk_1.wrap;
-exports.openDB = openDB;
+exports.unwrap = wrapIdbValue.unwrap;
+exports.wrap = wrapIdbValue.wrap;
 exports.deleteDB = deleteDB;
+exports.openDB = openDB;
