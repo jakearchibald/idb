@@ -44,7 +44,8 @@ function isIteratorProp(target, prop) {
         wrapIdbValue.instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor])) ||
         (prop === 'iterate' && wrapIdbValue.instanceOfAny(target, [IDBIndex, IDBObjectStore])));
 }
-wrapIdbValue.addTraps(oldTraps => ({
+wrapIdbValue.replaceTraps(oldTraps => ({
+    ...oldTraps,
     get(target, prop, receiver) {
         if (isIteratorProp(target, prop))
             return iterate;
@@ -54,3 +55,4 @@ wrapIdbValue.addTraps(oldTraps => ({
         return isIteratorProp(target, prop) || oldTraps.has(target, prop);
     },
 }));
+//# sourceMappingURL=async-iterators.js.map

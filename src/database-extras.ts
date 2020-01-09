@@ -1,5 +1,5 @@
 import { Func } from './util';
-import { addTraps } from './wrap-idb-value';
+import { replaceTraps } from './wrap-idb-value';
 import { IDBPDatabase, IDBPObjectStore, IDBPIndex } from './entry';
 
 const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
@@ -52,7 +52,8 @@ function getMethod(
   return method;
 }
 
-addTraps(oldTraps => ({
+replaceTraps(oldTraps => ({
+  ...oldTraps,
   get: (target, prop, receiver) =>
     getMethod(target, prop) || oldTraps.get!(target, prop, receiver),
   has: (target, prop) =>

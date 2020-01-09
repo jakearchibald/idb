@@ -22,7 +22,9 @@ function openDB(name, version, { blocked, upgrade, blocking } = {}) {
     if (blocked)
         request.addEventListener('blocked', () => blocked());
     if (blocking) {
-        openPromise.then(db => db.addEventListener('versionchange', blocking)).catch(() => { });
+        openPromise
+            .then(db => db.addEventListener('versionchange', blocking))
+            .catch(() => { });
     }
     return openPromise;
 }
@@ -37,6 +39,7 @@ function deleteDB(name, { blocked } = {}) {
         request.addEventListener('blocked', () => blocked());
     return wrapIdbValue.wrap(request).then(() => undefined);
 }
+//# sourceMappingURL=entry.js.map
 
 const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
 const writeMethods = ['put', 'add', 'delete', 'clear'];
@@ -72,10 +75,12 @@ function getMethod(target, prop) {
     cachedMethods.set(prop, method);
     return method;
 }
-wrapIdbValue.addTraps(oldTraps => ({
+wrapIdbValue.replaceTraps(oldTraps => ({
+    ...oldTraps,
     get: (target, prop, receiver) => getMethod(target, prop) || oldTraps.get(target, prop, receiver),
     has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop),
 }));
+//# sourceMappingURL=database-extras.js.map
 
 exports.unwrap = wrapIdbValue.unwrap;
 exports.wrap = wrapIdbValue.wrap;

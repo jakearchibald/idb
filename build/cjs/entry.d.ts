@@ -316,16 +316,12 @@ export interface IDBPTransaction<DBTypes extends DBSchema | unknown = unknown, T
      */
     objectStore<StoreName extends TxStores[number]>(name: StoreName): IDBPObjectStore<DBTypes, TxStores, StoreName>;
 }
-declare type IDBPObjectStoreExtends = Omit<IDBObjectStore, 'transaction' | 'add' | 'clear' | 'count' | 'createIndex' | 'delete' | 'get' | 'getAll' | 'getAllKeys' | 'getKey' | 'index' | 'openCursor' | 'openKeyCursor' | 'put' | 'indexNames' | 'name'>;
+declare type IDBPObjectStoreExtends = Omit<IDBObjectStore, 'transaction' | 'add' | 'clear' | 'count' | 'createIndex' | 'delete' | 'get' | 'getAll' | 'getAllKeys' | 'getKey' | 'index' | 'openCursor' | 'openKeyCursor' | 'put' | 'indexNames'>;
 export interface IDBPObjectStore<DBTypes extends DBSchema | unknown = unknown, TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[], StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>> extends IDBPObjectStoreExtends {
     /**
      * The names of indexes in the store.
      */
-    readonly indexNames: IndexNames<DBTypes, StoreName>[];
-    /**
-     * The name of the store to newName. Can be set during an upgrade transaction.
-     */
-    name: StoreName;
+    readonly indexNames: TypedDOMStringList<IndexNames<DBTypes, StoreName>>;
     /**
      * The associated transaction.
      */

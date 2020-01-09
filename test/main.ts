@@ -10,6 +10,8 @@ import {
   IDBPCursor,
   IDBPIndex,
   TypedDOMStringList,
+  openDB,
+  DBSchema,
 } from '../src/';
 import { assert as typeAssert, IsExact } from 'conditional-type-checks';
 import {
@@ -18,6 +20,8 @@ import {
   openDBWithData,
   ObjectStoreValue,
   TestDBSchema,
+  getNextVersion,
+  dbName,
 } from './utils';
 
 suite('IDBPDatabase', () => {
@@ -39,7 +43,9 @@ suite('IDBPDatabase', () => {
       >
     >(true);
 
-    typeAssert<IsExact<typeof db.objectStoreNames, TypedDOMStringList<string>>>(true);
+    typeAssert<IsExact<typeof db.objectStoreNames, TypedDOMStringList<string>>>(
+      true,
+    );
   });
 
   test('createObjectStore', async () => {
@@ -732,6 +738,18 @@ suite('IDBPTransaction', () => {
   });
 });
 
+export interface RenamedDBSchema extends DBSchema {
+  'key-val-store-renamed': {
+    key: string;
+    value: number;
+  };
+  'object-store': {
+    value: ObjectStoreValue;
+    key: number;
+    indexes: { 'date-renamed': Date; title: string };
+  };
+}
+
 suite('IDBPObjectStore', () => {
   let db: IDBPDatabase;
 
@@ -747,24 +765,29 @@ suite('IDBPObjectStore', () => {
     const tx = schemaDB.transaction('object-store');
     const tx2 = db.transaction('object-store');
 
-    typeAssert<IsExact<typeof tx.store.indexNames, ('date' | 'title')[]>>(true);
+    typeAssert<
+      IsExact<typeof tx.store.indexNames, TypedDOMStringList<'date' | 'title'>>
+    >(true);
 
-    typeAssert<IsExact<typeof tx2.store.indexNames, string[]>>(true);
+    typeAssert<
+      IsExact<typeof tx2.store.indexNames, TypedDOMStringList<string>>
+    >(true);
   });
 
-  test('name', async () => {
+  test('set name', async () => {
     const schemaDB = await openDBWithSchema();
-    db = schemaDB as IDBPDatabase;
+    schemaDB.close();
 
-    const tx = schemaDB.transaction('object-store');
-    const tx2 = db.transaction('object-store');
-    const store = db.transaction('object-store').objectStore('object-store');
+    const newDB = await openDB<RenamedDBSchema>(dbName, getNextVersion(), {
+      upgrade(db, oldVersion, newVersion, tx) {
+        const store = (tx as IDBPTransaction).objectStore('key-val-store');
+        store.name = 'key-val-store-renamed';
+      },
+    });
 
-    typeAssert<IsExact<typeof tx.store.name, 'object-store'>>(true);
+    db = newDB as IDBPDatabase;
 
-    typeAssert<IsExact<typeof tx2.store.name, 'object-store'>>(true);
-
-    typeAssert<IsExact<typeof store.name, 'object-store'>>(true);
+    assert(newDB.objectStoreNames.contains('key-val-store-renamed'));
   });
 
   test('transaction', async () => {
@@ -1305,6 +1328,7 @@ suite('IDBPIndex', () => {
 
   teardown('Close DB', async () => {
     if (db) db.close();
+    await deleteDatabase();
   });
 
   test('objectStore', async () => {
@@ -1342,6 +1366,25 @@ suite('IDBPIndex', () => {
         IDBPObjectStore<unknown, ['object-store'], 'object-store'>
       >
     >(true);
+  });
+
+  test('set name', async () => {
+    const schemaDB = await openDBWithSchema();
+    schemaDB.close();
+
+    const newDB = await openDB<RenamedDBSchema>(dbName, getNextVersion(), {
+      upgrade(db, oldVersion, newVersion, tx) {
+        const store = (tx.objectStore(
+          'object-store',
+        ) as unknown) as IDBObjectStore;
+        const index = store.index('date');
+        index.name = 'date-renamed';
+      },
+    });
+    db = newDB as IDBPDatabase;
+
+    const tx = newDB.transaction('object-store');
+    assert(tx.store.indexNames.contains('date-renamed'));
   });
 
   test('count', async () => {

@@ -1,4 +1,5 @@
 const instanceOfAny = (object, constructors) => constructors.some(c => object instanceof c);
+//# sourceMappingURL=util.js.map
 
 let idbProxyableTypes;
 let cursorAdvanceMethods;
@@ -104,6 +105,10 @@ let idbProxyTraps = {
         // Else transform whatever we get back.
         return wrap(target[prop]);
     },
+    set(target, prop, value) {
+        target[prop] = value;
+        return true;
+    },
     has(target, prop) {
         if (target instanceof IDBTransaction &&
             (prop === 'done' || prop === 'store')) {
@@ -112,7 +117,7 @@ let idbProxyTraps = {
         return prop in target;
     },
 };
-function addTraps(callback) {
+function replaceTraps(callback) {
     idbProxyTraps = callback(idbProxyTraps);
 }
 function wrapFunction(func) {
@@ -177,5 +182,6 @@ function wrap(value) {
     return newValue;
 }
 const unwrap = (value) => reverseTransformCache.get(value);
+//# sourceMappingURL=wrap-idb-value.js.map
 
-export { addTraps as a, instanceOfAny as i, reverseTransformCache as r, unwrap as u, wrap as w };
+export { reverseTransformCache as a, instanceOfAny as i, replaceTraps as r, unwrap as u, wrap as w };

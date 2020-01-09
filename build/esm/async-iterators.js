@@ -1,4 +1,4 @@
-import { a as addTraps, i as instanceOfAny, r as reverseTransformCache, u as unwrap } from './wrap-idb-value.js';
+import { r as replaceTraps, i as instanceOfAny, a as reverseTransformCache, u as unwrap } from './wrap-idb-value.js';
 
 const advanceMethodProps = ['continue', 'continuePrimaryKey', 'advance'];
 const methodMap = {};
@@ -42,7 +42,8 @@ function isIteratorProp(target, prop) {
         instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor])) ||
         (prop === 'iterate' && instanceOfAny(target, [IDBIndex, IDBObjectStore])));
 }
-addTraps(oldTraps => ({
+replaceTraps(oldTraps => ({
+    ...oldTraps,
     get(target, prop, receiver) {
         if (isIteratorProp(target, prop))
             return iterate;
@@ -52,3 +53,4 @@ addTraps(oldTraps => ({
         return isIteratorProp(target, prop) || oldTraps.has(target, prop);
     },
 }));
+//# sourceMappingURL=async-iterators.js.map

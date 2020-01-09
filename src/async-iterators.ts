@@ -1,5 +1,5 @@
 import { instanceOfAny, Func } from './util';
-import { addTraps, reverseTransformCache, unwrap } from './wrap-idb-value';
+import { replaceTraps, reverseTransformCache, unwrap } from './wrap-idb-value';
 import { IDBPObjectStore, IDBPIndex, IDBPCursor } from './entry';
 
 const advanceMethodProps = ['continue', 'continuePrimaryKey', 'advance'];
@@ -64,7 +64,8 @@ function isIteratorProp(target: any, prop: number | string | symbol) {
   );
 }
 
-addTraps(oldTraps => ({
+replaceTraps(oldTraps => ({
+  ...oldTraps,
   get(target, prop, receiver) {
     if (isIteratorProp(target, prop)) return iterate;
     return oldTraps.get!(target, prop, receiver);

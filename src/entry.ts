@@ -56,7 +56,9 @@ export function openDB<DBTypes extends DBSchema | unknown = unknown>(
 
   if (blocked) request.addEventListener('blocked', () => blocked());
   if (blocking) {
-    openPromise.then(db => db.addEventListener('versionchange', blocking)).catch(() => {});
+    openPromise
+      .then(db => db.addEventListener('versionchange', blocking))
+      .catch(() => {});
   }
 
   return openPromise;
@@ -518,7 +520,6 @@ type IDBPObjectStoreExtends = Omit<
   | 'openKeyCursor'
   | 'put'
   | 'indexNames'
-  | 'name'
 >;
 
 export interface IDBPObjectStore<
@@ -529,11 +530,7 @@ export interface IDBPObjectStore<
   /**
    * The names of indexes in the store.
    */
-  readonly indexNames: IndexNames<DBTypes, StoreName>[];
-  /**
-   * The name of the store to newName. Can be set during an upgrade transaction.
-   */
-  name: StoreName;
+  readonly indexNames: TypedDOMStringList<IndexNames<DBTypes, StoreName>>;
   /**
    * The associated transaction.
    */

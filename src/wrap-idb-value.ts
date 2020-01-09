@@ -136,6 +136,10 @@ let idbProxyTraps: ProxyHandler<any> = {
     // Else transform whatever we get back.
     return wrap(target[prop]);
   },
+  set(target, prop, value) {
+    target[prop] = value;
+    return true;
+  },
   has(target, prop) {
     if (
       target instanceof IDBTransaction &&
@@ -147,7 +151,7 @@ let idbProxyTraps: ProxyHandler<any> = {
   },
 };
 
-export function addTraps(
+export function replaceTraps(
   callback: (currentTraps: ProxyHandler<any>) => ProxyHandler<any>,
 ): void {
   idbProxyTraps = callback(idbProxyTraps);
