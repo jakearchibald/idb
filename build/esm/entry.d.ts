@@ -19,6 +19,11 @@ export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
      * Called if this connection is blocking a future version of the database from opening.
      */
     blocking?(): void;
+    /**
+     * Called if the browser abnormally terminates the connection.
+     * This is not called when `db.close()` is called.
+     */
+    terminated?(): void;
 }
 /**
  * Open a database.
@@ -27,7 +32,7 @@ export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
  * @param version Schema version.
  * @param callbacks Additional callbacks.
  */
-export declare function openDB<DBTypes extends DBSchema | unknown = unknown>(name: string, version: number, { blocked, upgrade, blocking }?: OpenDBCallbacks<DBTypes>): Promise<IDBPDatabase<DBTypes>>;
+export declare function openDB<DBTypes extends DBSchema | unknown = unknown>(name: string, version: number, { blocked, upgrade, blocking, terminated }?: OpenDBCallbacks<DBTypes>): Promise<IDBPDatabase<DBTypes>>;
 export interface DeleteDBCallbacks {
     /**
      * Called if there are connections to this database open, so it cannot be deleted.

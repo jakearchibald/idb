@@ -11,7 +11,7 @@ var wrapIdbValue = require('./wrap-idb-value.js');
  * @param version Schema version.
  * @param callbacks Additional callbacks.
  */
-function openDB(name, version, { blocked, upgrade, blocking } = {}) {
+function openDB(name, version, { blocked, upgrade, blocking, terminated } = {}) {
     const request = indexedDB.open(name, version);
     const openPromise = wrapIdbValue.wrap(request);
     if (upgrade) {
@@ -21,6 +21,8 @@ function openDB(name, version, { blocked, upgrade, blocking } = {}) {
     }
     if (blocked)
         request.addEventListener('blocked', () => blocked());
+    if (terminated)
+        request.addEventListener('close', () => terminated());
     if (blocking) {
         openPromise
             .then(db => db.addEventListener('versionchange', blocking))

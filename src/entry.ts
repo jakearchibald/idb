@@ -26,6 +26,11 @@ export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
    * Called if this connection is blocking a future version of the database from opening.
    */
   blocking?(): void;
+  /**
+   * Called if the browser abnormally terminates the connection.
+   * This is not called when `db.close()` is called.
+   */
+  terminated?(): void;
 }
 
 /**
@@ -38,7 +43,7 @@ export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
 export function openDB<DBTypes extends DBSchema | unknown = unknown>(
   name: string,
   version: number,
-  { blocked, upgrade, blocking }: OpenDBCallbacks<DBTypes> = {},
+  { blocked, upgrade, blocking, terminated }: OpenDBCallbacks<DBTypes> = {},
 ): Promise<IDBPDatabase<DBTypes>> {
   const request = indexedDB.open(name, version);
   const openPromise = wrap(request) as Promise<IDBPDatabase<DBTypes>>;
@@ -55,6 +60,7 @@ export function openDB<DBTypes extends DBSchema | unknown = unknown>(
   }
 
   if (blocked) request.addEventListener('blocked', () => blocked());
+  if (terminated) request.addEventListener('close', () => terminated());
   if (blocking) {
     openPromise
       .then(db => db.addEventListener('versionchange', blocking))
