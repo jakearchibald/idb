@@ -702,6 +702,28 @@ suite('IDBPTransaction', () => {
     assert.strictEqual(schemalessStore.name, 'object-store');
   });
 
+  test('abort', async () => {
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB as IDBPDatabase;
+
+    const tx = schemaDB.transaction('key-val-store');
+    tx.abort();
+
+    let threw = false;
+    let error: Error | null = null;
+
+    try {
+      await tx.done;
+    } catch (e) {
+      threw = true;
+      error = e;
+    }
+
+    assert(threw, 'Done threw');
+    assert.instanceOf(error, DOMException);
+    assert.strictEqual(error?.name, 'AbortError');
+  });
+
   test('wrap', async () => {
     const schemaDB = await openDBWithSchema();
     db = schemaDB as IDBPDatabase;

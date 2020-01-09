@@ -105,7 +105,7 @@ function cacheDonePromiseForTransaction(tx: IDBTransaction): void {
       unlisten();
     };
     const error = () => {
-      reject(tx.error);
+      reject(tx.error || new DOMException('AbortError', 'AbortError'));
       unlisten();
     };
     tx.addEventListener('complete', complete);
