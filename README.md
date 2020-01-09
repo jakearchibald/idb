@@ -448,3 +448,13 @@ const db = await openDB<MyDBV2>('my-db', 2, {
 You can also cast to a typeless database by omitting the type, eg `db as IDBPDatabase`.
 
 Note: Types like `IDBPDatabase` are used by TypeScript only. The implementation uses proxies under the hood.
+
+# Building and testing
+
+```sh
+npm run build
+```
+
+This will also perform type testing.
+
+To test, navigate to `build/test/` in a browser. You'll need to set up a [basic web server](https://www.npmjs.com/package/http-server) for this.
