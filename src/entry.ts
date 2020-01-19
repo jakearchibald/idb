@@ -114,6 +114,10 @@ interface DBSchemaValue {
   key: IDBValidKey;
   value: any;
   indexes?: IndexKeys;
+  autoIncrementKeyPath?: string;
+}
+interface DBSchemaValueAutoIncrement extends DBSchemaValue {
+	autoIncrementKeyPath: string;
 }
 
 /**
@@ -126,7 +130,24 @@ export type StoreNames<
 > = DBTypes extends DBSchema ? KnownKeys<DBTypes> : string;
 
 /**
- * Extract database value types from the DB schema type.
+ * Extract database value types from the DB schema type, with any auto-incrementing key path
+ * optionally included, as it can be when passed to add or put.
+ *
+ * @template DBTypes DB schema type, or unknown if the DB isn't typed.
+ * @template StoreName Names of the object stores to get the types of.
+ */
+export type StoreValueAddPut<
+  DBTypes extends DBSchema | unknown,
+  StoreName extends StoreNames<DBTypes>
+> = DBTypes extends DBSchema ? DBTypes[StoreName]['value'] : any;
+
+type ValueWithID<
+  T extends DBSchemaValue | DBSchemaValueAutoIncrement
+> = T['value'] & (T extends DBSchemaValueAutoIncrement ? Record<T['autoIncrementKeyPath'], number> : {});
+
+/**
+ * Extract database value types from the DB schema type, with any auto-incrementing key path
+ * included.
  *
  * @template DBTypes DB schema type, or unknown if the DB isn't typed.
  * @template StoreName Names of the object stores to get the types of.
@@ -134,7 +155,7 @@ export type StoreNames<
 export type StoreValue<
   DBTypes extends DBSchema | unknown,
   StoreName extends StoreNames<DBTypes>
-> = DBTypes extends DBSchema ? DBTypes[StoreName]['value'] : any;
+> = DBTypes extends DBSchema ? ValueWithID<DBTypes[StoreName]> : any;
 
 /**
  * Extract database key types from the DB schema type.
@@ -259,7 +280,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    */
   add<Name extends StoreNames<DBTypes>>(
     storeName: Name,
-    value: StoreValue<DBTypes, Name>,
+    value: StoreValueAddPut<DBTypes, Name>,
     key?: StoreKey<DBTypes, Name> | IDBKeyRange,
   ): Promise<StoreKey<DBTypes, Name>>;
   /**
@@ -469,7 +490,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    */
   put<Name extends StoreNames<DBTypes>>(
     storeName: Name,
-    value: StoreValue<DBTypes, Name>,
+    value: StoreValueAddPut<DBTypes, Name>,
     key?: StoreKey<DBTypes, Name> | IDBKeyRange,
   ): Promise<StoreKey<DBTypes, Name>>;
 }

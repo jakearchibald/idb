@@ -387,6 +387,14 @@ interface MyDB extends DBSchema {
     key: string;
     indexes: { 'by-price': number };
   };
+  autoIncrementingStore: {
+    value: {
+      id?: number;
+      name: string;
+    };
+    key: string;
+    autoIncremetKeyPath: 'id';
+  };
 }
 
 async function demo() {
@@ -398,6 +406,11 @@ async function demo() {
         keyPath: 'productCode',
       });
       productStore.createIndex('by-price', 'price');
+
+      db.createObjectStore('autoIncrementingStore', {
+        keyPath: 'id',
+        autoIncrement: true,
+      });
     },
   });
 
@@ -405,6 +418,14 @@ async function demo() {
   await db.put('favourite-number', 7, 'Jen');
   // This fails at compile time, as the 'favourite-number' store expects a number.
   await db.put('favourite-number', 'Twelve', 'Jake');
+
+  // Auto incrementing primary keys are handled - you don't have to specify it
+  // when writing to the database, but it will always be there when you read!
+  await db.put('autoIncrementingStore', { name: 'Whatever' });
+  const value = db.get('autoIncrementingStore', 1);
+  if (value) {
+    // value is guaranteed to have an id property containing a number
+  }
 }
 ```
 
@@ -413,6 +434,8 @@ To define types for your database, extend `DBSchema` with an interface where the
 For each value, provide an object where `value` is the type of values within the store, and `key` is the type of keys within the store.
 
 Optionally, `indexes` can contain a map of index names, to the type of key within that index.
+
+Optionally, for object stores with an auto incrementing primary key, put the key path in `autoIncrementKeyPath` and it will be automatically applied to all values returned from the database, even while you write objects to the store without a primary key in `add` and `put`. (This will only work if your key path is on the root of the `value` object, not nested.)
 
 Provide this interface when calling `openDB`, and from then on your database will be strongly typed. This also allows your IDE to autocomplete the names of stores and indexes.
 
