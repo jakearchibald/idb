@@ -13,6 +13,10 @@
     "type": "git",
     "url": "git://github.com/jakearchibald/idb.git"
   },
+  "files": [
+    "build/**",
+    "with-*"
+  ],
   "author": "Jake Archibald",
   "license": "ISC",
   "devDependencies": {
