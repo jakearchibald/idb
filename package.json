@@ -16,6 +16,7 @@
   "author": "Jake Archibald",
   "license": "ISC",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^11.0.1",
     "@types/chai": "^4.2.7",
     "@types/mocha": "^5.2.7",
     "chai": "^4.2.0",
@@ -29,8 +30,5 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-terser": "^5.1.3",
     "typescript": "^3.7.4"
-  },
-  "dependencies": {
-    "@rollup/plugin-commonjs": "^11.0.1"
   }
 }
