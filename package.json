@@ -6,7 +6,7 @@
   "module": "build/esm/index.js",
   "typings": "build/esm/index.d.ts",
   "scripts": {
-    "build": "rollup -c && node --experimental-modules lib/size-report.mjs",
+    "build": "PRODUCTION=1 rollup -c && node --experimental-modules lib/size-report.mjs",
     "dev": "rollup -c --watch"
   },
   "repository": {

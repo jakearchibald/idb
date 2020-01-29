@@ -10,7 +10,10 @@ import simpleTS from './lib/simple-ts';
 export default async function({ watch }) {
   await del('build');
 
-  const main = {
+  const builds = [];
+
+  // Main
+  builds.push({
     plugins: [simpleTS('test', { watch })],
     input: ['src/index.ts', 'src/async-iterators.ts'],
     output: [
@@ -27,9 +30,10 @@ export default async function({ watch }) {
         chunkFileNames: '[name].js',
       },
     ],
-  };
+  });
 
-  const iffeMin = {
+  // Minified iife
+  builds.push({
     input: 'build/esm/index.js',
     plugins: [
       terser({
@@ -41,9 +45,10 @@ export default async function({ watch }) {
       format: 'iife',
       name: 'idb',
     },
-  };
+  });
 
-  const iffeIttrMin = {
+  // Minified iife including iteration
+  builds.push({
     input: './with-async-ittr.js',
     plugins: [
       terser({
@@ -55,33 +60,41 @@ export default async function({ watch }) {
       format: 'iife',
       name: 'idb',
     },
-  };
+  });
 
-  const testBuild = {
-    plugins: [
-      simpleTS('test', { noBuild: true }),
-      resolve(),
-      commonjs({
-        namedExports: {
-          chai: ['assert'],
+  // Tests
+  if (!process.env.PRODUCTION) {
+    builds.push({
+      plugins: [
+        simpleTS('test', { noBuild: true }),
+        resolve(),
+        commonjs({
+          namedExports: {
+            chai: ['assert'],
+          },
+        }),
+        {
+          async generateBundle() {
+            this.emitFile({
+              type: 'asset',
+              source: await fsp.readFile('test/index.html'),
+              fileName: 'index.html',
+            });
+          },
         },
-      }),
-      {
-        async generateBundle() {
-          this.emitFile({
-            type: 'asset',
-            source: await fsp.readFile('test/index.html'),
-            fileName: 'index.html',
-          });
-        },
+      ],
+      input: [
+        'test/index.ts',
+        'test/main.ts',
+        'test/open.ts',
+        'test/iterate.ts',
+      ],
+      output: {
+        dir: 'build/test',
+        format: 'esm',
       },
-    ],
-    input: ['test/index.ts', 'test/main.ts', 'test/open.ts', 'test/iterate.ts'],
-    output: {
-      dir: 'build/test',
-      format: 'esm',
-    },
-  };
+    });
+  }
 
-  return [main, iffeMin, iffeIttrMin, testBuild];
+  return builds;
 }
