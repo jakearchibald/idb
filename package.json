@@ -1,6 +1,6 @@
 {
   "name": "idb",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "A small wrapper that makes IndexedDB usable",
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
