@@ -60,7 +60,7 @@ export function openDB<DBTypes extends DBSchema | unknown = unknown>(
   }
 
   if (blocked) request.addEventListener('blocked', () => blocked());
-  if (terminated) request.addEventListener('close', () => terminated());
+  if (terminated) request.addEventListener('onclose', () => terminated());
   if (blocking) {
     openPromise
       .then(db => db.addEventListener('versionchange', blocking))
