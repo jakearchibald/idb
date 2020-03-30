@@ -1,4 +1,4 @@
-const instanceOfAny = (object, constructors) => constructors.some(c => object instanceof c);
+const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
 
 let idbProxyableTypes;
 let cursorAdvanceMethods;
@@ -45,7 +45,7 @@ function promisifyRequest(request) {
         request.addEventListener('error', error);
     });
     promise
-        .then(value => {
+        .then((value) => {
         // Since cursoring reuses the IDBRequest (*sigh*), we cache it for later retrieval
         // (see wrapFunction).
         if (value instanceof IDBCursor) {

@@ -7,7 +7,7 @@ import del from 'del';
 
 import simpleTS from './lib/simple-ts';
 
-export default async function({ watch }) {
+export default async function ({ watch }) {
   await del('build');
 
   const builds = [];

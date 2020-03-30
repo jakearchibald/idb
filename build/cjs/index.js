@@ -15,14 +15,14 @@ function openDB(name, version, { blocked, upgrade, blocking, terminated } = {}) 
     const request = indexedDB.open(name, version);
     const openPromise = wrapIdbValue.wrap(request);
     if (upgrade) {
-        request.addEventListener('upgradeneeded', event => {
+        request.addEventListener('upgradeneeded', (event) => {
             upgrade(wrapIdbValue.wrap(request.result), event.oldVersion, event.newVersion, wrapIdbValue.wrap(request.transaction));
         });
     }
     if (blocked)
         request.addEventListener('blocked', () => blocked());
     openPromise
-        .then(db => {
+        .then((db) => {
         if (terminated)
             db.addEventListener('close', () => terminated());
         if (blocking)
@@ -77,7 +77,7 @@ function getMethod(target, prop) {
     cachedMethods.set(prop, method);
     return method;
 }
-wrapIdbValue.replaceTraps(oldTraps => ({
+wrapIdbValue.replaceTraps((oldTraps) => ({
     ...oldTraps,
     get: (target, prop, receiver) => getMethod(target, prop) || oldTraps.get(target, prop, receiver),
     has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop),

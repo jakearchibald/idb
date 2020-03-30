@@ -16,7 +16,7 @@ function loadScript(url: string): Promise<void> {
   });
 }
 
-(async function() {
+(async function () {
   const edgeCompat = navigator.userAgent.includes('Edge/');
 
   if (!edgeCompat) await loadScript('./open.js');

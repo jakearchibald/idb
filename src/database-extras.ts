@@ -34,7 +34,7 @@ function getMethod(
     return;
   }
 
-  const method = async function(
+  const method = async function (
     this: IDBPDatabase,
     storeName: string,
     ...args: any[]
@@ -52,7 +52,7 @@ function getMethod(
   return method;
 }
 
-replaceTraps(oldTraps => ({
+replaceTraps((oldTraps) => ({
   ...oldTraps,
   get: (target, prop, receiver) =>
     getMethod(target, prop) || oldTraps.get!(target, prop, receiver),

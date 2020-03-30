@@ -95,7 +95,7 @@ suite('openDb', () => {
     );
 
     // Let's do it the old fashioned way
-    const idb = await new Promise<IDBDatabase>(async resolve => {
+    const idb = await new Promise<IDBDatabase>(async (resolve) => {
       const request = indexedDB.open(dbName, getNextVersion());
       wrappedRequest = wrap(request);
       request.addEventListener('success', () => resolve(request.result));

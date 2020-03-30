@@ -161,7 +161,7 @@ suite('IDBPDatabase', () => {
     );
   });
 
-  test('getKey', async function() {
+  test('getKey', async function () {
     if (!('getKey' in IDBObjectStore.prototype)) this.skip();
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
@@ -191,7 +191,7 @@ suite('IDBPDatabase', () => {
     assert.strictEqual(val2, 'foo', 'Correct value');
   });
 
-  test('getKeyFromIndex', async function() {
+  test('getKeyFromIndex', async function () {
     if (!('getKey' in IDBObjectStore.prototype)) this.skip();
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
@@ -219,7 +219,7 @@ suite('IDBPDatabase', () => {
     assert.strictEqual(val2, 4, 'Correct value');
   });
 
-  test('getAll', async function() {
+  test('getAll', async function () {
     if (!('getAll' in IDBObjectStore.prototype)) this.skip();
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
@@ -246,7 +246,7 @@ suite('IDBPDatabase', () => {
     assert.deepStrictEqual(val2, [456, 123, 789], 'Correct values from store');
   });
 
-  test('getAllFromIndex', async function() {
+  test('getAllFromIndex', async function () {
     if (!('getAll' in IDBObjectStore.prototype)) this.skip();
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
@@ -315,7 +315,7 @@ suite('IDBPDatabase', () => {
     );
   });
 
-  test('getAllKeys', async function() {
+  test('getAllKeys', async function () {
     if (!('getAllKeys' in IDBObjectStore.prototype)) this.skip();
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
@@ -350,7 +350,7 @@ suite('IDBPDatabase', () => {
     );
   });
 
-  test('getAllKeysFromIndex', async function() {
+  test('getAllKeysFromIndex', async function () {
     if (!('getAllKeys' in IDBObjectStore.prototype)) this.skip();
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
@@ -1026,7 +1026,7 @@ suite('IDBPObjectStore', () => {
     assert.strictEqual(val2, 456, 'Correct value from store');
   });
 
-  test('getAll', async function() {
+  test('getAll', async function () {
     if (!('getAll' in IDBObjectStore.prototype)) this.skip();
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
@@ -1062,7 +1062,7 @@ suite('IDBPObjectStore', () => {
     assert.deepStrictEqual(val2, [456, 123, 789], 'Correct values from store');
   });
 
-  test('getAllKeys', async function() {
+  test('getAllKeys', async function () {
     if (!('getAllKeys' in IDBObjectStore.prototype)) this.skip();
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
@@ -1106,7 +1106,7 @@ suite('IDBPObjectStore', () => {
     );
   });
 
-  test('getKey', async function() {
+  test('getKey', async function () {
     if (!('getKey' in IDBObjectStore.prototype)) this.skip();
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
@@ -1206,7 +1206,7 @@ suite('IDBPObjectStore', () => {
     assert.instanceOf(cursor2, IDBCursorWithValue);
   });
 
-  test('openKeyCursor', async function() {
+  test('openKeyCursor', async function () {
     if (!('openKeyCursor' in IDBObjectStore.prototype)) this.skip();
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
@@ -1489,7 +1489,7 @@ suite('IDBPIndex', () => {
     );
   });
 
-  test('getAll', async function() {
+  test('getAll', async function () {
     if (!('getAll' in IDBIndex.prototype)) this.skip();
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
@@ -1579,7 +1579,7 @@ suite('IDBPIndex', () => {
     }
   });
 
-  test('getAllKeys', async function() {
+  test('getAllKeys', async function () {
     if (!('getAllKeys' in IDBIndex.prototype)) this.skip();
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
@@ -2013,7 +2013,7 @@ suite('IDBPCursor', () => {
     }
   });
 
-  test('continuePrimaryKey', async function() {
+  test('continuePrimaryKey', async function () {
     if (!('continuePrimaryKey' in IDBCursor.prototype)) this.skip();
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
@@ -2076,7 +2076,7 @@ suite('IDBPCursor', () => {
     }
   });
 
-  test('delete', async function() {
+  test('delete', async function () {
     if (!('delete' in IDBCursor.prototype)) this.skip();
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
@@ -2106,7 +2106,7 @@ suite('IDBPCursor', () => {
     }
   });
 
-  test('update', async function() {
+  test('update', async function () {
     if (!('update' in IDBCursor.prototype)) this.skip();
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;

@@ -49,7 +49,7 @@ export function openDB<DBTypes extends DBSchema | unknown = unknown>(
   const openPromise = wrap(request) as Promise<IDBPDatabase<DBTypes>>;
 
   if (upgrade) {
-    request.addEventListener('upgradeneeded', event => {
+    request.addEventListener('upgradeneeded', (event) => {
       upgrade(
         wrap(request.result) as IDBPDatabase<DBTypes>,
         event.oldVersion,
@@ -62,7 +62,7 @@ export function openDB<DBTypes extends DBSchema | unknown = unknown>(
   if (blocked) request.addEventListener('blocked', () => blocked());
 
   openPromise
-    .then(db => {
+    .then((db) => {
       if (terminated) db.addEventListener('close', () => terminated());
       if (blocking) db.addEventListener('versionchange', () => blocking());
     })

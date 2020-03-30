@@ -44,7 +44,7 @@ function isIteratorProp(target, prop) {
         wrapIdbValue.instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor])) ||
         (prop === 'iterate' && wrapIdbValue.instanceOfAny(target, [IDBIndex, IDBObjectStore])));
 }
-wrapIdbValue.replaceTraps(oldTraps => ({
+wrapIdbValue.replaceTraps((oldTraps) => ({
     ...oldTraps,
     get(target, prop, receiver) {
         if (isIteratorProp(target, prop))

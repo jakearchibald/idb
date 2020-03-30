@@ -71,7 +71,7 @@ function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
   });
 
   promise
-    .then(value => {
+    .then((value) => {
       // Since cursoring reuses the IDBRequest (*sigh*), we cache it for later retrieval
       // (see wrapFunction).
       if (value instanceof IDBCursor) {
@@ -166,7 +166,7 @@ function wrapFunction<T extends Func>(func: T): Function {
     func === IDBDatabase.prototype.transaction &&
     !('objectStoreNames' in IDBTransaction.prototype)
   ) {
-    return function(
+    return function (
       this: IDBPDatabase,
       storeNames: string | string[],
       ...args: any[]
@@ -186,7 +186,7 @@ function wrapFunction<T extends Func>(func: T): Function {
   // with real promises, so each advance methods returns a new promise for the cursor object, or
   // undefined if the end of the cursor has been reached.
   if (getCursorAdvanceMethods().includes(func)) {
-    return function(this: IDBPCursor, ...args: Parameters<T>) {
+    return function (this: IDBPCursor, ...args: Parameters<T>) {
       // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
       // the original object.
       func.apply(unwrap(this), args);
@@ -194,7 +194,7 @@ function wrapFunction<T extends Func>(func: T): Function {
     };
   }
 
-  return function(this: any, ...args: Parameters<T>) {
+  return function (this: any, ...args: Parameters<T>) {
     // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
     // the original object.
     return wrap(func.apply(unwrap(this), args));

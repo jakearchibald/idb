@@ -14,7 +14,7 @@ const cursorIteratorTraps: ProxyHandler<any> = {
     let cachedFunc = methodMap[prop as string];
 
     if (!cachedFunc) {
-      cachedFunc = methodMap[prop as string] = function(
+      cachedFunc = methodMap[prop as string] = function (
         this: IDBPCursor,
         ...args: any
       ) {
@@ -64,7 +64,7 @@ function isIteratorProp(target: any, prop: number | string | symbol) {
   );
 }
 
-replaceTraps(oldTraps => ({
+replaceTraps((oldTraps) => ({
   ...oldTraps,
   get(target, prop, receiver) {
     if (isIteratorProp(target, prop)) return iterate;

@@ -42,7 +42,7 @@ function isIteratorProp(target, prop) {
         instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor])) ||
         (prop === 'iterate' && instanceOfAny(target, [IDBIndex, IDBObjectStore])));
 }
-replaceTraps(oldTraps => ({
+replaceTraps((oldTraps) => ({
     ...oldTraps,
     get(target, prop, receiver) {
         if (isIteratorProp(target, prop))
