@@ -18,13 +18,14 @@ function openDB(name, version, { blocked, upgrade, blocking, terminated } = {}) 
     }
     if (blocked)
         request.addEventListener('blocked', () => blocked());
-    if (terminated)
-        request.addEventListener('close', () => terminated());
-    if (blocking) {
-        openPromise
-            .then(db => db.addEventListener('versionchange', blocking))
-            .catch(() => { });
-    }
+    openPromise
+        .then(db => {
+        if (terminated)
+            db.addEventListener('close', () => terminated());
+        if (blocking)
+            db.addEventListener('versionchange', () => blocking());
+    })
+        .catch(() => { });
     return openPromise;
 }
 /**
