@@ -281,6 +281,8 @@ for await (const cursor of index.iterate('Douglas Adams')) {
 This is very similar to `localStorage`, but async. If this is _all_ you need, you may be interested in [idb-keyval](https://www.npmjs.com/package/idb-keyval). You can always upgrade to this library later.
 
 ```js
+import { openDB } from 'idb';
+
 const dbPromise = openDB('keyval-store', 1, {
   upgrade(db) {
     db.createObjectStore('keyval');
@@ -309,6 +311,8 @@ const idbKeyval = {
 ## Article store
 
 ```js
+import { openDB } from 'idb/with-async-ittr.js';
+
 async function demo() {
   const db = await openDB('Articles', 1, {
     upgrade(db) {
