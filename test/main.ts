@@ -1,5 +1,5 @@
 import 'mocha/mocha';
-import { assert } from 'chai';
+import chai from 'chai/chai';
 import {
   IDBPDatabase,
   IDBPTransaction,
@@ -23,6 +23,8 @@ import {
   getNextVersion,
   dbName,
 } from './utils';
+
+const { assert } = chai;
 
 suite('IDBPDatabase', () => {
   let db: IDBPDatabase;
