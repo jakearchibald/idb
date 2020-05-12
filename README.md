@@ -149,7 +149,7 @@ An IDB transaction auto-closes if it doesn't have anything left do once microtas
 const tx = db.transaction('keyval', 'readwrite');
 const store = tx.objectStore('keyval');
 const val = (await store.get('counter')) || 0;
-store.put(val + 1, 'counter');
+await store.put(val + 1, 'counter');
 await tx.done;
 ```
 
@@ -162,7 +162,7 @@ const val = (await store.get('counter')) || 0;
 // This is where things go wrong:
 const newVal = await fetch('/increment?val=' + val);
 // And this throws an error:
-store.put(newVal, 'counter');
+await store.put(newVal, 'counter');
 await tx.done;
 ```
 
@@ -215,9 +215,14 @@ Transactions have a `.done` promise which resolves when the transaction complete
 
 ```js
 const tx = db.transaction(storeName, 'readwrite');
-tx.store.put('foo', 'bar');
-await tx.done;
+await Promise.all([
+  tx.store.put('bar', 'foo'),
+  tx.store.put('world', 'hello'),
+  tx.done,
+]);
 ```
+
+If you're writing to the database, `tx.done` is the signal that everything was successfully committed to the database. However, it's still beneficial to await the individual operations, as you'll see the error that caused the transition to fail.
 
 ## `IDBCursor` enhancements
 
@@ -338,17 +343,19 @@ async function demo() {
   // Add multiple articles in one transaction:
   {
     const tx = db.transaction('articles', 'readwrite');
-    tx.store.add({
-      title: 'Article 2',
-      date: new Date('2019-01-01'),
-      body: '…',
-    });
-    tx.store.add({
-      title: 'Article 3',
-      date: new Date('2019-01-02'),
-      body: '…',
-    });
-    await tx.done;
+    await Promise.all([
+      tx.store.add({
+        title: 'Article 2',
+        date: new Date('2019-01-01'),
+        body: '…',
+      }),
+      tx.store.add({
+        title: 'Article 3',
+        date: new Date('2019-01-02'),
+        body: '…',
+      }),
+      tx.done,
+    ]);
   }
 
   // Get all the articles in date order:
