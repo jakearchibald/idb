@@ -69,7 +69,7 @@ function getMethod(target, prop) {
         let target = tx.store;
         if (useIndex)
             target = target.index(args.shift());
-        const returnVal = target[targetFuncName](...args);
+        const returnVal = await target[targetFuncName](...args);
         if (isWrite)
             await tx.done;
         return returnVal;

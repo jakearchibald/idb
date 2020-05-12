@@ -2,7 +2,7 @@
 // library that behave differently to IDB, or may cause accidental differences.
 
 import 'mocha/mocha';
-import { assert } from 'chai';
+import chai from 'chai/chai';
 import { IDBPDatabase, IDBPCursorWithValueIteratorValue } from '../src/';
 import '../src/async-iterators';
 import { assert as typeAssert, IsExact } from 'conditional-type-checks';
@@ -12,6 +12,8 @@ import {
   TestDBSchema,
   ObjectStoreValue,
 } from './utils';
+
+const { assert } = chai;
 
 suite('Async iterators', () => {
   let db: IDBPDatabase;

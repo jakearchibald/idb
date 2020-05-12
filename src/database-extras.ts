@@ -43,7 +43,7 @@ function getMethod(
     const tx = this.transaction(storeName, isWrite ? 'readwrite' : 'readonly');
     let target: IDBPObjectStore | IDBPIndex = tx.store;
     if (useIndex) target = target.index(args.shift());
-    const returnVal = (target as any)[targetFuncName](...args);
+    const returnVal = await (target as any)[targetFuncName](...args);
     if (isWrite) await tx.done;
     return returnVal;
   };
