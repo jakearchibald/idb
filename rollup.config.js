@@ -68,11 +68,7 @@ export default async function ({ watch }) {
       plugins: [
         simpleTS('test', { noBuild: true }),
         resolve(),
-        commonjs({
-          namedExports: {
-            chai: ['assert'],
-          },
-        }),
+        commonjs(),
         {
           async generateBundle() {
             this.emitFile({
