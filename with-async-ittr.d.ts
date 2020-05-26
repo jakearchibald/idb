@@ -1,1 +1,1 @@
-export * from './build/esm/index.d.ts';
+export * from './build/esm/index.js';
