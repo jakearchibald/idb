@@ -74,10 +74,18 @@ function getMethod(target, prop) {
     cachedMethods.set(prop, method);
     return method;
 }
-replaceTraps((oldTraps) => ({
-    ...oldTraps,
-    get: (target, prop, receiver) => getMethod(target, prop) || oldTraps.get(target, prop, receiver),
-    has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop),
-}));
+const trapReplacer = (oldTraps) => {
+    
+    
+    const rtn = {
+        get: (target, prop, receiver) => getMethod(target, prop) || oldTraps.get(target, prop, receiver),
+        has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop),
+    };
+    Object.keys(oldTraps).forEach(x => {
+        rtn[x] = oldTraps[x];
+    });
+    return rtn;
+};
 
+replaceTraps(trapReplacer);
 export { deleteDB, openDB };
