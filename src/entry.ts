@@ -42,7 +42,7 @@ export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
  */
 export function openDB<DBTypes extends DBSchema | unknown = unknown>(
   name: string,
-  version: number,
+  version?: number,
   { blocked, upgrade, blocking, terminated }: OpenDBCallbacks<DBTypes> = {},
 ): Promise<IDBPDatabase<DBTypes>> {
   const request = indexedDB.open(name, version);
