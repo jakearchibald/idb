@@ -19,6 +19,8 @@ This is a tiny (~1.08k brotli'd) library that mostly mirrors the IndexedDB API, 
 
 # Installation
 
+## Using npm
+
 ```sh
 npm install idb
 ```
@@ -33,7 +35,9 @@ async function doDatabaseStuff() {
 }
 ```
 
-Or, use it directly via unpkg:
+## Directly In a browser
+
+### Using the modules method directly via unpkg:
 
 ```html
 <script type="module">
@@ -41,6 +45,17 @@ Or, use it directly via unpkg:
 
   async function doDatabaseStuff() {
     const db = await openDB(…);
+  }
+</script>
+```
+
+### Using external script reference
+
+```html
+<script src="https://unpkg.com/idb@5.0.4/build/iife/index-min.js"></script>
+<script>
+  async function doDatabaseStuff() {
+    const db = await idb.openDB(…);
   }
 </script>
 ```
