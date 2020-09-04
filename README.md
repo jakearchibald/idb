@@ -52,7 +52,7 @@ async function doDatabaseStuff() {
 ### Using external script reference
 
 ```html
-<script src="https://unpkg.com/idb@5.0.4/build/iife/index-min.js"></script>
+<script src="https://unpkg.com/idb@5/build/iife/index-min.js"></script>
 <script>
   async function doDatabaseStuff() {
     const db = await idb.openDB(…);
