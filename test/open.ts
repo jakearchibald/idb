@@ -41,6 +41,19 @@ suite('openDb', () => {
     assert.isTrue(upgradeRun, 'upgrade run');
   });
 
+  test('open without version - upgrade should not run', async () => {
+    let upgradeRun = false;
+
+    db = (await openDB<TestDBSchema>(dbName, undefined, {
+      upgrade(db, oldVersion, newVersion, tx) {
+        upgradeRun = true;
+      },
+    })) as IDBPDatabase;
+
+    assert.isFalse(upgradeRun, 'upgrade not run');
+    assert.strictEqual(db.version, 1);
+  });
+
   test('open without version - database never existed', async () => {
     db = (await openDB<TestDBSchema>(dbName)) as IDBPDatabase;
 
