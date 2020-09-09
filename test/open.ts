@@ -14,11 +14,9 @@ const { assert } = chai;
 
 suite('openDb', () => {
   let db: IDBPDatabase;
-  let db1: IDBPDatabase;
 
   teardown('Close DB', () => {
     if (db) db.close();
-    if (db1) db1.close();
   });
 
   test('upgrade', async () => {
@@ -43,8 +41,14 @@ suite('openDb', () => {
     assert.isTrue(upgradeRun, 'upgrade run');
   });
 
-  test('open without version - database never existed ', async () => {
+  test('open without version - database never existed', async () => {
     db = (await openDB<TestDBSchema>(dbName)) as IDBPDatabase;
+
+    assert.strictEqual(db.version, 1);
+  });
+
+  test('open with undefined version - database never existed', async () => {
+    db = (await openDB<TestDBSchema>(dbName, undefined)) as IDBPDatabase;
 
     assert.strictEqual(db.version, 1);
   });
@@ -54,9 +58,19 @@ suite('openDb', () => {
     db = (await openDB<TestDBSchema>(dbName, version)) as IDBPDatabase;
     db.close();
 
-    const db1 = (await openDB<TestDBSchema>(dbName)) as IDBPDatabase;
+    db = (await openDB<TestDBSchema>(dbName)) as IDBPDatabase;
 
-    assert.strictEqual(db1.version, version);
+    assert.strictEqual(db.version, version);
+  });
+
+  test('open with undefined version - database previously created', async () => {
+    const version = getNextVersion();
+    db = (await openDB<TestDBSchema>(dbName, version)) as IDBPDatabase;
+    db.close();
+
+    db = (await openDB<TestDBSchema>(dbName, undefined)) as IDBPDatabase;
+
+    assert.strictEqual(db.version, version);
   });
 
   test('upgrade - schemaless', async () => {
