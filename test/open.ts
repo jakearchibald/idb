@@ -48,7 +48,7 @@ suite('openDb', () => {
   });
 
   test('open with undefined version - database never existed', async () => {
-    db = (await openDB<TestDBSchema>(dbName, undefined)) as IDBPDatabase;
+    db = (await openDB<TestDBSchema>(dbName, undefined, {})) as IDBPDatabase;
 
     assert.strictEqual(db.version, 1);
   });
@@ -68,7 +68,7 @@ suite('openDb', () => {
     db = (await openDB<TestDBSchema>(dbName, version)) as IDBPDatabase;
     db.close();
 
-    db = (await openDB<TestDBSchema>(dbName, undefined)) as IDBPDatabase;
+    db = (await openDB<TestDBSchema>(dbName, undefined, {})) as IDBPDatabase;
 
     assert.strictEqual(db.version, version);
   });
