@@ -88,7 +88,7 @@ const db = await openDB(name, version, {
 ```
 
 - `name`: Name of the database.
-- `version`: Schema version.
+- `version` (optional): Schema version, or `undefined` to open the current version.
 - `upgrade` (optional): Called if this version of the database has never been opened before. Use it to specify the schema for the database. This is similar to the [`upgradeneeded` event](https://developer.mozilla.org/en-US/docs/Web/API/IDBOpenDBRequest/upgradeneeded_event) in plain IndexedDB.
   - `db`: An enhanced `IDBDatabase`.
   - `oldVersion`: Last version of the database opened by the user.
