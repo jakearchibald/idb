@@ -32,7 +32,16 @@ suite('openDb', () => {
         assert.strictEqual(oldVersion, 0);
         assert.strictEqual(newVersion, version);
 
-        typeAssert<IsExact<typeof tx, IDBPTransaction<TestDBSchema>>>(true);
+        typeAssert<
+          IsExact<
+            typeof tx,
+            IDBPTransaction<
+              TestDBSchema,
+              ('key-val-store' | 'object-store')[],
+              'versionchange'
+            >
+          >
+        >(true);
         assert.instanceOf(tx, IDBTransaction, 'db instance');
         assert.strictEqual(tx.mode, 'versionchange', 'tx mode');
       },
@@ -93,7 +102,12 @@ suite('openDb', () => {
       upgrade(db, oldVersion, newVersion, tx) {
         upgradeRun = true;
         typeAssert<IsExact<typeof db, IDBPDatabase>>(true);
-        typeAssert<IsExact<typeof tx, IDBPTransaction>>(true);
+        typeAssert<
+          IsExact<
+            typeof tx,
+            IDBPTransaction<unknown, string[], 'versionchange'>
+          >
+        >(true);
       },
     });
 

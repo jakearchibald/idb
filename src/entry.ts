@@ -15,7 +15,11 @@ export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
     database: IDBPDatabase<DBTypes>,
     oldVersion: number,
     newVersion: number | null,
-    transaction: IDBPTransaction<DBTypes>,
+    transaction: IDBPTransaction<
+      DBTypes,
+      StoreNames<DBTypes>[],
+      'versionchange'
+    >,
   ): void;
   /**
    * Called if there are older versions of the database open on the origin, so this version cannot
@@ -54,7 +58,11 @@ export function openDB<DBTypes extends DBSchema | unknown = unknown>(
         wrap(request.result) as IDBPDatabase<DBTypes>,
         event.oldVersion,
         event.newVersion,
-        (wrap(request.transaction!) as unknown) as IDBPTransaction<DBTypes>,
+        (wrap(request.transaction!) as unknown) as IDBPTransaction<
+          DBTypes,
+          StoreNames<DBTypes>[],
+          'versionchange'
+        >,
       );
     });
   }
@@ -180,10 +188,11 @@ type CursorSource<
   DBTypes extends DBSchema | unknown,
   TxStores extends StoreNames<DBTypes>[],
   StoreName extends StoreNames<DBTypes>,
-  IndexName extends IndexNames<DBTypes, StoreName> | unknown
+  IndexName extends IndexNames<DBTypes, StoreName> | unknown,
+  Mode extends IDBTransactionMode = 'readonly'
 > = IndexName extends IndexNames<DBTypes, StoreName>
-  ? IDBPIndex<DBTypes, TxStores, StoreName, IndexName>
-  : IDBPObjectStore<DBTypes, TxStores, StoreName>;
+  ? IDBPIndex<DBTypes, TxStores, StoreName, IndexName, Mode>
+  : IDBPObjectStore<DBTypes, TxStores, StoreName, Mode>;
 
 type CursorKey<
   DBTypes extends DBSchema | unknown,
@@ -234,7 +243,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
   createObjectStore<Name extends StoreNames<DBTypes>>(
     name: Name,
     optionalParameters?: IDBObjectStoreParameters,
-  ): IDBPObjectStore<DBTypes, StoreNames<DBTypes>[], Name>;
+  ): IDBPObjectStore<DBTypes, StoreNames<DBTypes>[], Name, 'versionchange'>;
   /**
    * Deletes the object store with the given name.
    *
@@ -248,16 +257,22 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    * @param mode
    * @param options
    */
-  transaction<Name extends StoreNames<DBTypes>>(
+  transaction<
+    Name extends StoreNames<DBTypes>,
+    Mode extends IDBTransactionMode = 'readonly'
+  >(
     storeNames: Name,
-    mode?: IDBTransactionMode,
+    mode?: Mode,
     options?: IDBTransactionOptions,
-  ): IDBPTransaction<DBTypes, [Name]>;
-  transaction<Names extends StoreNames<DBTypes>[]>(
+  ): IDBPTransaction<DBTypes, [Name], Mode>;
+  transaction<
+    Names extends StoreNames<DBTypes>[],
+    Mode extends IDBTransactionMode = 'readonly'
+  >(
     storeNames: Names,
-    mode?: IDBTransactionMode,
+    mode?: Mode,
     options?: IDBTransactionOptions,
-  ): IDBPTransaction<DBTypes, Names>;
+  ): IDBPTransaction<DBTypes, Names, Mode>;
 
   // Shortcut methods
 
@@ -497,8 +512,13 @@ type IDBPTransactionExtends = Omit<
 
 export interface IDBPTransaction<
   DBTypes extends DBSchema | unknown = unknown,
-  TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[]
+  TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
+  Mode extends IDBTransactionMode = 'readonly'
 > extends IDBPTransactionExtends {
+  /**
+   * The transaction's mode.
+   */
+  readonly mode: Mode;
   /**
    * The names of stores in scope for this transaction.
    */
@@ -515,14 +535,14 @@ export interface IDBPTransaction<
    * The associated object store, if the transaction covers a single store, otherwise undefined.
    */
   readonly store: TxStores[1] extends undefined
-    ? IDBPObjectStore<DBTypes, TxStores, TxStores[0]>
+    ? IDBPObjectStore<DBTypes, TxStores, TxStores[0], Mode>
     : undefined;
   /**
    * Returns an IDBObjectStore in the transaction's scope.
    */
   objectStore<StoreName extends TxStores[number]>(
     name: StoreName,
-  ): IDBPObjectStore<DBTypes, TxStores, StoreName>;
+  ): IDBPObjectStore<DBTypes, TxStores, StoreName, Mode>;
 }
 
 type IDBPObjectStoreExtends = Omit<
@@ -547,7 +567,8 @@ type IDBPObjectStoreExtends = Omit<
 export interface IDBPObjectStore<
   DBTypes extends DBSchema | unknown = unknown,
   TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
-  StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>
+  StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
+  Mode extends IDBTransactionMode = 'readonly'
 > extends IDBPObjectStoreExtends {
   /**
    * The names of indexes in the store.
@@ -556,20 +577,22 @@ export interface IDBPObjectStore<
   /**
    * The associated transaction.
    */
-  readonly transaction: IDBPTransaction<DBTypes, TxStores>;
+  readonly transaction: IDBPTransaction<DBTypes, TxStores, Mode>;
   /**
    * Add a value to the store.
    *
    * Rejects if an item of a given key already exists in the store.
    */
-  add(
-    value: StoreValue<DBTypes, StoreName>,
-    key?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
-  ): Promise<StoreKey<DBTypes, StoreName>>;
+  add: Mode extends 'readonly'
+    ? undefined
+    : (
+        value: StoreValue<DBTypes, StoreName>,
+        key?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
+      ) => Promise<StoreKey<DBTypes, StoreName>>;
   /**
    * Deletes all records in store.
    */
-  clear(): Promise<void>;
+  clear: Mode extends 'readonly' ? undefined : () => Promise<void>;
   /**
    * Retrieves the number of records matching the given query.
    */
@@ -579,15 +602,19 @@ export interface IDBPObjectStore<
    *
    * Throws an "InvalidStateError" DOMException if not called within an upgrade transaction.
    */
-  createIndex<IndexName extends IndexNames<DBTypes, StoreName>>(
-    name: IndexName,
-    keyPath: string | string[],
-    options?: IDBIndexParameters,
-  ): IDBPIndex<DBTypes, TxStores, StoreName, IndexName>;
+  createIndex: Mode extends 'versionchange'
+    ? <IndexName extends IndexNames<DBTypes, StoreName>>(
+        name: IndexName,
+        keyPath: string | string[],
+        options?: IDBIndexParameters,
+      ) => IDBPIndex<DBTypes, TxStores, StoreName, IndexName, Mode>
+    : undefined;
   /**
    * Deletes records in store matching the given query.
    */
-  delete(key: StoreKey<DBTypes, StoreName> | IDBKeyRange): Promise<void>;
+  delete: Mode extends 'readonly'
+    ? undefined
+    : (key: StoreKey<DBTypes, StoreName> | IDBKeyRange) => Promise<void>;
   /**
    * Retrieves the value of the first record matching the query.
    *
@@ -629,7 +656,7 @@ export interface IDBPObjectStore<
    */
   index<IndexName extends IndexNames<DBTypes, StoreName>>(
     name: IndexName,
-  ): IDBPIndex<DBTypes, TxStores, StoreName, IndexName>;
+  ): IDBPIndex<DBTypes, TxStores, StoreName, IndexName, Mode>;
   /**
    * Opens a cursor over the records matching the query.
    *
@@ -641,7 +668,13 @@ export interface IDBPObjectStore<
   openCursor(
     query?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
     direction?: IDBCursorDirection,
-  ): Promise<IDBPCursorWithValue<DBTypes, TxStores, StoreName> | null>;
+  ): Promise<IDBPCursorWithValue<
+    DBTypes,
+    TxStores,
+    StoreName,
+    unknown,
+    Mode
+  > | null>;
   /**
    * Opens a cursor over the keys matching the query.
    *
@@ -653,21 +686,29 @@ export interface IDBPObjectStore<
   openKeyCursor(
     query?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
     direction?: IDBCursorDirection,
-  ): Promise<IDBPCursor<DBTypes, TxStores, StoreName> | null>;
+  ): Promise<IDBPCursor<DBTypes, TxStores, StoreName, unknown, Mode> | null>;
   /**
    * Put an item in the store.
    *
    * Replaces any item with the same key.
    */
-  put(
-    value: StoreValue<DBTypes, StoreName>,
-    key?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
-  ): Promise<StoreKey<DBTypes, StoreName>>;
+  put: Mode extends 'readonly'
+    ? undefined
+    : (
+        value: StoreValue<DBTypes, StoreName>,
+        key?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
+      ) => Promise<StoreKey<DBTypes, StoreName>>;
   /**
    * Iterate over the store.
    */
   [Symbol.asyncIterator](): AsyncIterableIterator<
-    IDBPCursorWithValueIteratorValue<DBTypes, TxStores, StoreName>
+    IDBPCursorWithValueIteratorValue<
+      DBTypes,
+      TxStores,
+      StoreName,
+      unknown,
+      Mode
+    >
   >;
   /**
    * Iterate over the records matching the query.
@@ -679,7 +720,13 @@ export interface IDBPObjectStore<
     query?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
     direction?: IDBCursorDirection,
   ): AsyncIterableIterator<
-    IDBPCursorWithValueIteratorValue<DBTypes, TxStores, StoreName>
+    IDBPCursorWithValueIteratorValue<
+      DBTypes,
+      TxStores,
+      StoreName,
+      unknown,
+      Mode
+    >
   >;
 }
 
@@ -702,12 +749,13 @@ export interface IDBPIndex<
   IndexName extends IndexNames<DBTypes, StoreName> = IndexNames<
     DBTypes,
     StoreName
-  >
+  >,
+  Mode extends IDBTransactionMode = 'readonly'
 > extends IDBPIndexExtends {
   /**
    * The IDBObjectStore the index belongs to.
    */
-  readonly objectStore: IDBPObjectStore<DBTypes, TxStores, StoreName>;
+  readonly objectStore: IDBPObjectStore<DBTypes, TxStores, StoreName, Mode>;
 
   /**
    * Retrieves the number of records matching the given query.
@@ -766,7 +814,8 @@ export interface IDBPIndex<
     DBTypes,
     TxStores,
     StoreName,
-    IndexName
+    IndexName,
+    Mode
   > | null>;
   /**
    * Opens a cursor over the keys matching the query.
@@ -779,12 +828,18 @@ export interface IDBPIndex<
   openKeyCursor(
     query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
     direction?: IDBCursorDirection,
-  ): Promise<IDBPCursor<DBTypes, TxStores, StoreName, IndexName> | null>;
+  ): Promise<IDBPCursor<DBTypes, TxStores, StoreName, IndexName, Mode> | null>;
   /**
    * Iterate over the index.
    */
   [Symbol.asyncIterator](): AsyncIterableIterator<
-    IDBPCursorWithValueIteratorValue<DBTypes, TxStores, StoreName, IndexName>
+    IDBPCursorWithValueIteratorValue<
+      DBTypes,
+      TxStores,
+      StoreName,
+      IndexName,
+      Mode
+    >
   >;
   /**
    * Iterate over the records matching the query.
@@ -798,7 +853,13 @@ export interface IDBPIndex<
     query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
     direction?: IDBCursorDirection,
   ): AsyncIterableIterator<
-    IDBPCursorWithValueIteratorValue<DBTypes, TxStores, StoreName, IndexName>
+    IDBPCursorWithValueIteratorValue<
+      DBTypes,
+      TxStores,
+      StoreName,
+      IndexName,
+      Mode
+    >
   >;
 }
 
@@ -818,7 +879,8 @@ export interface IDBPCursor<
   DBTypes extends DBSchema | unknown = unknown,
   TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
-  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown
+  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
+  Mode extends IDBTransactionMode = 'readonly'
 > extends IDBPCursorExtends {
   /**
    * The key of the current index or object store item.
@@ -831,7 +893,7 @@ export interface IDBPCursor<
   /**
    * Returns the IDBObjectStore or IDBIndex the cursor was opened from.
    */
-  readonly source: CursorSource<DBTypes, TxStores, StoreName, IndexName>;
+  readonly source: CursorSource<DBTypes, TxStores, StoreName, IndexName, Mode>;
   /**
    * Advances the cursor a given number of records.
    *
@@ -867,18 +929,20 @@ export interface IDBPCursor<
   /**
    * Delete the current record.
    */
-  delete(): Promise<void>;
+  delete: Mode extends 'readonly' ? undefined : () => Promise<void>;
   /**
    * Updated the current record.
    */
-  update(
-    value: StoreValue<DBTypes, StoreName>,
-  ): Promise<StoreKey<DBTypes, StoreName>>;
+  update: Mode extends 'readonly'
+    ? undefined
+    : (
+        value: StoreValue<DBTypes, StoreName>,
+      ) => Promise<StoreKey<DBTypes, StoreName>>;
   /**
    * Iterate over the cursor.
    */
   [Symbol.asyncIterator](): AsyncIterableIterator<
-    IDBPCursorIteratorValue<DBTypes, TxStores, StoreName, IndexName>
+    IDBPCursorIteratorValue<DBTypes, TxStores, StoreName, IndexName, Mode>
   >;
 }
 
@@ -886,9 +950,10 @@ type IDBPCursorIteratorValueExtends<
   DBTypes extends DBSchema | unknown = unknown,
   TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
-  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown
+  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
+  Mode extends IDBTransactionMode = 'readonly'
 > = Omit<
-  IDBPCursor<DBTypes, TxStores, StoreName, IndexName>,
+  IDBPCursor<DBTypes, TxStores, StoreName, IndexName, Mode>,
   'advance' | 'continue' | 'continuePrimaryKey'
 >;
 
@@ -896,13 +961,15 @@ export interface IDBPCursorIteratorValue<
   DBTypes extends DBSchema | unknown = unknown,
   TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
-  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown
+  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
+  Mode extends IDBTransactionMode = 'readonly'
 >
   extends IDBPCursorIteratorValueExtends<
     DBTypes,
     TxStores,
     StoreName,
-    IndexName
+    IndexName,
+    Mode
   > {
   /**
    * Advances the cursor a given number of records.
@@ -933,8 +1000,9 @@ export interface IDBPCursorWithValue<
   DBTypes extends DBSchema | unknown = unknown,
   TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
-  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown
-> extends IDBPCursor<DBTypes, TxStores, StoreName, IndexName> {
+  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
+  Mode extends IDBTransactionMode = 'readonly'
+> extends IDBPCursor<DBTypes, TxStores, StoreName, IndexName, Mode> {
   /**
    * The value of the current item.
    */
@@ -943,7 +1011,13 @@ export interface IDBPCursorWithValue<
    * Iterate over the cursor.
    */
   [Symbol.asyncIterator](): AsyncIterableIterator<
-    IDBPCursorWithValueIteratorValue<DBTypes, TxStores, StoreName, IndexName>
+    IDBPCursorWithValueIteratorValue<
+      DBTypes,
+      TxStores,
+      StoreName,
+      IndexName,
+      Mode
+    >
   >;
 }
 
@@ -952,9 +1026,10 @@ type IDBPCursorWithValueIteratorValueExtends<
   DBTypes extends DBSchema | unknown = unknown,
   TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
-  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown
+  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
+  Mode extends IDBTransactionMode = 'readonly'
 > = Omit<
-  IDBPCursorWithValue<DBTypes, TxStores, StoreName, IndexName>,
+  IDBPCursorWithValue<DBTypes, TxStores, StoreName, IndexName, Mode>,
   'advance' | 'continue' | 'continuePrimaryKey'
 >;
 
@@ -962,13 +1037,15 @@ export interface IDBPCursorWithValueIteratorValue<
   DBTypes extends DBSchema | unknown = unknown,
   TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
-  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown
+  IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
+  Mode extends IDBTransactionMode = 'readonly'
 >
   extends IDBPCursorWithValueIteratorValueExtends<
     DBTypes,
     TxStores,
     StoreName,
-    IndexName
+    IndexName,
+    Mode
   > {
   /**
    * Advances the cursor a given number of records.
