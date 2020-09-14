@@ -32,7 +32,7 @@ export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
  * @param version Schema version.
  * @param callbacks Additional callbacks.
  */
-export declare function openDB<DBTypes extends DBSchema | unknown = unknown>(name: string, version: number, { blocked, upgrade, blocking, terminated }?: OpenDBCallbacks<DBTypes>): Promise<IDBPDatabase<DBTypes>>;
+export declare function openDB<DBTypes extends DBSchema | unknown = unknown>(name: string, version?: number, { blocked, upgrade, blocking, terminated }?: OpenDBCallbacks<DBTypes>): Promise<IDBPDatabase<DBTypes>>;
 export interface DeleteDBCallbacks {
     /**
      * Called if there are connections to this database open, so it cannot be deleted.
