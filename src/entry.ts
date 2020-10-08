@@ -243,6 +243,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    *
    * @param storeNames The object store(s) this transaction needs.
    * @param mode
+   * @param options Dictionary of other options.
    */
   transaction<Name extends StoreNames<DBTypes>>(
     storeNames: Name,
