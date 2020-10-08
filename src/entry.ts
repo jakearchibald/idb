@@ -212,8 +212,11 @@ interface IDBTransactionOptions {
   /**
    * The durability of the transaction.
    *
-   * The default is "default". Using "relaxed" provides better performance, but with fewer guarantees. Web applications are encouraged to use "relaxed" for ephemeral data such as caches or quickly changing records, and "strict" in cases where reducing the risk of data loss outweighs the impact to performance and power.
-  */
+   * The default is "default". Using "relaxed" provides better performance, but with fewer
+   * guarantees. Web applications are encouraged to use "relaxed" for ephemeral data such as caches
+   * or quickly changing records, and "strict" in cases where reducing the risk of data loss
+   * outweighs the impact to performance and power.
+   */
   durability?: 'default' | 'strict' | 'relaxed';
 }
 
@@ -243,7 +246,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    *
    * @param storeNames The object store(s) this transaction needs.
    * @param mode
-   * @param options Dictionary of other options.
+   * @param options
    */
   transaction<Name extends StoreNames<DBTypes>>(
     storeNames: Name,

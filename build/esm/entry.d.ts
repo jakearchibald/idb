@@ -110,6 +110,17 @@ export interface TypedDOMStringList<T extends string> extends DOMStringList {
     [index: number]: T;
     [Symbol.iterator](): IterableIterator<T>;
 }
+interface IDBTransactionOptions {
+    /**
+     * The durability of the transaction.
+     *
+     * The default is "default". Using "relaxed" provides better performance, but with fewer
+     * guarantees. Web applications are encouraged to use "relaxed" for ephemeral data such as caches
+     * or quickly changing records, and "strict" in cases where reducing the risk of data loss
+     * outweighs the impact to performance and power.
+     */
+    durability?: 'default' | 'strict' | 'relaxed';
+}
 export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown> extends IDBPDatabaseExtends {
     /**
      * The names of stores in the database.
@@ -132,9 +143,10 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown> exte
      *
      * @param storeNames The object store(s) this transaction needs.
      * @param mode
+     * @param options
      */
-    transaction<Name extends StoreNames<DBTypes>>(storeNames: Name, mode?: IDBTransactionMode): IDBPTransaction<DBTypes, [Name]>;
-    transaction<Names extends StoreNames<DBTypes>[]>(storeNames: Names, mode?: IDBTransactionMode): IDBPTransaction<DBTypes, Names>;
+    transaction<Name extends StoreNames<DBTypes>>(storeNames: Name, mode?: IDBTransactionMode, options?: IDBTransactionOptions): IDBPTransaction<DBTypes, [Name]>;
+    transaction<Names extends StoreNames<DBTypes>[]>(storeNames: Names, mode?: IDBTransactionMode, options?: IDBTransactionOptions): IDBPTransaction<DBTypes, Names>;
     /**
      * Add a value to a store.
      *
