@@ -208,6 +208,10 @@ export interface TypedDOMStringList<T extends string> extends DOMStringList {
   [Symbol.iterator](): IterableIterator<T>;
 }
 
+interface IDBTransactionOptions {
+  durability?: 'default'|'strict'|'relaxed';
+}
+
 export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
   extends IDBPDatabaseExtends {
   /**
@@ -238,10 +242,12 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
   transaction<Name extends StoreNames<DBTypes>>(
     storeNames: Name,
     mode?: IDBTransactionMode,
+    options?: IDBTransactionOptions,
   ): IDBPTransaction<DBTypes, [Name]>;
   transaction<Names extends StoreNames<DBTypes>[]>(
     storeNames: Names,
     mode?: IDBTransactionMode,
+    options?: IDBTransactionOptions,
   ): IDBPTransaction<DBTypes, Names>;
 
   // Shortcut methods
