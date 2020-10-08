@@ -209,7 +209,12 @@ export interface TypedDOMStringList<T extends string> extends DOMStringList {
 }
 
 interface IDBTransactionOptions {
-  durability?: 'default'|'strict'|'relaxed';
+  /**
+   * The durability of the transaction.
+   *
+   * The default is "default". Using "relaxed" provides better performance, but with fewer guarantees. Web applications are encouraged to use "relaxed" for ephemeral data such as caches or quickly changing records, and "strict" in cases where reducing the risk of data loss outweighs the impact to performance and power.
+  */
+  durability?: 'default' | 'strict' | 'relaxed';
 }
 
 export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
