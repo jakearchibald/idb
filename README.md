@@ -52,13 +52,15 @@ async function doDatabaseStuff() {
 ### Using external script reference
 
 ```html
-<script src="https://unpkg.com/idb@5/build/iife/index-min.js"></script>
+<script src="https://unpkg.com/idb/build/iife/index-min.js"></script>
 <script>
   async function doDatabaseStuff() {
     const db = await idb.openDB(…);
   }
 </script>
 ```
+
+A global, `idb`, will be created, containing all exports of the module version.
 
 # Changes
 
@@ -259,6 +261,8 @@ Async iterator support isn't included by default (Edge doesn't support them). To
 ```js
 import { openDB } from 'idb/with-async-ittr.js';
 ```
+
+Or `https://unpkg.com/idb/build/iife/with-async-ittr-min.js` if you're using the non-module version.
 
 Now you can iterate over stores, indexes, and cursors:
 
