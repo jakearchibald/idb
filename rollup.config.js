@@ -43,6 +43,7 @@ export default async function ({ watch }) {
     output: {
       file: 'build/iife/index-min.js',
       format: 'iife',
+      esModule: false,
       name: 'idb',
     },
   });
@@ -58,6 +59,7 @@ export default async function ({ watch }) {
     output: {
       file: 'build/iife/with-async-ittr-min.js',
       format: 'iife',
+      esModule: false,
       name: 'idb',
     },
   });
