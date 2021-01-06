@@ -1029,7 +1029,7 @@ suite('IDBPObjectStore', () => {
     typeAssert<
       IsExact<
         Parameters<typeof store1.count>[0],
-        string | IDBKeyRange | undefined
+        string | IDBKeyRange | undefined | null
       >
     >(true);
 
@@ -1044,7 +1044,7 @@ suite('IDBPObjectStore', () => {
     typeAssert<
       IsExact<
         Parameters<typeof store2.count>[0],
-        IDBValidKey | IDBKeyRange | undefined
+        IDBValidKey | IDBKeyRange | undefined | null
       >
     >(true);
 
@@ -1070,12 +1070,12 @@ suite('IDBPObjectStore', () => {
     db = (await openDB(dbName, getNextVersion(), {
       upgrade(db, oldVersion, newVersion, tx) {
         const store = db.createObjectStore('object-store');
-        typeAssert<
-          IsExact<Parameters<typeof store.createIndex>[0], string>
-        >(true);
+        typeAssert<IsExact<Parameters<typeof store.createIndex>[0], string>>(
+          true,
+        );
       },
-    })) as IDBPDatabase;        
-  });  
+    })) as IDBPDatabase;
+  });
 
   test('delete', async () => {
     const schemaDB = await openDBWithData();
@@ -1143,7 +1143,7 @@ suite('IDBPObjectStore', () => {
     typeAssert<
       IsExact<
         Parameters<typeof store1.getAll>[0],
-        string | IDBKeyRange | undefined
+        string | IDBKeyRange | undefined | null
       >
     >(true);
 
@@ -1158,7 +1158,7 @@ suite('IDBPObjectStore', () => {
     typeAssert<
       IsExact<
         Parameters<typeof store2.getAll>[0],
-        IDBValidKey | IDBKeyRange | undefined
+        IDBValidKey | IDBKeyRange | undefined | null
       >
     >(true);
 
@@ -1179,7 +1179,7 @@ suite('IDBPObjectStore', () => {
     typeAssert<
       IsExact<
         Parameters<typeof store1.getAllKeys>[0],
-        string | IDBKeyRange | undefined
+        string | IDBKeyRange | undefined | null
       >
     >(true);
 
@@ -1198,7 +1198,7 @@ suite('IDBPObjectStore', () => {
     typeAssert<
       IsExact<
         Parameters<typeof store2.getAllKeys>[0],
-        IDBValidKey | IDBKeyRange | undefined
+        IDBValidKey | IDBKeyRange | undefined | null
       >
     >(true);
 
@@ -1267,7 +1267,7 @@ suite('IDBPObjectStore', () => {
     typeAssert<
       IsExact<
         Parameters<typeof store1.openCursor>[0],
-        string | IDBKeyRange | undefined
+        string | IDBKeyRange | undefined | null
       >
     >(true);
 
@@ -1292,7 +1292,7 @@ suite('IDBPObjectStore', () => {
     typeAssert<
       IsExact<
         Parameters<typeof store2.openCursor>[0],
-        IDBValidKey | IDBKeyRange | undefined
+        IDBValidKey | IDBKeyRange | undefined | null
       >
     >(true);
 
@@ -1323,7 +1323,7 @@ suite('IDBPObjectStore', () => {
     typeAssert<
       IsExact<
         Parameters<typeof store1.openKeyCursor>[0],
-        string | IDBKeyRange | undefined
+        string | IDBKeyRange | undefined | null
       >
     >(true);
 
@@ -1346,7 +1346,7 @@ suite('IDBPObjectStore', () => {
     typeAssert<
       IsExact<
         Parameters<typeof store2.openKeyCursor>[0],
-        IDBValidKey | IDBKeyRange | undefined
+        IDBValidKey | IDBKeyRange | undefined | null
       >
     >(true);
 
@@ -1546,7 +1546,7 @@ suite('IDBPIndex', () => {
     typeAssert<
       IsExact<
         Parameters<typeof index1.count>[0],
-        Date | IDBKeyRange | undefined
+        Date | IDBKeyRange | undefined | null
       >
     >(true);
 
@@ -1561,7 +1561,7 @@ suite('IDBPIndex', () => {
     typeAssert<
       IsExact<
         Parameters<typeof index2.count>[0],
-        IDBValidKey | IDBKeyRange | undefined
+        IDBValidKey | IDBKeyRange | undefined | null
       >
     >(true);
 
@@ -1628,7 +1628,7 @@ suite('IDBPIndex', () => {
       typeAssert<
         IsExact<
           Parameters<typeof index.getAll>[0],
-          Date | IDBKeyRange | undefined
+          Date | IDBKeyRange | undefined | null
         >
       >(true);
 
@@ -1670,7 +1670,7 @@ suite('IDBPIndex', () => {
       typeAssert<
         IsExact<
           Parameters<typeof index.getAll>[0],
-          IDBValidKey | IDBKeyRange | undefined
+          IDBValidKey | IDBKeyRange | undefined | null
         >
       >(true);
 
@@ -1718,7 +1718,7 @@ suite('IDBPIndex', () => {
       typeAssert<
         IsExact<
           Parameters<typeof index.getAllKeys>[0],
-          Date | IDBKeyRange | undefined
+          Date | IDBKeyRange | undefined | null
         >
       >(true);
 
@@ -1735,7 +1735,7 @@ suite('IDBPIndex', () => {
       typeAssert<
         IsExact<
           Parameters<typeof index.getAllKeys>[0],
-          IDBValidKey | IDBKeyRange | undefined
+          IDBValidKey | IDBKeyRange | undefined | null
         >
       >(true);
 
@@ -1792,7 +1792,7 @@ suite('IDBPIndex', () => {
       typeAssert<
         IsExact<
           Parameters<typeof index.openCursor>[0],
-          Date | IDBKeyRange | undefined
+          Date | IDBKeyRange | undefined | null
         >
       >(true);
 
@@ -1819,7 +1819,7 @@ suite('IDBPIndex', () => {
       typeAssert<
         IsExact<
           Parameters<typeof index.openCursor>[0],
-          IDBValidKey | IDBKeyRange | undefined
+          IDBValidKey | IDBKeyRange | undefined | null
         >
       >(true);
 
@@ -1851,7 +1851,7 @@ suite('IDBPIndex', () => {
       typeAssert<
         IsExact<
           Parameters<typeof index.openKeyCursor>[0],
-          Date | IDBKeyRange | undefined
+          Date | IDBKeyRange | undefined | null
         >
       >(true);
 
@@ -1878,7 +1878,7 @@ suite('IDBPIndex', () => {
       typeAssert<
         IsExact<
           Parameters<typeof index.openKeyCursor>[0],
-          IDBValidKey | IDBKeyRange | undefined
+          IDBValidKey | IDBKeyRange | undefined | null
         >
       >(true);
 

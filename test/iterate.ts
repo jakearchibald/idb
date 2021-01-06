@@ -100,7 +100,7 @@ suite('Async iterators', () => {
       typeAssert<
         IsExact<
           Parameters<typeof store.iterate>[0],
-          string | IDBKeyRange | undefined
+          string | IDBKeyRange | undefined | null
         >
       >(true);
 
@@ -114,7 +114,7 @@ suite('Async iterators', () => {
       typeAssert<
         IsExact<
           Parameters<typeof store.iterate>[0],
-          IDBValidKey | IDBKeyRange | undefined
+          IDBValidKey | IDBKeyRange | undefined | null
         >
       >(true);
 
@@ -279,7 +279,7 @@ suite('Async iterators', () => {
       typeAssert<
         IsExact<
           Parameters<typeof index.iterate>[0],
-          Date | IDBKeyRange | undefined
+          Date | IDBKeyRange | undefined | null
         >
       >(true);
 
@@ -294,7 +294,7 @@ suite('Async iterators', () => {
       typeAssert<
         IsExact<
           Parameters<typeof index.iterate>[0],
-          IDBValidKey | IDBKeyRange | undefined
+          IDBValidKey | IDBKeyRange | undefined | null
         >
       >(true);
 

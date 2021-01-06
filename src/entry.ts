@@ -313,7 +313,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    */
   count<Name extends StoreNames<DBTypes>>(
     storeName: Name,
-    key?: StoreKey<DBTypes, Name> | IDBKeyRange,
+    key?: StoreKey<DBTypes, Name> | IDBKeyRange | null,
   ): Promise<number>;
   /**
    * Retrieves the number of records matching the given query in an index.
@@ -331,7 +331,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
   >(
     storeName: Name,
     indexName: IndexName,
-    key?: IndexKey<DBTypes, Name, IndexName> | IDBKeyRange,
+    key?: IndexKey<DBTypes, Name, IndexName> | IDBKeyRange | null,
   ): Promise<number>;
   /**
    * Deletes records in a store matching the given query.
@@ -393,7 +393,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    */
   getAll<Name extends StoreNames<DBTypes>>(
     storeName: Name,
-    query?: StoreKey<DBTypes, Name> | IDBKeyRange,
+    query?: StoreKey<DBTypes, Name> | IDBKeyRange | null,
     count?: number,
   ): Promise<StoreValue<DBTypes, Name>[]>;
   /**
@@ -413,7 +413,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
   >(
     storeName: Name,
     indexName: IndexName,
-    query?: IndexKey<DBTypes, Name, IndexName> | IDBKeyRange,
+    query?: IndexKey<DBTypes, Name, IndexName> | IDBKeyRange | null,
     count?: number,
   ): Promise<StoreValue<DBTypes, Name>[]>;
   /**
@@ -428,7 +428,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    */
   getAllKeys<Name extends StoreNames<DBTypes>>(
     storeName: Name,
-    query?: StoreKey<DBTypes, Name> | IDBKeyRange,
+    query?: StoreKey<DBTypes, Name> | IDBKeyRange | null,
     count?: number,
   ): Promise<StoreKey<DBTypes, Name>[]>;
   /**
@@ -448,7 +448,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
   >(
     storeName: Name,
     indexName: IndexName,
-    query?: IndexKey<DBTypes, Name, IndexName> | IDBKeyRange,
+    query?: IndexKey<DBTypes, Name, IndexName> | IDBKeyRange | null,
     count?: number,
   ): Promise<StoreKey<DBTypes, Name>[]>;
   /**
@@ -596,7 +596,9 @@ export interface IDBPObjectStore<
   /**
    * Retrieves the number of records matching the given query.
    */
-  count(key?: StoreKey<DBTypes, StoreName> | IDBKeyRange): Promise<number>;
+  count(
+    key?: StoreKey<DBTypes, StoreName> | IDBKeyRange | null,
+  ): Promise<number>;
   /**
    * Creates a new index in store.
    *
@@ -630,7 +632,7 @@ export interface IDBPObjectStore<
    * @param count Maximum number of values to return.
    */
   getAll(
-    query?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
+    query?: StoreKey<DBTypes, StoreName> | IDBKeyRange | null,
     count?: number,
   ): Promise<StoreValue<DBTypes, StoreName>[]>;
   /**
@@ -640,7 +642,7 @@ export interface IDBPObjectStore<
    * @param count Maximum number of keys to return.
    */
   getAllKeys(
-    query?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
+    query?: StoreKey<DBTypes, StoreName> | IDBKeyRange | null,
     count?: number,
   ): Promise<StoreKey<DBTypes, StoreName>[]>;
   /**
@@ -666,7 +668,7 @@ export interface IDBPObjectStore<
    * @param direction
    */
   openCursor(
-    query?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
+    query?: StoreKey<DBTypes, StoreName> | IDBKeyRange | null,
     direction?: IDBCursorDirection,
   ): Promise<IDBPCursorWithValue<
     DBTypes,
@@ -684,7 +686,7 @@ export interface IDBPObjectStore<
    * @param direction
    */
   openKeyCursor(
-    query?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
+    query?: StoreKey<DBTypes, StoreName> | IDBKeyRange | null,
     direction?: IDBCursorDirection,
   ): Promise<IDBPCursor<DBTypes, TxStores, StoreName, unknown, Mode> | null>;
   /**
@@ -717,7 +719,7 @@ export interface IDBPObjectStore<
    * @param direction
    */
   iterate(
-    query?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
+    query?: StoreKey<DBTypes, StoreName> | IDBKeyRange | null,
     direction?: IDBCursorDirection,
   ): AsyncIterableIterator<
     IDBPCursorWithValueIteratorValue<
@@ -761,7 +763,7 @@ export interface IDBPIndex<
    * Retrieves the number of records matching the given query.
    */
   count(
-    key?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
+    key?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange | null,
   ): Promise<number>;
   /**
    * Retrieves the value of the first record matching the query.
@@ -778,7 +780,7 @@ export interface IDBPIndex<
    * @param count Maximum number of values to return.
    */
   getAll(
-    query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
+    query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange | null,
     count?: number,
   ): Promise<StoreValue<DBTypes, StoreName>[]>;
   /**
@@ -788,7 +790,7 @@ export interface IDBPIndex<
    * @param count Maximum number of keys to return.
    */
   getAllKeys(
-    query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
+    query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange | null,
     count?: number,
   ): Promise<StoreKey<DBTypes, StoreName>[]>;
   /**
@@ -808,7 +810,7 @@ export interface IDBPIndex<
    * @param direction
    */
   openCursor(
-    query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
+    query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange | null,
     direction?: IDBCursorDirection,
   ): Promise<IDBPCursorWithValue<
     DBTypes,
@@ -826,7 +828,7 @@ export interface IDBPIndex<
    * @param direction
    */
   openKeyCursor(
-    query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
+    query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange | null,
     direction?: IDBCursorDirection,
   ): Promise<IDBPCursor<DBTypes, TxStores, StoreName, IndexName, Mode> | null>;
   /**
@@ -850,7 +852,7 @@ export interface IDBPIndex<
    * @param direction
    */
   iterate(
-    query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange,
+    query?: IndexKey<DBTypes, StoreName, IndexName> | IDBKeyRange | null,
     direction?: IDBCursorDirection,
   ): AsyncIterableIterator<
     IDBPCursorWithValueIteratorValue<
