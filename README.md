@@ -35,7 +35,7 @@ async function doDatabaseStuff() {
 }
 ```
 
-## Directly In a browser
+## Directly in a browser
 
 ### Using the modules method directly via unpkg:
 
@@ -65,6 +65,12 @@ A global, `idb`, will be created, containing all exports of the module version.
 # Changes
 
 [See details of (potentially) breaking changes](changes.md).
+
+# Browser support
+
+This library targets modern browsers, as in Chrome, Firefox, Safari, and other browsers that use those engines, such as Edge. IE is not supported.
+
+If you want to target much older versions of those browsers, you can transpile the library using something like [Babel](https://babeljs.io/). You can't transpile the library for IE, as it relies on a proper implementation of [JavaScript proxies](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy).
 
 # API
 
