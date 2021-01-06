@@ -20,12 +20,12 @@ export declare function wrap<T>(value: IDBRequest<T>): Promise<T>;
  * @param value The enhanced object to revert.
  */
 interface Unwrap {
-    (value: IDBPCursorWithValue<any, any, any, any>): IDBCursorWithValue;
-    (value: IDBPCursor<any, any, any, any>): IDBCursor;
+    (value: IDBPCursorWithValue<any, any, any, any, any>): IDBCursorWithValue;
+    (value: IDBPCursor<any, any, any, any, any>): IDBCursor;
     (value: IDBPDatabase): IDBDatabase;
     (value: IDBPIndex<any, any, any, any>): IDBIndex;
     (value: IDBPObjectStore<any, any, any>): IDBObjectStore;
-    (value: IDBPTransaction<any, any>): IDBTransaction;
+    (value: IDBPTransaction<any, any, any>): IDBTransaction;
     <T extends any>(value: Promise<IDBPDatabase<T>>): IDBOpenDBRequest;
     (value: Promise<IDBPDatabase>): IDBOpenDBRequest;
     <T>(value: Promise<T>): IDBRequest<T>;

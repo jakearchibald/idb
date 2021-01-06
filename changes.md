@@ -1,3 +1,7 @@
+# Changes in 6.x
+
+Some TypeScript definitions changed so write-methods are missing from 'readonly' transactions. This might be backwards-incompatible with code that performs a lot of type wrangling.
+
 # Changes in 5.x
 
 I moved some files around, so I bumped the major version for safety.
@@ -12,7 +16,7 @@ I moved some files around, so I bumped the major version for safety.
 // Old 3.x way
 import { openDb } from 'idb';
 
-openDb('db-name', 1, upgradeDb => {
+openDb('db-name', 1, (upgradeDb) => {
   console.log(upgradeDb.oldVersion);
   console.log(upgradeDb.transaction);
 });
