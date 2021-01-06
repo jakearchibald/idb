@@ -4,6 +4,7 @@ This is a tiny (~1.09k brotli'd) library that mostly mirrors the IndexedDB API, 
 
 1. [Installation](#installation)
 1. [Changes](#changes)
+1. [Browser support](#browser-support)
 1. [API](#api)
    1. [`openDB`](#opendb)
    1. [`deleteDB`](#deletedb)
