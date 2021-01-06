@@ -46,9 +46,18 @@ function getMethod(
       | IDBPIndex<unknown, string[], string, string, 'readwrite' | 'readonly'> =
       tx.store;
     if (useIndex) target = target.index(args.shift());
-    const returnVal = await (target as any)[targetFuncName](...args);
-    if (isWrite) await tx.done;
-    return returnVal;
+
+    // Must reject if op rejects.
+    // If it's a write operation, must reject if tx.done rejects.
+    // Must reject with op rejection first.
+    // Must resolve with op value.
+    // Must handle both promises (no unhandled rejections)
+    return (
+      await Promise.all([
+        (target as any)[targetFuncName](...args),
+        isWrite && tx.done,
+      ])
+    )[0];
   };
 
   cachedMethods.set(prop, method);

@@ -537,6 +537,31 @@ suite('IDBPDatabase', () => {
     }
   });
 
+  test('add - avoid unhandled rejection', async () => {
+    let unhandledRejection = false;
+    let errored = false;
+    const onUnhandledRejection = () => (unhandledRejection = true);
+
+    self.addEventListener('unhandledrejection', onUnhandledRejection);
+
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    try {
+      await schemaDB.add('key-val-store', 123, 'foo');
+    } catch (err) {
+      errored = true;
+    }
+
+    // Wait for a frame so tasks are processed
+    await new Promise((r) => requestAnimationFrame(r));
+
+    assert.isTrue(errored, 'Add errored');
+    assert.isFalse(unhandledRejection, 'No unhandled rejection');
+
+    self.removeEventListener('unhandledrejection', onUnhandledRejection);
+  });
+
   test('delete', async () => {
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
