@@ -320,23 +320,21 @@ const dbPromise = openDB('keyval-store', 1, {
   },
 });
 
-const idbKeyval = {
-  async get(key) {
-    return (await dbPromise).get('keyval', key);
-  },
-  async set(key, val) {
-    return (await dbPromise).put('keyval', val, key);
-  },
-  async delete(key) {
-    return (await dbPromise).delete('keyval', key);
-  },
-  async clear() {
-    return (await dbPromise).clear('keyval');
-  },
-  async keys() {
-    return (await dbPromise).getAllKeys('keyval');
-  },
-};
+export async function get(key) {
+  return (await dbPromise).get('keyval', key);
+},
+export async function set(key, val) {
+  return (await dbPromise).put('keyval', val, key);
+},
+export async function del(key) {
+  return (await dbPromise).delete('keyval', key);
+},
+export async function clear() {
+  return (await dbPromise).clear('keyval');
+},
+export async function keys() {
+  return (await dbPromise).getAllKeys('keyval');
+},
 ```
 
 ## Article store
