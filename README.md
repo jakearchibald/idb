@@ -207,8 +207,6 @@ await db.put(storeName, value, key);
 
 The shortcuts are: `get`, `getKey`, `getAll`, `getAllKeys`, `count`, `put`, `add`, `delete`, and `clear`. Each method takes a `storeName` argument, the name of the object store, and the rest of the arguments are the same as the equivalent `IDBObjectStore` method.
 
-These methods depend on the same methods on `IDBObjectStore`, therefore `getKey`, `getAll`, and `getAllKeys` are missing in Edge.
-
 ### Shortcuts to get from an index
 
 The shortcuts are: `getFromIndex`, `getKeyFromIndex`, `getAllFromIndex`, `getAllKeysFromIndex`, and `countFromIndex`.
@@ -218,7 +216,7 @@ The shortcuts are: `getFromIndex`, `getKeyFromIndex`, `getAllFromIndex`, `getAll
 const value = await db.getFromIndex(storeName, indexName, key);
 ```
 
-Each method takes `storeName` and `indexName` arguments, followed by the rest of the arguments from the equivalent `IDBIndex` method. Again, these methods depend on the equivalent methods on `IDBIndex`, so Edge does not support `getKeyFromIndex`, `getAllFromIndex`, or `getAllKeysFromIndex`.
+Each method takes `storeName` and `indexName` arguments, followed by the rest of the arguments from the equivalent `IDBIndex` method.
 
 ## `IDBTransaction` enhancements
 
