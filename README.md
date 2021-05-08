@@ -246,7 +246,7 @@ await Promise.all([
 ]);
 ```
 
-If you're writing to the database, `tx.done` is the signal that everything was successfully committed to the database. However, it's still beneficial to await the individual operations, as you'll see the error that caused the transition to fail.
+If you're writing to the database, `tx.done` is the signal that everything was successfully committed to the database. However, it's still beneficial to await the individual operations, as you'll see the error that caused the transaction to fail.
 
 ## `IDBCursor` enhancements
 
