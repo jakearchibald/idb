@@ -471,7 +471,7 @@ interface MyDBV2 extends DBSchema {
 const db = await openDB<MyDBV2>('my-db', 2, {
   async upgrade(db, oldVersion) {
     // Cast a reference of the database to the old schema.
-    const v1Db = (db as unknown) as IDBPDatabase<MyDBV1>;
+    const v1Db = db as unknown as IDBPDatabase<MyDBV1>;
 
     if (oldVersion < 1) {
       v1Db.createObjectStore('favourite-number');

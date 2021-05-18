@@ -151,9 +151,8 @@ suite('openDb', () => {
   });
 
   test('wrap', async () => {
-    let wrappedRequest: Promise<IDBPDatabase | undefined> = Promise.resolve(
-      undefined,
-    );
+    let wrappedRequest: Promise<IDBPDatabase | undefined> =
+      Promise.resolve(undefined);
 
     // Let's do it the old fashioned way
     const idb = await new Promise<IDBDatabase>(async (resolve) => {

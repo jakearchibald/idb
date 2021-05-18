@@ -925,7 +925,7 @@ suite('IDBPObjectStore', () => {
 
     const newDB = await openDB<RenamedDBSchema>(dbName, getNextVersion(), {
       upgrade(db, oldVersion, newVersion, tx) {
-        const store = ((tx as unknown) as IDBPTransaction).objectStore(
+        const store = (tx as unknown as IDBPTransaction).objectStore(
           'key-val-store',
         );
         store.name = 'key-val-store-renamed';
@@ -1549,9 +1549,9 @@ suite('IDBPIndex', () => {
 
     const newDB = await openDB<RenamedDBSchema>(dbName, getNextVersion(), {
       upgrade(db, oldVersion, newVersion, tx) {
-        const store = (tx.objectStore(
+        const store = tx.objectStore(
           'object-store',
-        ) as unknown) as IDBObjectStore;
+        ) as unknown as IDBObjectStore;
         const index = store.index('date');
         index.name = 'date-renamed';
       },

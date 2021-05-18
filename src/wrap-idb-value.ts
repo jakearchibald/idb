@@ -37,18 +37,12 @@ function getCursorAdvanceMethods(): Func[] {
   );
 }
 
-const cursorRequestMap: WeakMap<
-  IDBPCursor,
-  IDBRequest<IDBCursor>
-> = new WeakMap();
-const transactionDoneMap: WeakMap<
-  IDBTransaction,
-  Promise<void>
-> = new WeakMap();
-const transactionStoreNamesMap: WeakMap<
-  IDBTransaction,
-  string[]
-> = new WeakMap();
+const cursorRequestMap: WeakMap<IDBPCursor, IDBRequest<IDBCursor>> =
+  new WeakMap();
+const transactionDoneMap: WeakMap<IDBTransaction, Promise<void>> =
+  new WeakMap();
+const transactionStoreNamesMap: WeakMap<IDBTransaction, string[]> =
+  new WeakMap();
 const transformCache = new WeakMap();
 export const reverseTransformCache = new WeakMap();
 
@@ -76,8 +70,8 @@ function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
       // (see wrapFunction).
       if (value instanceof IDBCursor) {
         cursorRequestMap.set(
-          (value as unknown) as IDBPCursor,
-          (request as unknown) as IDBRequest<IDBCursor>,
+          value as unknown as IDBPCursor,
+          request as unknown as IDBRequest<IDBCursor>,
         );
       }
       // Catching to avoid "Uncaught Promise exceptions"
