@@ -46,11 +46,10 @@ export interface DeleteDBCallbacks {
  */
 export declare function deleteDB(name: string, { blocked }?: DeleteDBCallbacks): Promise<void>;
 export { unwrap, wrap } from './wrap-idb-value';
-declare type KnownKeys<T> = {
-    [K in keyof T]: string extends K ? never : number extends K ? never : K;
-} extends {
-    [_ in keyof T]: infer U;
-} ? U : never;
+declare type RemoveIndex<T> = {
+    [P in keyof T as string extends P ? never : number extends P ? never : P]: T[P];
+};
+declare type KnownKeys<T> = keyof RemoveIndex<T>;
 declare type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 export interface DBSchema {
     [s: string]: DBSchemaValue;
