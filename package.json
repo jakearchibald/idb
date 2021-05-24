@@ -15,7 +15,8 @@
   },
   "files": [
     "build/**",
-    "with-*"
+    "with-*",
+    "src/**"
   ],
   "author": "Jake Archibald",
   "license": "ISC",
