@@ -103,15 +103,11 @@ export function deleteDB(
 export { unwrap, wrap } from './wrap-idb-value';
 
 // === The rest of this file is type defs ===
-type RemoveIndex<T> = {
-  [P in keyof T as string extends P
-    ? never
-    : number extends P
-    ? never
-    : P]: T[P];
+type KeyToKeyNoIndex<T> = {
+  [K in keyof T]: string extends K ? never : number extends K ? never : K;
 };
-
-type KnownKeys<T> = keyof RemoveIndex<T>;
+type ValuesOf<T> = T extends { [K in keyof T]: infer U } ? U : never;
+type KnownKeys<T> = ValuesOf<KeyToKeyNoIndex<T>>;
 
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 
