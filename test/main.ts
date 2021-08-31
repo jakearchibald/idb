@@ -89,14 +89,35 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.transaction>[0],
-        ('key-val-store' | 'object-store')[]
+        ArrayLike<'key-val-store' | 'object-store'>
       >
     >(true);
 
-    typeAssert<IsExact<Parameters<typeof db.transaction>[0], string[]>>(true);
+    typeAssert<
+      IsExact<Parameters<typeof db.transaction>[0], ArrayLike<string>>
+    >(true);
 
     // Function getters should return the same instance.
     assert.strictEqual(db.transaction, db.transaction, 'transaction');
+  });
+
+  test('transaction - all stores', async () => {
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB as IDBPDatabase;
+
+    const tx = schemaDB.transaction(schemaDB.objectStoreNames);
+    const tx2 = db.transaction(db.objectStoreNames);
+
+    typeAssert<
+      IsExact<
+        typeof tx.objectStoreNames,
+        TypedDOMStringList<'key-val-store' | 'object-store'>
+      >
+    >(true);
+
+    typeAssert<
+      IsExact<typeof tx2.objectStoreNames, TypedDOMStringList<string>>
+    >(true);
   });
 
   test('get', async () => {
@@ -795,9 +816,9 @@ suite('IDBPTransaction', () => {
 
     const wrappedTx = wrap(tx);
 
-    typeAssert<IsExact<typeof wrappedTx, IDBPTransaction<unknown, string[]>>>(
-      true,
-    );
+    typeAssert<
+      IsExact<typeof wrappedTx, IDBPTransaction<unknown, ArrayLike<string>>>
+    >(true);
 
     assert.property(wrappedTx, 'store');
   });

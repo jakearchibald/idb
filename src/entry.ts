@@ -185,7 +185,7 @@ export type IndexKey<
 
 type CursorSource<
   DBTypes extends DBSchema | unknown,
-  TxStores extends StoreNames<DBTypes>[],
+  TxStores extends ArrayLike<StoreNames<DBTypes>>,
   StoreName extends StoreNames<DBTypes>,
   IndexName extends IndexNames<DBTypes, StoreName> | unknown,
   Mode extends IDBTransactionMode = 'readonly',
@@ -242,7 +242,12 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
   createObjectStore<Name extends StoreNames<DBTypes>>(
     name: Name,
     optionalParameters?: IDBObjectStoreParameters,
-  ): IDBPObjectStore<DBTypes, StoreNames<DBTypes>[], Name, 'versionchange'>;
+  ): IDBPObjectStore<
+    DBTypes,
+    ArrayLike<StoreNames<DBTypes>>,
+    Name,
+    'versionchange'
+  >;
   /**
    * Deletes the object store with the given name.
    *
@@ -265,7 +270,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
     options?: IDBTransactionOptions,
   ): IDBPTransaction<DBTypes, [Name], Mode>;
   transaction<
-    Names extends StoreNames<DBTypes>[],
+    Names extends ArrayLike<StoreNames<DBTypes>>,
     Mode extends IDBTransactionMode = 'readonly',
   >(
     storeNames: Names,
@@ -511,7 +516,9 @@ type IDBPTransactionExtends = Omit<
 
 export interface IDBPTransaction<
   DBTypes extends DBSchema | unknown = unknown,
-  TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
+  TxStores extends ArrayLike<StoreNames<DBTypes>> = ArrayLike<
+    StoreNames<DBTypes>
+  >,
   Mode extends IDBTransactionMode = 'readonly',
 > extends IDBPTransactionExtends {
   /**
@@ -565,7 +572,9 @@ type IDBPObjectStoreExtends = Omit<
 
 export interface IDBPObjectStore<
   DBTypes extends DBSchema | unknown = unknown,
-  TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
+  TxStores extends ArrayLike<StoreNames<DBTypes>> = ArrayLike<
+    StoreNames<DBTypes>
+  >,
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
   Mode extends IDBTransactionMode = 'readonly',
 > extends IDBPObjectStoreExtends {
@@ -745,7 +754,9 @@ type IDBPIndexExtends = Omit<
 
 export interface IDBPIndex<
   DBTypes extends DBSchema | unknown = unknown,
-  TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
+  TxStores extends ArrayLike<StoreNames<DBTypes>> = ArrayLike<
+    StoreNames<DBTypes>
+  >,
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
   IndexName extends IndexNames<DBTypes, StoreName> = IndexNames<
     DBTypes,
@@ -878,7 +889,9 @@ type IDBPCursorExtends = Omit<
 
 export interface IDBPCursor<
   DBTypes extends DBSchema | unknown = unknown,
-  TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
+  TxStores extends ArrayLike<StoreNames<DBTypes>> = ArrayLike<
+    StoreNames<DBTypes>
+  >,
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
   IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
   Mode extends IDBTransactionMode = 'readonly',
@@ -949,7 +962,9 @@ export interface IDBPCursor<
 
 type IDBPCursorIteratorValueExtends<
   DBTypes extends DBSchema | unknown = unknown,
-  TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
+  TxStores extends ArrayLike<StoreNames<DBTypes>> = ArrayLike<
+    StoreNames<DBTypes>
+  >,
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
   IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
   Mode extends IDBTransactionMode = 'readonly',
@@ -960,7 +975,9 @@ type IDBPCursorIteratorValueExtends<
 
 export interface IDBPCursorIteratorValue<
   DBTypes extends DBSchema | unknown = unknown,
-  TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
+  TxStores extends ArrayLike<StoreNames<DBTypes>> = ArrayLike<
+    StoreNames<DBTypes>
+  >,
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
   IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
   Mode extends IDBTransactionMode = 'readonly',
@@ -998,7 +1015,9 @@ export interface IDBPCursorIteratorValue<
 
 export interface IDBPCursorWithValue<
   DBTypes extends DBSchema | unknown = unknown,
-  TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
+  TxStores extends ArrayLike<StoreNames<DBTypes>> = ArrayLike<
+    StoreNames<DBTypes>
+  >,
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
   IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
   Mode extends IDBTransactionMode = 'readonly',
@@ -1024,7 +1043,9 @@ export interface IDBPCursorWithValue<
 // Some of that sweeeeet Java-esque naming.
 type IDBPCursorWithValueIteratorValueExtends<
   DBTypes extends DBSchema | unknown = unknown,
-  TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
+  TxStores extends ArrayLike<StoreNames<DBTypes>> = ArrayLike<
+    StoreNames<DBTypes>
+  >,
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
   IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
   Mode extends IDBTransactionMode = 'readonly',
@@ -1035,7 +1056,9 @@ type IDBPCursorWithValueIteratorValueExtends<
 
 export interface IDBPCursorWithValueIteratorValue<
   DBTypes extends DBSchema | unknown = unknown,
-  TxStores extends StoreNames<DBTypes>[] = StoreNames<DBTypes>[],
+  TxStores extends ArrayLike<StoreNames<DBTypes>> = ArrayLike<
+    StoreNames<DBTypes>
+  >,
   StoreName extends StoreNames<DBTypes> = StoreNames<DBTypes>,
   IndexName extends IndexNames<DBTypes, StoreName> | unknown = unknown,
   Mode extends IDBTransactionMode = 'readonly',
