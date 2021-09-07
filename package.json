@@ -5,6 +5,16 @@
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "typings": "build/esm/index.d.ts",
+  "exports: {
+    ".": {
+      "import": "build/esm/index.js",
+      "require": "build/cjs/index.js"
+    },
+    "./with-async-ittr": {
+      "import": "with-async-ittr.js",
+      "require": "with-async-ittr-cjs.js"
+    }
+  },
   "scripts": {
     "build": "PRODUCTION=1 rollup -c && node --experimental-modules lib/size-report.mjs",
     "dev": "rollup -c --watch"
