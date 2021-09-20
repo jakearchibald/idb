@@ -528,7 +528,7 @@ export interface IDBPTransaction<
   /**
    * The names of stores in scope for this transaction.
    */
-  readonly objectStoreNames: TxStores;
+  readonly objectStoreNames: TypedDOMStringList<TxStores[number]>;
   /**
    * The transaction's connection.
    */

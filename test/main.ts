@@ -658,18 +658,27 @@ suite('IDBPTransaction', () => {
     const tx2 = schemaDB.transaction('object-store');
     const tx3 = schemaDB.transaction(['object-store', 'key-val-store']);
 
-    typeAssert<IsExact<typeof tx1.objectStoreNames, ['key-val-store']>>(true);
-
-    typeAssert<IsExact<typeof tx2.objectStoreNames, ['object-store']>>(true);
+    typeAssert<
+      IsExact<typeof tx1.objectStoreNames, TypedDOMStringList<'key-val-store'>>
+    >(true);
 
     typeAssert<
-      IsExact<typeof tx3.objectStoreNames, ('object-store' | 'key-val-store')[]>
+      IsExact<typeof tx2.objectStoreNames, TypedDOMStringList<'object-store'>>
+    >(true);
+
+    typeAssert<
+      IsExact<
+        typeof tx3.objectStoreNames,
+        TypedDOMStringList<'object-store' | 'key-val-store'>
+      >
     >(true);
 
     // Without schema it should still work:
     const tx4 = db.transaction('key-val-store');
 
-    typeAssert<IsExact<typeof tx4.objectStoreNames, ['key-val-store']>>(true);
+    typeAssert<
+      IsExact<typeof tx4.objectStoreNames, TypedDOMStringList<'key-val-store'>>
+    >(true);
   });
 
   test('db', async () => {
