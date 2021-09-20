@@ -321,7 +321,7 @@ export interface IDBPTransaction<DBTypes extends DBSchema | unknown = unknown, T
     /**
      * The names of stores in scope for this transaction.
      */
-    readonly objectStoreNames: TxStores;
+    readonly objectStoreNames: TypedDOMStringList<TxStores[number]>;
     /**
      * The transaction's connection.
      */
