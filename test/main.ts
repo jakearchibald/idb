@@ -838,15 +838,18 @@ suite('IDBPTransaction', () => {
 
     const tx = schemaDB.transaction('key-val-store');
     const tx2 = db.transaction('key-val-store');
+    const tx3 = schemaDB.transaction('key-val-store', 'readwrite');
     const unwrappedTx = unwrap(tx);
     const unwrappedTx2 = unwrap(tx2);
+    const unwrappedTx3 = unwrap(tx3);
 
     typeAssert<IsExact<typeof unwrappedTx, IDBTransaction>>(true);
-
     typeAssert<IsExact<typeof unwrappedTx2, IDBTransaction>>(true);
+    typeAssert<IsExact<typeof unwrappedTx3, IDBTransaction>>(true);
 
     assert.notProperty(unwrappedTx, 'store');
     assert.notProperty(unwrappedTx2, 'store');
+    assert.notProperty(unwrappedTx3, 'store');
   });
 });
 
@@ -1495,15 +1498,18 @@ suite('IDBPObjectStore', () => {
 
     const store1 = schemaDB.transaction('key-val-store').store;
     const store2 = db.transaction('key-val-store').store;
+    const store3 = schemaDB.transaction('key-val-store', 'readwrite').store;
     const unwrappedStore1 = unwrap(store1);
     const unwrappedStore2 = unwrap(store2);
+    const unwrappedStore3 = unwrap(store3);
 
     typeAssert<IsExact<typeof unwrappedStore1, IDBObjectStore>>(true);
-
     typeAssert<IsExact<typeof unwrappedStore2, IDBObjectStore>>(true);
+    typeAssert<IsExact<typeof unwrappedStore3, IDBObjectStore>>(true);
 
     assert.instanceOf(unwrappedStore1.get('foo'), IDBRequest);
     assert.instanceOf(unwrappedStore2.get('foo'), IDBRequest);
+    assert.instanceOf(unwrappedStore3.get('foo'), IDBRequest);
   });
 });
 
@@ -1973,15 +1979,21 @@ suite('IDBPIndex', () => {
 
     const index1 = schemaDB.transaction('object-store').store.index('date');
     const index2 = db.transaction('object-store').store.index('title');
+    const index3 = schemaDB
+      .transaction('object-store', 'readwrite')
+      .store.index('date');
+
     const unwrappedIndex1 = unwrap(index1);
     const unwrappedIndex2 = unwrap(index2);
+    const unwrappedIndex3 = unwrap(index3);
 
     typeAssert<IsExact<typeof unwrappedIndex1, IDBIndex>>(true);
-
     typeAssert<IsExact<typeof unwrappedIndex2, IDBIndex>>(true);
+    typeAssert<IsExact<typeof unwrappedIndex3, IDBIndex>>(true);
 
     assert.instanceOf(unwrappedIndex1.get('foo'), IDBRequest);
     assert.instanceOf(unwrappedIndex2.get('foo'), IDBRequest);
+    assert.instanceOf(unwrappedIndex3.get('foo'), IDBRequest);
   });
 });
 
