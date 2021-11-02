@@ -1,14 +1,19 @@
 import { promises as fsp } from 'fs';
+import { promisify } from 'util';
+import { basename } from 'path';
 
 import { terser } from 'rollup-plugin-terser';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import del from 'del';
+import glob from 'glob';
 
 import simpleTS from './lib/simple-ts';
 
+const globP = promisify(glob);
+
 export default async function ({ watch }) {
-  await del('build');
+  await del(['build', 'tmp']);
 
   const builds = [];
 
@@ -93,6 +98,25 @@ export default async function ({ watch }) {
       },
     });
   }
+
+  builds.push(
+    ...(await globP('size-tests/*.js').then((paths) =>
+      paths.map((path) => ({
+        input: path,
+        plugins: [
+          terser({
+            compress: { ecma: 2020 },
+          }),
+        ],
+        output: [
+          {
+            file: `tmp/size-tests/${basename(path)}`,
+            format: 'esm',
+          },
+        ],
+      })),
+    )),
+  );
 
   return builds;
 }
