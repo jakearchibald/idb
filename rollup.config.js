@@ -18,31 +18,31 @@ export default async function ({ watch }) {
     input: ['src/index.ts', 'src/async-iterators.ts'],
     output: [
       {
-        dir: 'build/esm/',
+        dir: 'build/',
         format: 'esm',
         entryFileNames: '[name].js',
         chunkFileNames: '[name].js',
       },
       {
-        dir: 'build/cjs/',
+        dir: 'build/',
         format: 'cjs',
-        entryFileNames: '[name].js',
-        chunkFileNames: '[name].js',
+        entryFileNames: '[name].cjs',
+        chunkFileNames: '[name].cjs',
       },
     ],
   });
 
   // Minified iife
   builds.push({
-    input: 'build/esm/index.js',
+    input: 'build/index.js',
     plugins: [
       terser({
         compress: { ecma: 2019 },
       }),
     ],
     output: {
-      file: 'build/iife/index-min.js',
-      format: 'iife',
+      file: 'build/umd.js',
+      format: 'umd',
       esModule: false,
       name: 'idb',
     },
@@ -57,8 +57,8 @@ export default async function ({ watch }) {
       }),
     ],
     output: {
-      file: 'build/iife/with-async-ittr-min.js',
-      format: 'iife',
+      file: 'build/umd-with-async-ittr.js',
+      format: 'umd',
       esModule: false,
       name: 'idb',
     },
