@@ -1,6 +1,6 @@
 # IndexedDB with usability.
 
-This is a tiny (~1.09k brotli'd) library that mostly mirrors the IndexedDB API, but with small improvements that make a big difference to usability.
+This is a tiny (~1.05k brotli'd) library that mostly mirrors the IndexedDB API, but with small improvements that make a big difference to usability.
 
 1. [Installation](#installation)
 1. [Changes](#changes)
@@ -38,11 +38,11 @@ async function doDatabaseStuff() {
 
 ## Directly in a browser
 
-### Using the modules method directly via unpkg:
+### Using the modules method directly via jsdelivr:
 
 ```html
 <script type="module">
-  import { openDB, deleteDB, wrap, unwrap } from 'https://unpkg.com/idb?module';
+  import { openDB, deleteDB, wrap, unwrap } from 'https://cdn.jsdelivr.net/npm/idb@7/+esm';
 
   async function doDatabaseStuff() {
     const db = await openDB(…);
@@ -53,7 +53,7 @@ async function doDatabaseStuff() {
 ### Using external script reference
 
 ```html
-<script src="https://unpkg.com/idb/build/umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
 <script>
   async function doDatabaseStuff() {
     const db = await idb.openDB(…);
@@ -261,13 +261,13 @@ while (cursor) {
 
 ## Async iterators
 
-Async iterator support isn't included by default (Edge doesn't support them). To include them, import `idb/with-async-ittr` instead of `idb` (this increases the library size to ~1.3k brotli'd):
+Async iterator support isn't included by default (Edge doesn't support them). To include them, import `idb/with-async-ittr` instead of `idb` (this increases the library size to ~1.28k brotli'd):
 
 ```js
 import { openDB } from 'idb/with-async-ittr';
 ```
 
-Or `https://unpkg.com/idb/build/iife/with-async-ittr-min.js` if you're using the non-module version.
+Or `https://cdn.jsdelivr.net/npm/idb@7/build/umd-with-async-ittr.js` if you're using the non-module version.
 
 Now you can iterate over stores, indexes, and cursors:
 
