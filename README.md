@@ -53,7 +53,7 @@ async function doDatabaseStuff() {
 ### Using external script reference
 
 ```html
-<script src="https://unpkg.com/idb/build/iife/index-min.js"></script>
+<script src="https://unpkg.com/idb/build/umd.js"></script>
 <script>
   async function doDatabaseStuff() {
     const db = await idb.openDB(…);
@@ -65,7 +65,7 @@ A global, `idb`, will be created, containing all exports of the module version.
 
 # Changes
 
-[See details of (potentially) breaking changes](changes.md).
+[See details of (potentially) breaking changes](CHANGELOG.md).
 
 # Browser support
 
@@ -261,10 +261,10 @@ while (cursor) {
 
 ## Async iterators
 
-Async iterator support isn't included by default (Edge doesn't support them). To include them, import `idb/with-async-ittr.js` instead of `idb` (this increases the library size to ~1.3k brotli'd):
+Async iterator support isn't included by default (Edge doesn't support them). To include them, import `idb/with-async-ittr` instead of `idb` (this increases the library size to ~1.3k brotli'd):
 
 ```js
-import { openDB } from 'idb/with-async-ittr.js';
+import { openDB } from 'idb/with-async-ittr';
 ```
 
 Or `https://unpkg.com/idb/build/iife/with-async-ittr-min.js` if you're using the non-module version.
