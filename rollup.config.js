@@ -20,8 +20,8 @@ export default async function ({ watch }) {
       {
         dir: 'build/esm/',
         format: 'esm',
-        entryFileNames: '[name].js',
-        chunkFileNames: '[name].js',
+        entryFileNames: '[name].mjs',
+        chunkFileNames: '[name].mjs',
       },
       {
         dir: 'build/cjs/',
@@ -34,7 +34,7 @@ export default async function ({ watch }) {
 
   // Minified iife
   builds.push({
-    input: 'build/esm/index.js',
+    input: 'build/esm/index.mjs',
     plugins: [
       terser({
         compress: { ecma: 2019 },
