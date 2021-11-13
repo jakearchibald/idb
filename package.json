@@ -7,6 +7,10 @@
   "typings": "build/esm/index.d.ts",
   "exports": {
     ".": {
+      "node": {
+        "require": "./build/cjs/index.js",
+        "import": "./build/esm/index.js"
+      },
       "require": "./build/cjs/index.js",
       "import": "./build/esm/index.js"
     }
