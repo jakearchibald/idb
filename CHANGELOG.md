@@ -1,8 +1,15 @@
-# Changes in 6.x
+# Breaking changes in 7.x
+
+- No longer committing `build` to GitHub.
+- Renamed files in dist.
+- Added conditional exports.
+- iife build is now a umd.
+
+# Breaking changes in 6.x
 
 Some TypeScript definitions changed so write-methods are missing from 'readonly' transactions. This might be backwards-incompatible with code that performs a lot of type wrangling.
 
-# Changes in 5.x
+# Breaking changes in 5.x
 
 I moved some files around, so I bumped the major version for safety.
 

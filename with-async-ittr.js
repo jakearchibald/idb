@@ -1,2 +1,2 @@
-export * from './build/esm/index.js';
-import './build/esm/async-iterators.js';
+export * from './build/index.js';
+import './build/async-iterators.js';

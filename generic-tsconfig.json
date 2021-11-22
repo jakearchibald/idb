@@ -7,11 +7,11 @@
     "moduleResolution": "node",
     "outDir": ".ts-tmp",
     "composite": true,
-    "declarationMap": true,
+    "declarationMap": false,
     "baseUrl": "./",
     "rootDir": "./",
     "allowSyntheticDefaultImports": true,
     "noUnusedLocals": true,
-    "sourceMap": true
+    "sourceMap": false
   }
 }
