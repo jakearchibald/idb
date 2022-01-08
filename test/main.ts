@@ -1067,10 +1067,10 @@ suite('IDBPObjectStore', () => {
     const store1 = schemaDB.transaction('auto-increment', 'readwrite').store;
 
     typeAssert<IsExact<Parameters<typeof store1.add>[0], {
+      id?: number;
       title: string;
       date: Date;
-      id?: number;
-    } | ObjectStoreValue>>(true);
+    }>>(true);
 
     typeAssert<
       IsExact<
@@ -1099,10 +1099,6 @@ suite('IDBPObjectStore', () => {
     typeAssert<IsExact<Parameters<typeof store2.add>[0], (ObjectStoreValue & {
       nested: {
         id?: number;
-      }
-    }) | (ObjectStoreValue & {
-      nested: {
-        id: number;
       }
     })>>(true);
 
