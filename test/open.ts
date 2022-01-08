@@ -37,7 +37,7 @@ suite('openDb', () => {
             typeof tx,
             IDBPTransaction<
               TestDBSchema,
-              ('key-val-store' | 'object-store')[],
+              ('key-val-store' | 'object-store' | 'auto-increment' | 'auto-increment-nested')[],
               'versionchange'
             >
           >
@@ -220,7 +220,7 @@ suite('deleteDb', () => {
 
   test('deleteDb', async () => {
     db = (await openDBWithSchema()) as IDBPDatabase;
-    assert.lengthOf(db.objectStoreNames, 2, 'DB has two stores');
+    assert.lengthOf(db.objectStoreNames, 4, 'DB has four stores');
     db.close();
     await deleteDatabase();
     db = await openDB(dbName, getNextVersion());
