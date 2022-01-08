@@ -303,7 +303,11 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    */
   createObjectStore<Name extends StoreNames<DBTypes>>(
     name: Name,
-    optionalParameters?: IDBObjectStoreParameters,
+    // When autoIncrementKeyPath is set, we know that optionalParameters must be set, and we know the correct value. However I'm not sure how to specify that it should not be optional in that situation.
+    optionalParameters?: DBTypes extends DBSchema ? DBTypes[Name]['autoIncrementKeyPath'] extends string ? (IDBObjectStoreParameters & {
+      autoIncrement: true,
+      keyPath: DBTypes[Name]['autoIncrementKeyPath'],
+    }) : IDBObjectStoreParameters : IDBObjectStoreParameters,
   ): IDBPObjectStore<
     DBTypes,
     ArrayLike<StoreNames<DBTypes>>,
@@ -356,7 +360,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    */
   add<Name extends StoreNames<DBTypes>>(
     storeName: Name,
-    value: StoreValue<DBTypes, Name>,
+    value: StoreValueWithOptionalKey<DBTypes, Name>,
     key?: StoreKey<DBTypes, Name> | IDBKeyRange,
   ): Promise<StoreKey<DBTypes, Name>>;
   /**
@@ -566,7 +570,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    */
   put<Name extends StoreNames<DBTypes>>(
     storeName: Name,
-    value: StoreValue<DBTypes, Name>,
+    value: StoreValueWithOptionalKey<DBTypes, Name>,
     key?: StoreKey<DBTypes, Name> | IDBKeyRange,
   ): Promise<StoreKey<DBTypes, Name>>;
 }
