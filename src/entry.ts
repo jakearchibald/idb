@@ -168,6 +168,7 @@ interface DBSchemaValue {
   key: IDBValidKey;
   value: any;
   indexes?: IndexKeys;
+  autoIncrementKeyPath?: string;
 }
 
 /**
@@ -188,6 +189,22 @@ export type StoreValue<
   DBTypes extends DBSchema | unknown,
   StoreName extends StoreNames<DBTypes>,
 > = DBTypes extends DBSchema ? DBTypes[StoreName]['value'] : any;
+
+type KeyPathToNestedObject<S extends string> =
+    S extends `${infer T}.${infer U}` ? {[Key in T]: KeyPathToNestedObject<U>} : S;
+
+type OmitNested<Type, PathToKey> = PathToKey extends object ? Omit<Type, keyof PathToKey> & {
+    [Key in Extract<keyof PathToKey, keyof Type>]: OmitNested<Type[Key], PathToKey[Key]>
+} : PathToKey extends keyof Type ? Omit<Type, PathToKey> & { [Key in PathToKey]?: Type[Key] } : never
+
+type ValueWithOptionalKeyPath<Value extends unknown, KeyPath extends string> = Value | OmitNested<Value, KeyPathToNestedObject<KeyPath>>;
+
+export type StoreValueWithOptionalKey<
+  DBTypes extends DBSchema | unknown,
+  StoreName extends StoreNames<DBTypes>,
+> = DBTypes extends DBSchema ? DBTypes[StoreName]['autoIncrementKeyPath'] extends string ? (
+  StoreValue<DBTypes, StoreName> | ValueWithOptionalKeyPath<DBTypes[StoreName]['value'], DBTypes[StoreName]['autoIncrementKeyPath']>
+) : StoreValue<DBTypes, StoreName> : any;
 
 /**
  * Extract database key types from the DB schema type.
@@ -639,7 +656,7 @@ export interface IDBPObjectStore<
   add: Mode extends 'readonly'
     ? undefined
     : (
-        value: StoreValue<DBTypes, StoreName>,
+        value: StoreValueWithOptionalKey<DBTypes, StoreName>,
         key?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
       ) => Promise<StoreKey<DBTypes, StoreName>>;
   /**
@@ -750,7 +767,7 @@ export interface IDBPObjectStore<
   put: Mode extends 'readonly'
     ? undefined
     : (
-        value: StoreValue<DBTypes, StoreName>,
+        value: StoreValueWithOptionalKey<DBTypes, StoreName>,
         key?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
       ) => Promise<StoreKey<DBTypes, StoreName>>;
   /**
