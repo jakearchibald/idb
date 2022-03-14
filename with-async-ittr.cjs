@@ -1,2 +1,2 @@
-module.exports = require('./build/cjs/index.js');
-require('./build/cjs/async-iterators.js');
+module.exports = require('./build/index.cjs');
+require('./build/async-iterators.cjs');
