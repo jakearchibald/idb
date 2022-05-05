@@ -5,8 +5,8 @@ import {
   IDBPIndex,
   IDBPObjectStore,
   IDBPTransaction,
-} from './entry';
-import { Constructor, Func, instanceOfAny } from './util';
+} from './entry.js';
+import { Constructor, Func, instanceOfAny } from './util.js';
 
 let idbProxyableTypes: Constructor[];
 let cursorAdvanceMethods: Func[];

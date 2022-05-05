@@ -1,6 +1,6 @@
-import { instanceOfAny, Func } from './util';
-import { replaceTraps, reverseTransformCache, unwrap } from './wrap-idb-value';
-import { IDBPObjectStore, IDBPIndex, IDBPCursor } from './entry';
+import { instanceOfAny, Func } from './util.js';
+import { replaceTraps, reverseTransformCache, unwrap } from './wrap-idb-value.js';
+import { IDBPObjectStore, IDBPIndex, IDBPCursor } from './entry.js';
 
 const advanceMethodProps = ['continue', 'continuePrimaryKey', 'advance'];
 const methodMap: { [s: string]: Func } = {};

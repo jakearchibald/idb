@@ -1,4 +1,4 @@
-import { wrap } from './wrap-idb-value';
+import { wrap } from './wrap-idb-value.js';
 
 export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
   /**
@@ -100,7 +100,7 @@ export function deleteDB(
   return wrap(request).then(() => undefined);
 }
 
-export { unwrap, wrap } from './wrap-idb-value';
+export { unwrap, wrap } from './wrap-idb-value.js';
 
 // === The rest of this file is type defs ===
 type KeyToKeyNoIndex<T> = {
