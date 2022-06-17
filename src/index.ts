@@ -1,2 +1,2 @@
-export * from './entry';
-import './database-extras';
+export * from './entry.js';
+import './database-extras.js';

@@ -1,6 +1,6 @@
-import { Func } from './util';
-import { replaceTraps } from './wrap-idb-value';
-import { IDBPDatabase, IDBPIndex } from './entry';
+import { Func } from './util.js';
+import { replaceTraps } from './wrap-idb-value.js';
+import { IDBPDatabase, IDBPIndex } from './entry.js';
 
 const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
 const writeMethods = ['put', 'add', 'delete', 'clear'];
