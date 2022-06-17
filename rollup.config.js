@@ -3,7 +3,7 @@ import { promisify } from 'util';
 import { basename } from 'path';
 
 import { terser } from 'rollup-plugin-terser';
-import resolve from 'rollup-plugin-node-resolve';
+import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import del from 'del';
 import glob from 'glob';
@@ -13,7 +13,7 @@ import simpleTS from './lib/simple-ts';
 const globP = promisify(glob);
 
 export default async function ({ watch }) {
-  await del(['build', 'tmp']);
+  await del(['.ts-tmp', 'build', 'tmp']);
 
   const builds = [];
 

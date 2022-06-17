@@ -11,6 +11,7 @@ import {
   openDBWithData,
   TestDBSchema,
   ObjectStoreValue,
+  SimpleIsExact,
 } from './utils';
 
 const { assert } = chai;
@@ -76,7 +77,7 @@ suite('Async iterators', () => {
           >
         >(true);
 
-        typeAssert<IsExact<typeof cursor.key, IDBValidKey>>(true);
+        typeAssert<SimpleIsExact<typeof cursor.key, IDBValidKey>>(true);
 
         typeAssert<IsExact<typeof cursor.value, any>>(true);
 
@@ -112,7 +113,7 @@ suite('Async iterators', () => {
       const store = db.transaction('key-val-store').store;
 
       typeAssert<
-        IsExact<
+        SimpleIsExact<
           Parameters<typeof store.iterate>[0],
           IDBValidKey | IDBKeyRange | undefined | null
         >
@@ -226,7 +227,7 @@ suite('Async iterators', () => {
           >
         >(true);
 
-        typeAssert<IsExact<typeof cursor.key, IDBValidKey>>(true);
+        typeAssert<SimpleIsExact<typeof cursor.key, IDBValidKey>>(true);
 
         typeAssert<IsExact<typeof cursor.value, any>>(true);
 
@@ -292,7 +293,7 @@ suite('Async iterators', () => {
       assert.property(index, 'iterate');
 
       typeAssert<
-        IsExact<
+        SimpleIsExact<
           Parameters<typeof index.iterate>[0],
           IDBValidKey | IDBKeyRange | undefined | null
         >
