@@ -88,10 +88,3 @@ export function deleteDatabase(callbacks: DeleteDBCallbacks = {}) {
   dbWithDataCreated = false;
   return deleteDB(dbName, callbacks);
 }
-
-// This is used in cases where IsExact causes infinite recursion.
-export type SimpleIsExact<T, U> = T extends U
-  ? U extends T
-    ? true
-    : false
-  : false;
