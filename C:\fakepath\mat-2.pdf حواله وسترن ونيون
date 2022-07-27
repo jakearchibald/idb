@@ -1,0 +1,6 @@
+let cursor = await db.transaction(storeName).store.openCursor();
+
+while (cursor) {
+  console.log(cursor.key, cursor.value);
+  cursor = await cursor.continue();
+}
