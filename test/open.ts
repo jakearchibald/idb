@@ -23,7 +23,7 @@ suite('openDb', () => {
     let upgradeRun = false;
     const version = getNextVersion();
     db = (await openDB<TestDBSchema>(dbName, version, {
-      upgrade(db, oldVersion, newVersion, tx) {
+      upgrade(db, oldVersion, newVersion, tx, event) {
         upgradeRun = true;
 
         typeAssert<IsExact<typeof db, IDBPDatabase<TestDBSchema>>>(true);
@@ -42,8 +42,11 @@ suite('openDb', () => {
             >
           >
         >(true);
-        assert.instanceOf(tx, IDBTransaction, 'db instance');
+        assert.instanceOf(tx, IDBTransaction, 'transaction');
         assert.strictEqual(tx.mode, 'versionchange', 'tx mode');
+
+        assert.instanceOf(event, IDBVersionChangeEvent, 'event');
+        typeAssert<IsExact<typeof event, IDBVersionChangeEvent>>(true);
       },
     })) as IDBPDatabase;
 
@@ -120,12 +123,22 @@ suite('openDb', () => {
     let newDbBlockedCalled = false;
     let newDbBlockingCalled = false;
 
-    db = (await openDB<TestDBSchema>(dbName, getNextVersion(), {
+    const firstVersion = getNextVersion();
+    const nextVersion = getNextVersion();
+
+    db = (await openDB<TestDBSchema>(dbName, firstVersion, {
       blocked() {
         blockedCalled = true;
       },
-      blocking() {
+      blocking(currentVersion, blockedVersion, event) {
         blockingCalled = true;
+
+        assert.strictEqual(currentVersion, firstVersion);
+        assert.strictEqual(blockedVersion, nextVersion);
+
+        assert.instanceOf(event, IDBVersionChangeEvent, 'event');
+        typeAssert<IsExact<typeof event, IDBVersionChangeEvent>>(true);
+
         // 'blocked' isn't called if older databases close once blocking fires.
         // Using set timeout so closing isn't immediate.
         setTimeout(() => db.close(), 0);
@@ -135,7 +148,7 @@ suite('openDb', () => {
     assert.isFalse(blockedCalled);
     assert.isFalse(blockingCalled);
 
-    db = (await openDB<TestDBSchema>(dbName, getNextVersion(), {
+    db = (await openDB<TestDBSchema>(dbName, nextVersion, {
       blocked() {
         newDbBlockedCalled = true;
       },

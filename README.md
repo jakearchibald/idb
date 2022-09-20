@@ -81,13 +81,13 @@ This method opens a database, and returns a promise for an enhanced [`IDBDatabas
 
 ```js
 const db = await openDB(name, version, {
-  upgrade(db, oldVersion, newVersion, transaction) {
+  upgrade(db, oldVersion, newVersion, transaction, event) {
     // …
   },
   blocked() {
     // …
   },
-  blocking() {
+  blocking(currentVersion, blockedVersion, event) {
     // …
   },
   terminated() {
@@ -103,8 +103,12 @@ const db = await openDB(name, version, {
   - `oldVersion`: Last version of the database opened by the user.
   - `newVersion`: Whatever new version you provided.
   - `transaction`: An enhanced transaction for this upgrade. This is useful if you need to get data from other stores as part of a migration.
+  - `event`: The event object for the associated `upgradeneeded` event.
 - `blocked` (optional): Called if there are older versions of the database open on the origin, so this version cannot open. This is similar to the [`blocked` event](https://developer.mozilla.org/en-US/docs/Web/API/IDBOpenDBRequest/blocked_event) in plain IndexedDB.
 - `blocking` (optional): Called if this connection is blocking a future version of the database from opening. This is similar to the [`versionchange` event](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/versionchange_event) in plain IndexedDB.
+  - `currentVersion`: Version of the open database (whatever version you provided to `openDB`).
+  - `blockedVersion`: The version of the database that's being blocked.
+  - `event`: The event object for the associated `versionchange` event.
 - `terminated` (optional): Called if the browser abnormally terminates the connection, but not on regular closures like calling `db.close()`. This is similar to the [`close` event](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/close_event) in plain IndexedDB.
 
 ## `deleteDB`
@@ -320,19 +324,19 @@ const dbPromise = openDB('keyval-store', 1, {
 
 export async function get(key) {
   return (await dbPromise).get('keyval', key);
-};
+}
 export async function set(key, val) {
   return (await dbPromise).put('keyval', val, key);
-};
+}
 export async function del(key) {
   return (await dbPromise).delete('keyval', key);
-};
+}
 export async function clear() {
   return (await dbPromise).clear('keyval');
-};
+}
 export async function keys() {
   return (await dbPromise).getAllKeys('keyval');
-};
+}
 ```
 
 ## Article store

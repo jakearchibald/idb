@@ -8,8 +8,9 @@ export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
    * @param database A database instance that you can use to add/remove stores and indexes.
    * @param oldVersion Last version of the database opened by the user.
    * @param newVersion Whatever new version you provided.
-   * @param transaction The transaction for this upgrade. This is useful if you need to get data
-   * from other stores as part of a migration.
+   * @param transaction The transaction for this upgrade.
+   * This is useful if you need to get data from other stores as part of a migration.
+   * @param event The event object for the associated 'upgradeneeded' event.
    */
   upgrade?(
     database: IDBPDatabase<DBTypes>,
@@ -20,6 +21,7 @@ export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
       StoreNames<DBTypes>[],
       'versionchange'
     >,
+    event: IDBVersionChangeEvent,
   ): void;
   /**
    * Called if there are older versions of the database open on the origin, so this version cannot
@@ -28,8 +30,16 @@ export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
   blocked?(): void;
   /**
    * Called if this connection is blocking a future version of the database from opening.
+   *
+   * @param currentVersion Version of the open database (whatever version you provided to `openDB`).
+   * @param blockedVersion The version of the database that's being blocked.
+   * @param event The event object for the associated 'versionchange' event.
    */
-  blocking?(): void;
+  blocking?(
+    currentVersion: number,
+    blockedVersion: number | null,
+    event: IDBVersionChangeEvent,
+  ): void;
   /**
    * Called if the browser abnormally terminates the connection.
    * This is not called when `db.close()` is called.
@@ -63,6 +73,7 @@ export function openDB<DBTypes extends DBSchema | unknown = unknown>(
           StoreNames<DBTypes>[],
           'versionchange'
         >,
+        event,
       );
     });
   }
@@ -72,7 +83,11 @@ export function openDB<DBTypes extends DBSchema | unknown = unknown>(
   openPromise
     .then((db) => {
       if (terminated) db.addEventListener('close', () => terminated());
-      if (blocking) db.addEventListener('versionchange', () => blocking());
+      if (blocking) {
+        db.addEventListener('versionchange', (event) =>
+          blocking(event.oldVersion, event.newVersion, event),
+        );
+      }
     })
     .catch(() => {});
 
