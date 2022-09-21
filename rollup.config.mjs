@@ -5,15 +5,15 @@ import { basename } from 'path';
 import { terser } from 'rollup-plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import del from 'del';
+import { deleteAsync } from 'del';
 import glob from 'glob';
 
-import simpleTS from './lib/simple-ts';
+import simpleTS from './lib/simple-ts.js';
 
 const globP = promisify(glob);
 
 export default async function ({ watch }) {
-  await del(['.ts-tmp', 'build', 'tmp']);
+  await deleteAsync(['.ts-tmp', 'build', 'tmp']);
 
   const builds = [];
 

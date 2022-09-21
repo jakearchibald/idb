@@ -8,8 +8,9 @@ export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
    * @param database A database instance that you can use to add/remove stores and indexes.
    * @param oldVersion Last version of the database opened by the user.
    * @param newVersion Whatever new version you provided.
-   * @param transaction The transaction for this upgrade. This is useful if you need to get data
-   * from other stores as part of a migration.
+   * @param transaction The transaction for this upgrade.
+   * This is useful if you need to get data from other stores as part of a migration.
+   * @param event The event object for the associated 'upgradeneeded' event.
    */
   upgrade?(
     database: IDBPDatabase<DBTypes>,
@@ -20,16 +21,33 @@ export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
       StoreNames<DBTypes>[],
       'versionchange'
     >,
+    event: IDBVersionChangeEvent,
   ): void;
   /**
    * Called if there are older versions of the database open on the origin, so this version cannot
    * open.
+   *
+   * @param currentVersion Version of the database that's blocking this one.
+   * @param blockedVersion The version of the database being blocked (whatever version you provided to `openDB`).
+   * @param event The event object for the associated `blocked` event.
    */
-  blocked?(): void;
+  blocked?(
+    currentVersion: number,
+    blockedVersion: number | null,
+    event: IDBVersionChangeEvent,
+  ): void;
   /**
    * Called if this connection is blocking a future version of the database from opening.
+   *
+   * @param currentVersion Version of the open database (whatever version you provided to `openDB`).
+   * @param blockedVersion The version of the database that's being blocked.
+   * @param event The event object for the associated `versionchange` event.
    */
-  blocking?(): void;
+  blocking?(
+    currentVersion: number,
+    blockedVersion: number | null,
+    event: IDBVersionChangeEvent,
+  ): void;
   /**
    * Called if the browser abnormally terminates the connection.
    * This is not called when `db.close()` is called.
@@ -63,16 +81,30 @@ export function openDB<DBTypes extends DBSchema | unknown = unknown>(
           StoreNames<DBTypes>[],
           'versionchange'
         >,
+        event,
       );
     });
   }
 
-  if (blocked) request.addEventListener('blocked', () => blocked());
+  if (blocked) {
+    request.addEventListener('blocked', (event) =>
+      blocked(
+        // Casting due to https://github.com/microsoft/TypeScript-DOM-lib-generator/pull/1405
+        (event as IDBVersionChangeEvent).oldVersion,
+        (event as IDBVersionChangeEvent).newVersion,
+        event as IDBVersionChangeEvent,
+      ),
+    );
+  }
 
   openPromise
     .then((db) => {
       if (terminated) db.addEventListener('close', () => terminated());
-      if (blocking) db.addEventListener('versionchange', () => blocking());
+      if (blocking) {
+        db.addEventListener('versionchange', (event) =>
+          blocking(event.oldVersion, event.newVersion, event),
+        );
+      }
     })
     .catch(() => {});
 
@@ -82,8 +114,11 @@ export function openDB<DBTypes extends DBSchema | unknown = unknown>(
 export interface DeleteDBCallbacks {
   /**
    * Called if there are connections to this database open, so it cannot be deleted.
+   *
+   * @param currentVersion Version of the database that's blocking the delete operation.
+   * @param event The event object for the associated `blocked` event.
    */
-  blocked?(): void;
+  blocked?(currentVersion: number, event: IDBVersionChangeEvent): void;
 }
 
 /**
@@ -96,7 +131,17 @@ export function deleteDB(
   { blocked }: DeleteDBCallbacks = {},
 ): Promise<void> {
   const request = indexedDB.deleteDatabase(name);
-  if (blocked) request.addEventListener('blocked', () => blocked());
+
+  if (blocked) {
+    request.addEventListener('blocked', (event) =>
+      blocked(
+        // Casting due to https://github.com/microsoft/TypeScript-DOM-lib-generator/pull/1405
+        (event as IDBVersionChangeEvent).oldVersion,
+        event as IDBVersionChangeEvent,
+      ),
+    );
+  }
+
   return wrap(request).then(() => undefined);
 }
 
