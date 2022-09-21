@@ -84,7 +84,7 @@ const db = await openDB(name, version, {
   upgrade(db, oldVersion, newVersion, transaction, event) {
     // …
   },
-  blocked() {
+  blocked(currentVersion, blockedVersion, event) {
     // …
   },
   blocking(currentVersion, blockedVersion, event) {
@@ -105,6 +105,9 @@ const db = await openDB(name, version, {
   - `transaction`: An enhanced transaction for this upgrade. This is useful if you need to get data from other stores as part of a migration.
   - `event`: The event object for the associated `upgradeneeded` event.
 - `blocked` (optional): Called if there are older versions of the database open on the origin, so this version cannot open. This is similar to the [`blocked` event](https://developer.mozilla.org/en-US/docs/Web/API/IDBOpenDBRequest/blocked_event) in plain IndexedDB.
+  - `currentVersion`: Version of the database that's blocking this one.
+  - `blockedVersion`: The version of the database being blocked (whatever version you provided to `openDB`).
+  - `event`: The event object for the associated `blocked` event.
 - `blocking` (optional): Called if this connection is blocking a future version of the database from opening. This is similar to the [`versionchange` event](https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/versionchange_event) in plain IndexedDB.
   - `currentVersion`: Version of the open database (whatever version you provided to `openDB`).
   - `blockedVersion`: The version of the database that's being blocked.
@@ -125,6 +128,8 @@ await deleteDB(name, {
 
 - `name`: Name of the database.
 - `blocked` (optional): Called if the database already exists and there are open connections that don’t close in response to a versionchange event, the request will be blocked until they all close.
+  - `currentVersion`: Version of the database that's blocking the delete operation.
+  - `event`: The event object for the associated 'versionchange' event.
 
 ## `unwrap`
 

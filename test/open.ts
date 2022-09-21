@@ -149,8 +149,14 @@ suite('openDb', () => {
     assert.isFalse(blockingCalled);
 
     db = (await openDB<TestDBSchema>(dbName, nextVersion, {
-      blocked() {
+      blocked(currentVersion, blockedVersion, event) {
         newDbBlockedCalled = true;
+
+        assert.strictEqual(currentVersion, firstVersion);
+        assert.strictEqual(blockedVersion, nextVersion);
+
+        assert.instanceOf(event, IDBVersionChangeEvent, 'event');
+        typeAssert<IsExact<typeof event, IDBVersionChangeEvent>>(true);
       },
       blocking() {
         newDbBlockingCalled = true;
@@ -225,8 +231,9 @@ suite('deleteDb', () => {
     let blockedCalled = false;
     let blockingCalled = false;
     let closeDbBlockedCalled = false;
+    const version = getNextVersion();
 
-    db = await openDB(dbName, getNextVersion(), {
+    db = await openDB(dbName, version, {
       blocked() {
         blockedCalled = true;
       },
@@ -242,8 +249,13 @@ suite('deleteDb', () => {
     assert.isFalse(blockingCalled);
 
     await deleteDatabase({
-      blocked() {
+      blocked(currentVersion, event) {
         closeDbBlockedCalled = true;
+
+        assert.strictEqual(currentVersion, version);
+
+        assert.instanceOf(event, IDBVersionChangeEvent, 'event');
+        typeAssert<IsExact<typeof event, IDBVersionChangeEvent>>(true);
       },
     });
 

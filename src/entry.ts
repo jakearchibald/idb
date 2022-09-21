@@ -26,14 +26,22 @@ export interface OpenDBCallbacks<DBTypes extends DBSchema | unknown> {
   /**
    * Called if there are older versions of the database open on the origin, so this version cannot
    * open.
+   *
+   * @param currentVersion Version of the database that's blocking this one.
+   * @param blockedVersion The version of the database being blocked (whatever version you provided to `openDB`).
+   * @param event The event object for the associated `blocked` event.
    */
-  blocked?(): void;
+  blocked?(
+    currentVersion: number,
+    blockedVersion: number | null,
+    event: IDBVersionChangeEvent,
+  ): void;
   /**
    * Called if this connection is blocking a future version of the database from opening.
    *
    * @param currentVersion Version of the open database (whatever version you provided to `openDB`).
    * @param blockedVersion The version of the database that's being blocked.
-   * @param event The event object for the associated 'versionchange' event.
+   * @param event The event object for the associated `versionchange` event.
    */
   blocking?(
     currentVersion: number,
@@ -78,7 +86,16 @@ export function openDB<DBTypes extends DBSchema | unknown = unknown>(
     });
   }
 
-  if (blocked) request.addEventListener('blocked', () => blocked());
+  if (blocked) {
+    request.addEventListener('blocked', (event) =>
+      blocked(
+        // Casting due to https://github.com/microsoft/TypeScript-DOM-lib-generator/pull/1405
+        (event as IDBVersionChangeEvent).oldVersion,
+        (event as IDBVersionChangeEvent).newVersion,
+        event as IDBVersionChangeEvent,
+      ),
+    );
+  }
 
   openPromise
     .then((db) => {
@@ -97,8 +114,11 @@ export function openDB<DBTypes extends DBSchema | unknown = unknown>(
 export interface DeleteDBCallbacks {
   /**
    * Called if there are connections to this database open, so it cannot be deleted.
+   *
+   * @param currentVersion Version of the database that's blocking the delete operation.
+   * @param event The event object for the associated `blocked` event.
    */
-  blocked?(): void;
+  blocked?(currentVersion: number, event: IDBVersionChangeEvent): void;
 }
 
 /**
@@ -111,7 +131,17 @@ export function deleteDB(
   { blocked }: DeleteDBCallbacks = {},
 ): Promise<void> {
   const request = indexedDB.deleteDatabase(name);
-  if (blocked) request.addEventListener('blocked', () => blocked());
+
+  if (blocked) {
+    request.addEventListener('blocked', (event) =>
+      blocked(
+        // Casting due to https://github.com/microsoft/TypeScript-DOM-lib-generator/pull/1405
+        (event as IDBVersionChangeEvent).oldVersion,
+        event as IDBVersionChangeEvent,
+      ),
+    );
+  }
+
   return wrap(request).then(() => undefined);
 }
 
