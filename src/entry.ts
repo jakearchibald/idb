@@ -183,22 +183,48 @@ export type StoreNames<DBTypes extends DBSchema | unknown> =
  *
  * @template DBTypes DB schema type, or unknown if the DB isn't typed.
  * @template StoreName Names of the object stores to get the types of.
+ * @template Key Key type used for narrowing unions.
  */
 export type StoreValue<
   DBTypes extends DBSchema | unknown,
   StoreName extends StoreNames<DBTypes>,
-> = DBTypes extends DBSchema ? DBTypes[StoreName]['value'] : any;
+  Key = {},
+> = DBTypes extends DBSchema
+  ? (DBTypes[StoreName] &
+      (Key extends DBTypes[StoreName]['key'] ? { key: Key } : {}))['value']
+  : any;
 
 /**
  * Extract database key types from the DB schema type.
  *
  * @template DBTypes DB schema type, or unknown if the DB isn't typed.
  * @template StoreName Names of the object stores to get the types of.
+ * @template Key Key type used for narrowing unions.
  */
 export type StoreKey<
   DBTypes extends DBSchema | unknown,
   StoreName extends StoreNames<DBTypes>,
-> = DBTypes extends DBSchema ? DBTypes[StoreName]['key'] : IDBValidKey;
+  Key = {},
+> = DBTypes extends DBSchema
+  ? Key extends DBTypes[StoreName]['key']
+    ? Key & DBTypes[StoreName]['key']
+    : DBTypes[StoreName]['key']
+  : IDBValidKey;
+
+/**
+ * Extract database key types from the DB schema type.
+ *
+ * @template DBTypes DB schema type, or unknown if the DB isn't typed.
+ * @template StoreName Names of the object stores to get the types of.
+ * @template Value Value type used for narrowing unions.
+ */
+export type StoreKeyFromValue<
+  DBTypes extends DBSchema | unknown,
+  StoreName extends StoreNames<DBTypes>,
+  Value extends StoreValue<DBTypes, StoreName>,
+> = DBTypes extends DBSchema
+  ? (DBTypes[StoreName] & { value: Value })['key']
+  : IDBValidKey;
 
 /**
  * Extract the names of indexes in certain object stores from the DB schema type.
@@ -337,11 +363,14 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    * @param value
    * @param key
    */
-  add<Name extends StoreNames<DBTypes>>(
+  add<
+    Name extends StoreNames<DBTypes>,
+    Value extends StoreValue<DBTypes, Name>,
+  >(
     storeName: Name,
-    value: StoreValue<DBTypes, Name>,
-    key?: StoreKey<DBTypes, Name> | IDBKeyRange,
-  ): Promise<StoreKey<DBTypes, Name>>;
+    value: Value,
+    key?: StoreKeyFromValue<DBTypes, Name, Value>,
+  ): Promise<StoreKeyFromValue<DBTypes, Name, Value>>;
   /**
    * Deletes all records in a store.
    *
@@ -406,10 +435,13 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    * @param storeName Name of the store.
    * @param query
    */
-  get<Name extends StoreNames<DBTypes>>(
+  get<
+    Name extends StoreNames<DBTypes>,
+    Key extends StoreKey<DBTypes, Name> | IDBKeyRange,
+  >(
     storeName: Name,
-    query: StoreKey<DBTypes, Name> | IDBKeyRange,
-  ): Promise<StoreValue<DBTypes, Name> | undefined>;
+    query: Key,
+  ): Promise<StoreValue<DBTypes, Name, Key> | undefined>;
   /**
    * Retrieves the value of the first record in an index matching the query.
    *
@@ -440,11 +472,14 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    * @param query
    * @param count Maximum number of values to return.
    */
-  getAll<Name extends StoreNames<DBTypes>>(
+  getAll<
+    Name extends StoreNames<DBTypes>,
+    Key extends StoreKey<DBTypes, Name> | IDBKeyRange | null,
+  >(
     storeName: Name,
-    query?: StoreKey<DBTypes, Name> | IDBKeyRange | null,
+    query?: Key,
     count?: number,
-  ): Promise<StoreValue<DBTypes, Name>[]>;
+  ): Promise<StoreValue<DBTypes, Name, Key>[]>;
   /**
    * Retrieves all values in an index that match the query.
    *
@@ -475,11 +510,14 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    * @param query
    * @param count Maximum number of keys to return.
    */
-  getAllKeys<Name extends StoreNames<DBTypes>>(
+  getAllKeys<
+    Name extends StoreNames<DBTypes>,
+    Key extends StoreKey<DBTypes, Name> | IDBKeyRange | null,
+  >(
     storeName: Name,
-    query?: StoreKey<DBTypes, Name> | IDBKeyRange | null,
+    query?: Key,
     count?: number,
-  ): Promise<StoreKey<DBTypes, Name>[]>;
+  ): Promise<StoreKey<DBTypes, Name, Key>[]>;
   /**
    * Retrieves the keys of records in an index matching the query.
    *
@@ -511,10 +549,13 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    * @param storeName Name of the store.
    * @param query
    */
-  getKey<Name extends StoreNames<DBTypes>>(
+  getKey<
+    Name extends StoreNames<DBTypes>,
+    Key extends StoreKey<DBTypes, Name> | IDBKeyRange,
+  >(
     storeName: Name,
-    query: StoreKey<DBTypes, Name> | IDBKeyRange,
-  ): Promise<StoreKey<DBTypes, Name> | undefined>;
+    query: Key,
+  ): Promise<StoreKey<DBTypes, Name, Key> | undefined>;
   /**
    * Retrieves the key of the first record in an index that matches the query.
    *
@@ -547,11 +588,14 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    * @param value
    * @param key
    */
-  put<Name extends StoreNames<DBTypes>>(
+  put<
+    Name extends StoreNames<DBTypes>,
+    Value extends StoreValue<DBTypes, Name>,
+  >(
     storeName: Name,
-    value: StoreValue<DBTypes, Name>,
-    key?: StoreKey<DBTypes, Name> | IDBKeyRange,
-  ): Promise<StoreKey<DBTypes, Name>>;
+    value: Value,
+    key?: StoreKeyFromValue<DBTypes, Name, Value>,
+  ): Promise<StoreKeyFromValue<DBTypes, Name, Value>>;
 }
 
 type IDBPTransactionExtends = Omit<
