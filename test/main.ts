@@ -42,7 +42,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         typeof schemaDB.objectStoreNames,
-        TypedDOMStringList<'key-val-store' | 'object-store'>
+        TypedDOMStringList<'key-val-store' | 'object-store' | 'union-store'>
       >
     >(true);
 
@@ -58,7 +58,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.createObjectStore>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'union-store'
       >
     >(true);
 
@@ -74,7 +74,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.deleteObjectStore>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'union-store'
       >
     >(true);
 
@@ -90,7 +90,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.transaction>[0],
-        ArrayLike<'key-val-store' | 'object-store'>
+        ArrayLike<'key-val-store' | 'object-store' | 'union-store'>
       >
     >(true);
 
@@ -112,7 +112,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         typeof tx.objectStoreNames,
-        TypedDOMStringList<'key-val-store' | 'object-store'>
+        TypedDOMStringList<'key-val-store' | 'object-store' | 'union-store'>
       >
     >(true);
 
@@ -130,7 +130,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.get>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'union-store'
       >
     >(true);
 
@@ -145,6 +145,12 @@ suite('IDBPDatabase', () => {
     typeAssert<IsExact<typeof val2, any>>(true);
 
     assert.strictEqual(val2, 456, 'Correct value from store');
+
+    const val3 = await schemaDB.get('union-store', 1);
+
+    typeAssert<IsExact<typeof val3, 'one' | undefined>>(true);
+
+    assert.strictEqual(val3, 'one', 'Correct value from store');
   });
 
   test('getFromIndex', async () => {
@@ -195,7 +201,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.getKey>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'union-store'
       >
     >(true);
 
@@ -213,6 +219,12 @@ suite('IDBPDatabase', () => {
     typeAssert<IsExact<typeof val2, IDBValidKey | undefined>>(true);
 
     assert.strictEqual(val2, 'foo', 'Correct value');
+
+    const val3 = await schemaDB.getKey('union-store', 2);
+
+    typeAssert<IsExact<typeof val3, 2 | undefined>>(true);
+
+    assert.strictEqual(val3, 2, 'Correct value');
   });
 
   test('getKeyFromIndex', async function () {
@@ -253,7 +265,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.getAll>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'union-store'
       >
     >(true);
 
@@ -268,6 +280,12 @@ suite('IDBPDatabase', () => {
     typeAssert<IsExact<typeof val2, any[]>>(true);
 
     assert.deepStrictEqual(val2, [456, 123, 789], 'Correct values from store');
+
+    const val3 = await schemaDB.getAll('union-store', 3);
+
+    typeAssert<IsExact<typeof val3, 'three'[]>>(true);
+
+    assert.deepStrictEqual(val3, ['three'], 'Correct values from store');
   });
 
   test('getAllFromIndex', async function () {
@@ -349,7 +367,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.getAllKeys>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'union-store'
       >
     >(true);
 
@@ -372,6 +390,12 @@ suite('IDBPDatabase', () => {
       ['bar', 'foo', 'hello'],
       'Correct values from store',
     );
+
+    const val3 = await schemaDB.getAllKeys('union-store', 4);
+
+    typeAssert<IsExact<typeof val3, 4[]>>(true);
+
+    assert.deepStrictEqual(val3, [4], 'Correct values from store');
   });
 
   test('getAllKeysFromIndex', async function () {
@@ -402,7 +426,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.count>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'union-store'
       >
     >(true);
 
@@ -450,7 +474,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.put>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'union-store'
       >
     >(true);
 
@@ -487,6 +511,18 @@ suite('IDBPDatabase', () => {
       },
       'Correct value from store',
     );
+
+    const key3 = await schemaDB.put('union-store', 'five', 5);
+
+    typeAssert<IsExact<typeof key3, 5>>(true);
+
+    assert.strictEqual(key3, 5, 'Correct value from store');
+
+    const val3 = await schemaDB.get('union-store', 5);
+
+    typeAssert<IsExact<typeof val3, 'five' | undefined>>(true);
+
+    assert.strictEqual(val3, 'five', 'Correct value from store');
   });
 
   test('add', async () => {
@@ -498,7 +534,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.add>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'union-store'
       >
     >(true);
 
@@ -535,6 +571,18 @@ suite('IDBPDatabase', () => {
       },
       'Correct value from store',
     );
+
+    const key3 = await schemaDB.add('union-store', 'five', 5);
+
+    typeAssert<IsExact<typeof key3, 5>>(true);
+
+    assert.strictEqual(key3, 5, 'Correct value from store');
+
+    const val3 = await schemaDB.get('union-store', 5);
+
+    typeAssert<IsExact<typeof val3, 'five' | undefined>>(true);
+
+    assert.strictEqual(val3, 'five', 'Correct value from store');
   });
 
   test('add - error type', async () => {
@@ -593,7 +641,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.delete>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'union-store'
       >
     >(true);
 
@@ -617,7 +665,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.clear>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'union-store'
       >
     >(true);
 
