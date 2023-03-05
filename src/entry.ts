@@ -682,12 +682,13 @@ export interface IDBPObjectStore<
    */
   add: Mode extends 'readonly'
     ? undefined
-    : <Value extends StoreValue<DBTypes, StoreName>>(
+    : <
+        Value extends StoreValue<DBTypes, Name>,
+        Name extends StoreName = StoreName,
+      >(
         value: Value,
-        key?: StoreKeyFromValue<DBTypes, StoreName, Value>,
-        // Somehow the return type is different from the key parameter type. Not
-        // sure how to fix it. The IDBPDatabase equivalent is fine.
-      ) => Promise<StoreKeyFromValue<DBTypes, StoreName, Value>>;
+        key?: StoreKeyFromValue<DBTypes, Name, Value>,
+      ) => Promise<StoreKeyFromValue<DBTypes, Name, Value>>;
   /**
    * Deletes all records in store.
    */
@@ -795,11 +796,13 @@ export interface IDBPObjectStore<
    */
   put: Mode extends 'readonly'
     ? undefined
-    : <Value extends StoreValue<DBTypes, StoreName>>(
+    : <
+        Value extends StoreValue<DBTypes, Name>,
+        Name extends StoreName = StoreName,
+      >(
         value: Value,
-        key?: StoreKeyFromValue<DBTypes, StoreName, Value>,
-        // ditto the add method
-      ) => Promise<StoreKeyFromValue<DBTypes, StoreName, Value>>;
+        key?: StoreKeyFromValue<DBTypes, Name, Value>,
+      ) => Promise<StoreKeyFromValue<DBTypes, Name, Value>>;
   /**
    * Iterate over the store.
    */
