@@ -914,7 +914,7 @@ suite('IDBPObjectStore', () => {
         typeof store2.add,
         (
           value: number,
-          key?: string | IDBKeyRange | undefined,
+          key?: string | undefined,
         ) => Promise<string>
       >
     >(true);
@@ -923,7 +923,7 @@ suite('IDBPObjectStore', () => {
         typeof store2.put,
         (
           value: number,
-          key?: string | IDBKeyRange | undefined,
+          key?: string | undefined,
         ) => Promise<string>
       >
     >(true);
@@ -1014,7 +1014,7 @@ suite('IDBPObjectStore', () => {
     typeAssert<
       IsExact<
         Parameters<typeof store1.add>[1],
-        string | IDBKeyRange | undefined
+        string | undefined
       >
     >(true);
 
@@ -1033,7 +1033,7 @@ suite('IDBPObjectStore', () => {
     typeAssert<
       IsExact<
         Parameters<typeof store2.add>[1],
-        IDBValidKey | IDBKeyRange | undefined
+        IDBValidKey | undefined
       >
     >(true);
 
@@ -1430,7 +1430,7 @@ suite('IDBPObjectStore', () => {
     typeAssert<
       IsExact<
         Parameters<typeof store1.put>[1],
-        string | IDBKeyRange | undefined
+        string | undefined
       >
     >(true);
 
@@ -1449,7 +1449,7 @@ suite('IDBPObjectStore', () => {
     typeAssert<
       IsExact<
         Parameters<typeof store2.put>[1],
-        IDBValidKey | IDBKeyRange | undefined
+        IDBValidKey | undefined
       >
     >(true);
 

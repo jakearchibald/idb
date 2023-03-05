@@ -682,10 +682,12 @@ export interface IDBPObjectStore<
    */
   add: Mode extends 'readonly'
     ? undefined
-    : (
-        value: StoreValue<DBTypes, StoreName>,
-        key?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
-      ) => Promise<StoreKey<DBTypes, StoreName>>;
+    : <Value extends StoreValue<DBTypes, StoreName>>(
+        value: Value,
+        key?: StoreKeyFromValue<DBTypes, StoreName, Value>,
+        // Somehow the return type is different from the key parameter type. Not
+        // sure how to fix it. The IDBPDatabase equivalent is fine.
+      ) => Promise<StoreKeyFromValue<DBTypes, StoreName, Value>>;
   /**
    * Deletes all records in store.
    */
@@ -719,37 +721,37 @@ export interface IDBPObjectStore<
    *
    * Resolves with undefined if no match is found.
    */
-  get(
-    query: StoreKey<DBTypes, StoreName> | IDBKeyRange,
-  ): Promise<StoreValue<DBTypes, StoreName> | undefined>;
+  get<Key extends StoreKey<DBTypes, StoreName> | IDBKeyRange>(
+    query: Key,
+  ): Promise<StoreValue<DBTypes, StoreName, Key> | undefined>;
   /**
    * Retrieves all values that match the query.
    *
    * @param query
    * @param count Maximum number of values to return.
    */
-  getAll(
-    query?: StoreKey<DBTypes, StoreName> | IDBKeyRange | null,
+  getAll<Key extends StoreKey<DBTypes, StoreName> | IDBKeyRange | null>(
+    query?: Key,
     count?: number,
-  ): Promise<StoreValue<DBTypes, StoreName>[]>;
+  ): Promise<StoreValue<DBTypes, StoreName, Key>[]>;
   /**
    * Retrieves the keys of records matching the query.
    *
    * @param query
    * @param count Maximum number of keys to return.
    */
-  getAllKeys(
-    query?: StoreKey<DBTypes, StoreName> | IDBKeyRange | null,
+  getAllKeys<Key extends StoreKey<DBTypes, StoreName> | IDBKeyRange | null>(
+    query?: Key,
     count?: number,
-  ): Promise<StoreKey<DBTypes, StoreName>[]>;
+  ): Promise<StoreKey<DBTypes, StoreName, Key>[]>;
   /**
    * Retrieves the key of the first record that matches the query.
    *
    * Resolves with undefined if no match is found.
    */
-  getKey(
-    query: StoreKey<DBTypes, StoreName> | IDBKeyRange,
-  ): Promise<StoreKey<DBTypes, StoreName> | undefined>;
+  getKey<Key extends StoreKey<DBTypes, StoreName> | IDBKeyRange>(
+    query: Key,
+  ): Promise<StoreKey<DBTypes, StoreName, Key> | undefined>;
   /**
    * Get a query of a given name.
    */
@@ -793,10 +795,11 @@ export interface IDBPObjectStore<
    */
   put: Mode extends 'readonly'
     ? undefined
-    : (
-        value: StoreValue<DBTypes, StoreName>,
-        key?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
-      ) => Promise<StoreKey<DBTypes, StoreName>>;
+    : <Value extends StoreValue<DBTypes, StoreName>>(
+        value: Value,
+        key?: StoreKeyFromValue<DBTypes, StoreName, Value>,
+        // ditto the add method
+      ) => Promise<StoreKeyFromValue<DBTypes, StoreName, Value>>;
   /**
    * Iterate over the store.
    */
