@@ -127,30 +127,36 @@ suite('IDBPDatabase', () => {
 
     assert.property(schemaDB, 'get', 'Method exists');
 
-    typeAssert<
-      IsExact<
-        Parameters<typeof schemaDB.get>[0],
-        'key-val-store' | 'object-store' | 'union-store'
-      >
-    >(true);
+    {
+      typeAssert<
+        IsExact<
+          Parameters<typeof schemaDB.get>[0],
+          'key-val-store' | 'object-store' | 'union-store'
+        >
+      >(true);
 
-    const val = await schemaDB.get('key-val-store', 'foo');
+      const val = await schemaDB.get('key-val-store', 'foo');
 
-    typeAssert<IsExact<typeof val, number | undefined>>(true);
+      typeAssert<IsExact<typeof val, number | undefined>>(true);
 
-    assert.strictEqual(val, 123, 'Correct value from store');
+      assert.strictEqual(val, 123, 'Correct value from store');
+    }
 
-    const val2 = await db.get('key-val-store', 'bar');
+    {
+      const val = await db.get('key-val-store', 'bar');
 
-    typeAssert<IsExact<typeof val2, any>>(true);
+      typeAssert<IsExact<typeof val, any>>(true);
 
-    assert.strictEqual(val2, 456, 'Correct value from store');
+      assert.strictEqual(val, 456, 'Correct value from store');
+    }
 
-    const val3 = await schemaDB.get('union-store', 1);
+    {
+      const val = await schemaDB.get('union-store', 1);
 
-    typeAssert<IsExact<typeof val3, 'one' | undefined>>(true);
+      typeAssert<IsExact<typeof val, 'one' | undefined>>(true);
 
-    assert.strictEqual(val3, 'one', 'Correct value from store');
+      assert.strictEqual(val, 'one', 'Correct value from store');
+    }
   });
 
   test('getFromIndex', async () => {
@@ -198,33 +204,39 @@ suite('IDBPDatabase', () => {
 
     assert.property(schemaDB, 'getKey', 'Method exists');
 
-    typeAssert<
-      IsExact<
-        Parameters<typeof schemaDB.getKey>[0],
-        'key-val-store' | 'object-store' | 'union-store'
-      >
-    >(true);
+    {
+      typeAssert<
+        IsExact<
+          Parameters<typeof schemaDB.getKey>[0],
+          'key-val-store' | 'object-store' | 'union-store'
+        >
+      >(true);
 
-    const val = await schemaDB.getKey(
-      'key-val-store',
-      IDBKeyRange.lowerBound('a'),
-    );
+      const val = await schemaDB.getKey(
+        'key-val-store',
+        IDBKeyRange.lowerBound('a'),
+      );
 
-    typeAssert<IsExact<typeof val, string | undefined>>(true);
+      typeAssert<IsExact<typeof val, string | undefined>>(true);
 
-    assert.strictEqual(val, 'bar', 'Correct value');
+      assert.strictEqual(val, 'bar', 'Correct value');
+    }
 
-    const val2 = await db.getKey('key-val-store', IDBKeyRange.lowerBound('c'));
+    {
+      const val = await db.getKey('key-val-store', IDBKeyRange.lowerBound('c'));
 
-    typeAssert<IsExact<typeof val2, IDBValidKey | undefined>>(true);
+      typeAssert<IsExact<typeof val, IDBValidKey | undefined>>(true);
 
-    assert.strictEqual(val2, 'foo', 'Correct value');
+      assert.strictEqual(val, 'foo', 'Correct value');
+    }
 
-    const val3 = await schemaDB.getKey('union-store', 2);
+    {
+      const val = await schemaDB.getKey('union-store', 2);
 
-    typeAssert<IsExact<typeof val3, 2 | undefined>>(true);
+      typeAssert<IsExact<typeof val, 2 | undefined>>(true);
 
-    assert.strictEqual(val3, 2, 'Correct value');
+      assert.strictEqual(val, 2, 'Correct value');
+    }
   });
 
   test('getKeyFromIndex', async function () {
@@ -262,30 +274,36 @@ suite('IDBPDatabase', () => {
 
     assert.property(schemaDB, 'getAll', 'Method exists');
 
-    typeAssert<
-      IsExact<
-        Parameters<typeof schemaDB.getAll>[0],
-        'key-val-store' | 'object-store' | 'union-store'
-      >
-    >(true);
+    {
+      typeAssert<
+        IsExact<
+          Parameters<typeof schemaDB.getAll>[0],
+          'key-val-store' | 'object-store' | 'union-store'
+        >
+      >(true);
 
-    const val = await schemaDB.getAll('key-val-store');
+      const val = await schemaDB.getAll('key-val-store');
 
-    typeAssert<IsExact<typeof val, number[]>>(true);
+      typeAssert<IsExact<typeof val, number[]>>(true);
 
-    assert.deepStrictEqual(val, [456, 123, 789], 'Correct values from store');
+      assert.deepStrictEqual(val, [456, 123, 789], 'Correct values from store');
+    }
 
-    const val2 = await db.getAll('key-val-store');
+    {
+      const val = await db.getAll('key-val-store');
 
-    typeAssert<IsExact<typeof val2, any[]>>(true);
+      typeAssert<IsExact<typeof val, any[]>>(true);
 
-    assert.deepStrictEqual(val2, [456, 123, 789], 'Correct values from store');
+      assert.deepStrictEqual(val, [456, 123, 789], 'Correct values from store');
+    }
 
-    const val3 = await schemaDB.getAll('union-store', 3);
+    {
+      const val = await schemaDB.getAll('union-store', 3);
 
-    typeAssert<IsExact<typeof val3, 'three'[]>>(true);
+      typeAssert<IsExact<typeof val, 'three'[]>>(true);
 
-    assert.deepStrictEqual(val3, ['three'], 'Correct values from store');
+      assert.deepStrictEqual(val, ['three'], 'Correct values from store');
+    }
   });
 
   test('getAllFromIndex', async function () {
@@ -364,38 +382,44 @@ suite('IDBPDatabase', () => {
 
     assert.property(schemaDB, 'getAllKeys', 'Method exists');
 
-    typeAssert<
-      IsExact<
-        Parameters<typeof schemaDB.getAllKeys>[0],
-        'key-val-store' | 'object-store' | 'union-store'
-      >
-    >(true);
+    {
+      typeAssert<
+        IsExact<
+          Parameters<typeof schemaDB.getAllKeys>[0],
+          'key-val-store' | 'object-store' | 'union-store'
+        >
+      >(true);
 
-    const val = await schemaDB.getAllKeys('key-val-store');
+      const val = await schemaDB.getAllKeys('key-val-store');
 
-    typeAssert<IsExact<typeof val, string[]>>(true);
+      typeAssert<IsExact<typeof val, string[]>>(true);
 
-    assert.deepStrictEqual(
-      val,
-      ['bar', 'foo', 'hello'],
-      'Correct values from store',
-    );
+      assert.deepStrictEqual(
+        val,
+        ['bar', 'foo', 'hello'],
+        'Correct values from store',
+      );
+    }
 
-    const val2 = await db.getAllKeys('key-val-store');
+    {
+      const val = await db.getAllKeys('key-val-store');
 
-    typeAssert<IsExact<typeof val2, IDBValidKey[]>>(true);
+      typeAssert<IsExact<typeof val, IDBValidKey[]>>(true);
 
-    assert.deepStrictEqual(
-      val2,
-      ['bar', 'foo', 'hello'],
-      'Correct values from store',
-    );
+      assert.deepStrictEqual(
+        val,
+        ['bar', 'foo', 'hello'],
+        'Correct values from store',
+      );
+    }
 
-    const val3 = await schemaDB.getAllKeys('union-store', 4);
+    {
+      const val = await schemaDB.getAllKeys('union-store', 4);
 
-    typeAssert<IsExact<typeof val3, 4[]>>(true);
+      typeAssert<IsExact<typeof val, 4[]>>(true);
 
-    assert.deepStrictEqual(val3, [4], 'Correct values from store');
+      assert.deepStrictEqual(val, [4], 'Correct values from store');
+    }
   });
 
   test('getAllKeysFromIndex', async function () {
@@ -471,58 +495,64 @@ suite('IDBPDatabase', () => {
 
     assert.property(schemaDB, 'put', 'Method exists');
 
-    typeAssert<
-      IsExact<
-        Parameters<typeof schemaDB.put>[0],
-        'key-val-store' | 'object-store' | 'union-store'
-      >
-    >(true);
+    {
+      typeAssert<
+        IsExact<
+          Parameters<typeof schemaDB.put>[0],
+          'key-val-store' | 'object-store' | 'union-store'
+        >
+      >(true);
 
-    const key = await schemaDB.put('key-val-store', 234, 'new');
+      const key = await schemaDB.put('key-val-store', 234, 'new');
 
-    typeAssert<IsExact<typeof key, string>>(true);
+      typeAssert<IsExact<typeof key, string>>(true);
 
-    assert.strictEqual(key, 'new');
+      assert.strictEqual(key, 'new');
 
-    const val = await schemaDB.get('key-val-store', 'new');
+      const val = await schemaDB.get('key-val-store', 'new');
 
-    assert.strictEqual(val, 234, 'Correct value from store');
+      assert.strictEqual(val, 234, 'Correct value from store');
+    }
 
-    const key2 = await db.put('object-store', {
-      id: 5,
-      title: 'Article 5',
-      date: new Date('2018-05-09'),
-    });
-
-    typeAssert<IsExact<typeof key2, IDBValidKey>>(true);
-
-    assert.strictEqual(key2, 5);
-
-    const val2 = await db.get('object-store', 5);
-
-    typeAssert<IsExact<typeof val2, any>>(true);
-
-    assert.deepStrictEqual(
-      val2,
-      {
+    {
+      const key = await db.put('object-store', {
         id: 5,
         title: 'Article 5',
         date: new Date('2018-05-09'),
-      },
-      'Correct value from store',
-    );
+      });
 
-    const key3 = await schemaDB.put('union-store', 'five', 5);
+      typeAssert<IsExact<typeof key, IDBValidKey>>(true);
 
-    typeAssert<IsExact<typeof key3, 5>>(true);
+      assert.strictEqual(key, 5);
 
-    assert.strictEqual(key3, 5, 'Correct value from store');
+      const val = await db.get('object-store', 5);
 
-    const val3 = await schemaDB.get('union-store', 5);
+      typeAssert<IsExact<typeof val, any>>(true);
 
-    typeAssert<IsExact<typeof val3, 'five' | undefined>>(true);
+      assert.deepStrictEqual(
+        val,
+        {
+          id: 5,
+          title: 'Article 5',
+          date: new Date('2018-05-09'),
+        },
+        'Correct value from store',
+      );
+    }
 
-    assert.strictEqual(val3, 'five', 'Correct value from store');
+    {
+      const key = await schemaDB.put('union-store', 'five', 5);
+
+      typeAssert<IsExact<typeof key, 5>>(true);
+
+      assert.strictEqual(key, 5, 'Correct value from store');
+
+      const val = await schemaDB.get('union-store', 5);
+
+      typeAssert<IsExact<typeof val, 'five' | undefined>>(true);
+
+      assert.strictEqual(val, 'five', 'Correct value from store');
+    }
   });
 
   test('add', async () => {
@@ -531,58 +561,64 @@ suite('IDBPDatabase', () => {
 
     assert.property(schemaDB, 'add', 'Method exists');
 
-    typeAssert<
-      IsExact<
-        Parameters<typeof schemaDB.add>[0],
-        'key-val-store' | 'object-store' | 'union-store'
-      >
-    >(true);
+    {
+      typeAssert<
+        IsExact<
+          Parameters<typeof schemaDB.add>[0],
+          'key-val-store' | 'object-store' | 'union-store'
+        >
+      >(true);
 
-    const key = await schemaDB.add('key-val-store', 234, 'new');
+      const key = await schemaDB.add('key-val-store', 234, 'new');
 
-    typeAssert<IsExact<typeof key, string>>(true);
+      typeAssert<IsExact<typeof key, string>>(true);
 
-    assert.strictEqual(key, 'new');
+      assert.strictEqual(key, 'new');
 
-    const val = await schemaDB.get('key-val-store', 'new');
+      const val = await schemaDB.get('key-val-store', 'new');
 
-    assert.strictEqual(val, 234, 'Correct value from store');
+      assert.strictEqual(val, 234, 'Correct value from store');
+    }
 
-    const key2 = await db.add('object-store', {
-      id: 5,
-      title: 'Article 5',
-      date: new Date('2018-05-09'),
-    });
-
-    typeAssert<IsExact<typeof key2, IDBValidKey>>(true);
-
-    assert.strictEqual(key2, 5);
-
-    const val2 = await db.get('object-store', 5);
-
-    typeAssert<IsExact<typeof val2, any>>(true);
-
-    assert.deepStrictEqual(
-      val2,
-      {
+    {
+      const key = await db.add('object-store', {
         id: 5,
         title: 'Article 5',
         date: new Date('2018-05-09'),
-      },
-      'Correct value from store',
-    );
+      });
 
-    const key3 = await schemaDB.add('union-store', 'five', 5);
+      typeAssert<IsExact<typeof key, IDBValidKey>>(true);
 
-    typeAssert<IsExact<typeof key3, 5>>(true);
+      assert.strictEqual(key, 5);
 
-    assert.strictEqual(key3, 5, 'Correct value from store');
+      const val = await db.get('object-store', 5);
 
-    const val3 = await schemaDB.get('union-store', 5);
+      typeAssert<IsExact<typeof val, any>>(true);
 
-    typeAssert<IsExact<typeof val3, 'five' | undefined>>(true);
+      assert.deepStrictEqual(
+        val,
+        {
+          id: 5,
+          title: 'Article 5',
+          date: new Date('2018-05-09'),
+        },
+        'Correct value from store',
+      );
+    }
 
-    assert.strictEqual(val3, 'five', 'Correct value from store');
+    {
+      const key = await schemaDB.add('union-store', 'five', 5);
+
+      typeAssert<IsExact<typeof key, 5>>(true);
+
+      assert.strictEqual(key, 5, 'Correct value from store');
+
+      const val = await schemaDB.get('union-store', 5);
+
+      typeAssert<IsExact<typeof val, 'five' | undefined>>(true);
+
+      assert.strictEqual(val, 'five', 'Correct value from store');
+    }
   });
 
   test('add - error type', async () => {
