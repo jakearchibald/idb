@@ -541,6 +541,20 @@ suite('IDBPDatabase', () => {
     }
 
     {
+      typeAssert<
+        IsExact<
+          Parameters<typeof schemaDB.put<'union-store', 'five'>>[1],
+          'five'
+        >
+      >(true);
+
+      typeAssert<
+        IsExact<
+          Parameters<typeof schemaDB.put<'union-store', 'five'>>[2],
+          5 | undefined
+        >
+      >(true);
+
       const key = await schemaDB.put('union-store', 'five', 5);
 
       typeAssert<IsExact<typeof key, 5>>(true);
@@ -607,6 +621,20 @@ suite('IDBPDatabase', () => {
     }
 
     {
+      typeAssert<
+        IsExact<
+          Parameters<typeof schemaDB.add<'union-store', 'five'>>[1],
+          'five'
+        >
+      >(true);
+
+      typeAssert<
+        IsExact<
+          Parameters<typeof schemaDB.add<'union-store', 'five'>>[2],
+          5 | undefined
+        >
+      >(true);
+
       const key = await schemaDB.add('union-store', 'five', 5);
 
       typeAssert<IsExact<typeof key, 5>>(true);
@@ -1152,15 +1180,15 @@ suite('IDBPObjectStore', () => {
 
       typeAssert<
         IsExact<
-          Parameters<typeof store.add>[0],
-          'one' | 'two' | 'three' | 'four' | 'five'
+          Parameters<typeof store.add<'five'>>[0],
+          'five'
         >
       >(true);
 
       typeAssert<
         IsExact<
-          Parameters<typeof store.add>[1],
-          1 | 2 | 3 | 4 | 5 | undefined
+          Parameters<typeof store.add<'five'>>[1],
+          5 | undefined
         >
       >(true);
 
@@ -1686,15 +1714,8 @@ suite('IDBPObjectStore', () => {
 
       typeAssert<
         IsExact<
-          Parameters<typeof store.put>[0],
-          'one' | 'two' | 'three' | 'four' | 'five'
-        >
-      >(true);
-
-      typeAssert<
-        IsExact<
-          Parameters<typeof store.put>[1],
-          1 | 2 | 3 | 4 | 5 | undefined
+          Parameters<typeof store.put<'five'>>[0],
+          'five'
         >
       >(true);
 
