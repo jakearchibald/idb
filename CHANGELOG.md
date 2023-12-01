@@ -1,3 +1,9 @@
+# Breaking changes in 8.x
+
+- Finally dropped support for old EdgeHTML engine.
+- Dropped support for browsers that don't support [`cursor.request`](https://caniuse.com/mdn-api_idbcursor_request).
+- Removed separate async iterators build. It's now one build with async iterator support.
+
 # Breaking changes in 7.x
 
 - No longer committing `build` to GitHub.
