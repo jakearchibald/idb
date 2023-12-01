@@ -37,10 +37,10 @@ function getCursorAdvanceMethods(): Func[] {
   );
 }
 
-const cursorRequestMap: WeakMap<IDBPCursor, IDBRequest<IDBCursor>> =
-  new WeakMap();
-const transactionDoneMap: WeakMap<IDBTransaction, Promise<void>> =
-  new WeakMap();
+const transactionDoneMap: WeakMap<
+  IDBTransaction,
+  Promise<void>
+> = new WeakMap();
 const transformCache = new WeakMap();
 export const reverseTransformCache = new WeakMap();
 
@@ -61,20 +61,6 @@ function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
     request.addEventListener('success', success);
     request.addEventListener('error', error);
   });
-
-  promise
-    .then((value) => {
-      // Since cursoring reuses the IDBRequest (*sigh*), we cache it for later retrieval
-      // (see wrapFunction).
-      if (value instanceof IDBCursor) {
-        cursorRequestMap.set(
-          value as unknown as IDBPCursor,
-          request as unknown as IDBRequest<IDBCursor>,
-        );
-      }
-      // Catching to avoid "Uncaught Promise exceptions"
-    })
-    .catch(() => {});
 
   // This mapping exists in reverseTransformCache but doesn't doesn't exist in transformCache. This
   // is because we create many promises from a single IDBRequest.
@@ -159,7 +145,7 @@ function wrapFunction<T extends Func>(func: T): Function {
       // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
       // the original object.
       func.apply(unwrap(this), args);
-      return wrap(cursorRequestMap.get(this)!);
+      return wrap(this.request);
     };
   }
 
