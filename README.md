@@ -1,6 +1,6 @@
 # IndexedDB with usability.
 
-This is a tiny (~1.29kB brotli'd) library that mostly mirrors the IndexedDB API, but with small improvements that make a big difference to usability.
+This is a tiny (~1.19kB brotli'd) library that mostly mirrors the IndexedDB API, but with small improvements that make a big difference to usability.
 
 1. [Installation](#installation)
 1. [Changes](#changes)
@@ -42,7 +42,7 @@ async function doDatabaseStuff() {
 
 ```html
 <script type="module">
-  import { openDB, deleteDB, wrap, unwrap } from 'https://cdn.jsdelivr.net/npm/idb@7/+esm';
+  import { openDB, deleteDB, wrap, unwrap } from 'https://cdn.jsdelivr.net/npm/idb@8/+esm';
 
   async function doDatabaseStuff() {
     const db = await openDB(…);
@@ -53,7 +53,7 @@ async function doDatabaseStuff() {
 ### Using external script reference
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
 <script>
   async function doDatabaseStuff() {
     const db = await idb.openDB(…);
@@ -70,8 +70,6 @@ A global, `idb`, will be created, containing all exports of the module version.
 # Browser support
 
 This library targets modern browsers, as in Chrome, Firefox, Safari, and other browsers that use those engines, such as Edge. IE is not supported.
-
-If you want to target much older versions of those browsers, you can transpile the library using something like [Babel](https://babeljs.io/). You can't transpile the library for IE, as it relies on a proper implementation of [JavaScript proxies](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy).
 
 # API
 
