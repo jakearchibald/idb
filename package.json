@@ -12,12 +12,6 @@
       "import": "./build/index.js",
       "default": "./build/index.cjs"
     },
-    "./with-async-ittr": {
-      "types": "./with-async-ittr.d.ts",
-      "module": "./with-async-ittr.js",
-      "import": "./with-async-ittr.js",
-      "default": "./with-async-ittr.cjs"
-    },
     "./build/*": "./build/*",
     "./package.json": "./package.json"
   },

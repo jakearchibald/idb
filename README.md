@@ -1,6 +1,6 @@
 # IndexedDB with usability.
 
-This is a tiny (~1.06kB brotli'd) library that mostly mirrors the IndexedDB API, but with small improvements that make a big difference to usability.
+This is a tiny (~1.29kB brotli'd) library that mostly mirrors the IndexedDB API, but with small improvements that make a big difference to usability.
 
 1. [Installation](#installation)
 1. [Changes](#changes)
@@ -151,8 +151,6 @@ const wrapped = wrap(unwrapped);
 
 This is useful if some third party code gives you an `IDBDatabase` object and you want it to have the features of this library.
 
-This doesn't work with `IDBCursor`, [due to missing primitives](https://github.com/w3c/IndexedDB/issues/255). Also, if you wrap an `IDBTransaction`, `tx.store` and `tx.objectStoreNames` won't work in Edge. To avoid these issues, wrap the `IDBDatabase` object, and use the wrapped object to create a new transaction.
-
 ## General enhancements
 
 Once you've opened the database the API is the same as IndexedDB, except for a few changes to make things easier.
@@ -270,15 +268,7 @@ while (cursor) {
 
 ## Async iterators
 
-Async iterator support isn't included by default (Edge doesn't support them). To include them, import `idb/with-async-ittr` instead of `idb` (this increases the library size to ~1.29kB brotli'd):
-
-```js
-import { openDB } from 'idb/with-async-ittr';
-```
-
-Or `https://cdn.jsdelivr.net/npm/idb@7/build/umd-with-async-ittr.js` if you're using the non-module version.
-
-Now you can iterate over stores, indexes, and cursors:
+You can iterate over stores, indexes, and cursors:
 
 ```js
 const tx = db.transaction(storeName);

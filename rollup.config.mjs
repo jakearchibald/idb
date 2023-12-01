@@ -20,7 +20,7 @@ export default async function ({ watch }) {
   // Main
   builds.push({
     plugins: [simpleTS('test', { watch })],
-    input: ['src/index.ts', 'src/async-iterators.ts'],
+    input: ['src/index.ts'],
     output: [
       {
         dir: 'build/',
@@ -47,22 +47,6 @@ export default async function ({ watch }) {
     ],
     output: {
       file: 'build/umd.js',
-      format: 'umd',
-      esModule: false,
-      name: 'idb',
-    },
-  });
-
-  // Minified iife including iteration
-  builds.push({
-    input: './with-async-ittr.js',
-    plugins: [
-      terser({
-        compress: { ecma: 2019 },
-      }),
-    ],
-    output: {
-      file: 'build/umd-with-async-ittr.js',
       format: 'umd',
       esModule: false,
       name: 'idb',
