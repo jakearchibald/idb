@@ -42,7 +42,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         typeof schemaDB.objectStoreNames,
-        TypedDOMStringList<'key-val-store' | 'object-store'>
+        TypedDOMStringList<'key-val-store' | 'object-store' | 'auto-increment' | 'auto-increment-nested'>
       >
     >(true);
 
@@ -58,7 +58,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.createObjectStore>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'auto-increment' | 'auto-increment-nested'
       >
     >(true);
 
@@ -74,7 +74,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.deleteObjectStore>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'auto-increment' | 'auto-increment-nested'
       >
     >(true);
 
@@ -90,7 +90,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.transaction>[0],
-        ArrayLike<'key-val-store' | 'object-store'>
+        ArrayLike<'key-val-store' | 'object-store' | 'auto-increment' | 'auto-increment-nested'>
       >
     >(true);
 
@@ -112,7 +112,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         typeof tx.objectStoreNames,
-        TypedDOMStringList<'key-val-store' | 'object-store'>
+        TypedDOMStringList<'key-val-store' | 'object-store' | 'auto-increment' | 'auto-increment-nested'>
       >
     >(true);
 
@@ -130,7 +130,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.get>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'auto-increment' | 'auto-increment-nested'
       >
     >(true);
 
@@ -195,7 +195,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.getKey>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'auto-increment' | 'auto-increment-nested'
       >
     >(true);
 
@@ -253,7 +253,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.getAll>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'auto-increment' | 'auto-increment-nested'
       >
     >(true);
 
@@ -349,7 +349,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.getAllKeys>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'auto-increment' | 'auto-increment-nested'
       >
     >(true);
 
@@ -402,7 +402,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.count>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'auto-increment' | 'auto-increment-nested'
       >
     >(true);
 
@@ -450,7 +450,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.put>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'auto-increment' | 'auto-increment-nested'
       >
     >(true);
 
@@ -498,7 +498,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.add>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'auto-increment' | 'auto-increment-nested'
       >
     >(true);
 
@@ -593,7 +593,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.delete>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'auto-increment' | 'auto-increment-nested'
       >
     >(true);
 
@@ -617,7 +617,7 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.clear>[0],
-        'key-val-store' | 'object-store'
+        'key-val-store' | 'object-store' | 'auto-increment' | 'auto-increment-nested'
       >
     >(true);
 
@@ -1058,6 +1058,75 @@ suite('IDBPObjectStore', () => {
       },
       'Correct value from store',
     );
+  });
+
+  test('add - autoIncrementKeyPath', async () => {
+    const schemaDB = await openDBWithData();
+    db = schemaDB as IDBPDatabase;
+
+    const store1 = schemaDB.transaction('auto-increment', 'readwrite').store;
+
+    typeAssert<IsExact<Parameters<typeof store1.add>[0], {
+      id?: number;
+      title: string;
+      date: Date;
+    }>>(true);
+
+    typeAssert<
+      IsExact<
+        Parameters<typeof store1.add>[1],
+        number | IDBKeyRange | undefined
+      >
+    >(true);
+
+    const record = {
+      title: "foo",
+      date: new Date(),
+    };
+    const key = await store1.add(record);
+
+    typeAssert<IsExact<typeof key, number>>(true);
+
+    const val = await store1.get(key);
+
+    assert.deepStrictEqual(val, {
+      ...record,
+      id: key,
+    }, 'Correct value from store');
+
+    const store2 = schemaDB.transaction('auto-increment-nested', 'readwrite').store;
+
+    typeAssert<IsExact<Parameters<typeof store2.add>[0], (ObjectStoreValue & {
+      nested: {
+        id?: number;
+      }
+    })>>(true);
+
+    typeAssert<
+      IsExact<
+        Parameters<typeof store2.add>[1],
+        number | IDBKeyRange | undefined
+      >
+    >(true);
+
+    const record2 = {
+      id: 1,
+      title: "foo",
+      date: new Date(),
+      nested: {},
+    };
+    const key2 = await store2.add(record2);
+
+    typeAssert<IsExact<typeof key2, number>>(true);
+
+    const val2 = await store2.get(key2);
+
+    assert.deepStrictEqual(val2, {
+      ...record2,
+      nested: {
+        id: key2,
+      }
+    }, 'Correct value from store');
   });
 
   test('clear', async () => {
