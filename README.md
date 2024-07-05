@@ -69,7 +69,7 @@ A global, `idb`, will be created, containing all exports of the module version.
 
 # Browser support
 
-This library targets modern browsers, as in Chrome, Firefox, Safari, and other browsers that use those engines, such as Edge. IE is not supported.
+This library targets modern browsers, as in Chrome, Firefox, Safari, Edge, and other browsers that use those engines. IE is not supported.
 
 # API
 
@@ -172,7 +172,7 @@ If you're using async functions, there's no observable difference.
 
 TL;DR: **Do not `await` other things between the start and end of your transaction**, otherwise the transaction will close before you're done.
 
-An IDB transaction auto-closes if it doesn't have anything left do once microtasks have been processed. As a result, this works fine:
+An IDB transaction auto-closes if it doesn't have anything left to do once microtasks have been processed. As a result, this works fine:
 
 ```js
 const tx = db.transaction('keyval', 'readwrite');
