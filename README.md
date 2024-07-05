@@ -69,7 +69,7 @@ A global, `idb`, will be created, containing all exports of the module version.
 
 # Browser support
 
-This library targets modern browsers, as in Chrome, Firefox, Safari, and other browsers that use those engines, such as Edge. IE is not supported.
+This library targets modern browsers, as in Chrome, Firefox, Safari, Edge, and other browsers that use those engines. IE is not supported.
 
 # API
 
