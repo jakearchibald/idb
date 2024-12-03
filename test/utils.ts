@@ -22,6 +22,27 @@ export interface TestDBSchema extends DBSchema {
     key: number;
     indexes: { date: Date; title: string };
   };
+  'union-store':
+    | {
+        key: 1;
+        value: 'one';
+      }
+    | {
+        key: 2;
+        value: 'two';
+      }
+    | {
+        key: 3;
+        value: 'three';
+      }
+    | {
+        key: 4;
+        value: 'four';
+      }
+    | {
+        key: 5;
+        value: 'five';
+      };
 }
 
 export const dbName = 'test-db';
@@ -43,6 +64,7 @@ export function openDBWithSchema(): Promise<IDBPDatabase<TestDBSchema>> {
       const store = db.createObjectStore('object-store', { keyPath: 'id' });
       store.createIndex('date', 'date');
       store.createIndex('title', 'title');
+      db.createObjectStore('union-store');
     },
   });
 }
@@ -53,9 +75,13 @@ export async function openDBWithData() {
   if (dbWithDataCreated) return openDB<TestDBSchema>(dbName, version);
   dbWithDataCreated = true;
   const db = await openDBWithSchema();
-  const tx = db.transaction(['key-val-store', 'object-store'], 'readwrite');
+  const tx = db.transaction(
+    ['key-val-store', 'object-store', 'union-store'],
+    'readwrite',
+  );
   const keyStore = tx.objectStore('key-val-store');
   const objStore = tx.objectStore('object-store');
+  const unionStore = tx.objectStore('union-store');
   keyStore.put(123, 'foo');
   keyStore.put(456, 'bar');
   keyStore.put(789, 'hello');
@@ -79,6 +105,10 @@ export async function openDBWithData() {
     title: 'Article 4',
     date: new Date('2019-01-01'),
   });
+  unionStore.put('one', 1);
+  unionStore.put('two', 2);
+  unionStore.put('three', 3);
+  unionStore.put('four', 4);
   return db;
 }
 
