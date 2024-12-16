@@ -199,8 +199,9 @@ suite('openDb', () => {
     typeAssert<IsExact<typeof request, IDBOpenDBRequest>>(true);
 
     assert.instanceOf(request, IDBOpenDBRequest, 'Request type');
-    db = (await openPromise) as IDBPDatabase;
-    const idb = unwrap(db);
+    const schemaDb = await openDBWithSchema();
+    db = schemaDb as IDBPDatabase;
+    const idb = unwrap(schemaDb);
 
     typeAssert<IsExact<typeof idb, IDBDatabase>>(true);
 
