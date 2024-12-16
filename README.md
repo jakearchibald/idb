@@ -486,7 +486,7 @@ Note: Types like `IDBPDatabase` are used by TypeScript only. The implementation 
 # Developing
 
 ```sh
-npm run dev
+pnpm run dev
 ```
 
 This will also perform type testing.

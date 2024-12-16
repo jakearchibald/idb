@@ -1,16 +1,13 @@
 import { promises as fsp } from 'fs';
-import { promisify } from 'util';
 import { basename } from 'path';
 
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import { deleteAsync } from 'del';
-import glob from 'glob';
+import { glob } from 'glob';
 
 import simpleTS from './lib/simple-ts.js';
-
-const globP = promisify(glob);
 
 export default async function ({ watch }) {
   await deleteAsync(['.ts-tmp', 'build', 'tmp']);
@@ -84,7 +81,7 @@ export default async function ({ watch }) {
   }
 
   builds.push(
-    ...(await globP('size-tests/*.js').then((paths) =>
+    ...(await glob('size-tests/*.js').then((paths) =>
       paths.map((path) => ({
         input: path,
         plugins: [

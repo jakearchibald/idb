@@ -1,5 +1,5 @@
 import 'mocha/mocha';
-import chai from 'chai/chai';
+import { assert } from 'chai';
 import {
   IDBPDatabase,
   IDBPTransaction,
@@ -23,9 +23,6 @@ import {
   getNextVersion,
   dbName,
 } from './utils';
-
-// This type assignment seems redundant, but TypeScript flips out if I don't do this.
-const assert: typeof chai.assert = chai.assert;
 
 suite('IDBPDatabase', () => {
   let db: IDBPDatabase;
@@ -718,10 +715,11 @@ suite('IDBPTransaction', () => {
       >
     >(true);
 
-    assert.instanceOf(tx.store, IDBObjectStore);
     assert.strictEqual(tx.store.name, 'key-val-store');
 
     assert.instanceOf(tx.store.get('blah'), Promise, 'Is the store wrapped?');
+
+    assert.instanceOf(tx.store, IDBObjectStore);
 
     const tx2 = schemaDB.transaction(['key-val-store', 'object-store']);
     assert.property(tx2, 'store');

@@ -1,5 +1,5 @@
 import 'mocha/mocha';
-import chai from 'chai/chai';
+import { assert } from 'chai';
 import { openDB, IDBPDatabase, IDBPTransaction, wrap, unwrap } from '../src/';
 import { assert as typeAssert, IsExact } from 'conditional-type-checks';
 import {
@@ -9,8 +9,6 @@ import {
   openDBWithSchema,
   deleteDatabase,
 } from './utils';
-
-const { assert } = chai;
 
 suite('openDb', () => {
   let db: IDBPDatabase;
