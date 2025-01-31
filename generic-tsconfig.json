@@ -5,11 +5,8 @@
     "module": "esnext",
     "strict": true,
     "moduleResolution": "node",
-    "outDir": ".ts-tmp",
     "composite": true,
-    "declarationMap": false,
-    "baseUrl": "./",
-    "rootDir": "./",
+    "declaration": true,
     "allowSyntheticDefaultImports": true,
     "noUnusedLocals": true,
     "sourceMap": false

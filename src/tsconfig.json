@@ -1,6 +1,8 @@
 {
   "extends": "../generic-tsconfig.json",
   "compilerOptions": {
-    "lib": ["esnext", "dom"]
+    "lib": ["esnext", "dom"],
+    "tsBuildInfoFile": "../.ts-tmp/.src.tsbuildinfo",
+    "declarationDir": "../build"
   }
 }
