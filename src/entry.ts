@@ -168,6 +168,7 @@ interface DBSchemaValue {
   key: IDBValidKey;
   value: any;
   indexes?: IndexKeys;
+  autoIncrementKeyPath?: string;
 }
 
 /**
@@ -188,6 +189,22 @@ export type StoreValue<
   DBTypes extends DBSchema | unknown,
   StoreName extends StoreNames<DBTypes>,
 > = DBTypes extends DBSchema ? DBTypes[StoreName]['value'] : any;
+
+type KeyPathToNestedObject<S extends string> =
+    S extends `${infer T}.${infer U}` ? {[Key in T]: KeyPathToNestedObject<U>} : S;
+
+type OptionalNested<Type, PathToKey> = PathToKey extends object ? Omit<Type, keyof PathToKey> & {
+    [Key in Extract<keyof PathToKey, keyof Type>]: OptionalNested<Type[Key], PathToKey[Key]>
+} : PathToKey extends keyof Type ? Omit<Type, PathToKey> & { [Key in PathToKey]?: Type[Key] } : never
+
+type ValueWithOptionalKeyPath<Value extends unknown, KeyPath extends string> = OptionalNested<Value, KeyPathToNestedObject<KeyPath>>;
+
+export type StoreValueWithOptionalKey<
+  DBTypes extends DBSchema | unknown,
+  StoreName extends StoreNames<DBTypes>,
+> = DBTypes extends DBSchema ? DBTypes[StoreName]['autoIncrementKeyPath'] extends string ? (
+  ValueWithOptionalKeyPath<DBTypes[StoreName]['value'], DBTypes[StoreName]['autoIncrementKeyPath']>
+) : StoreValue<DBTypes, StoreName> : any;
 
 /**
  * Extract database key types from the DB schema type.
@@ -286,7 +303,11 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    */
   createObjectStore<Name extends StoreNames<DBTypes>>(
     name: Name,
-    optionalParameters?: IDBObjectStoreParameters,
+    // When autoIncrementKeyPath is set, we know that optionalParameters must be set, and we know the correct value. However I'm not sure how to specify that it should not be optional in that situation.
+    optionalParameters?: DBTypes extends DBSchema ? DBTypes[Name]['autoIncrementKeyPath'] extends string ? (IDBObjectStoreParameters & {
+      autoIncrement: true,
+      keyPath: DBTypes[Name]['autoIncrementKeyPath'],
+    }) : IDBObjectStoreParameters : IDBObjectStoreParameters,
   ): IDBPObjectStore<
     DBTypes,
     ArrayLike<StoreNames<DBTypes>>,
@@ -339,7 +360,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    */
   add<Name extends StoreNames<DBTypes>>(
     storeName: Name,
-    value: StoreValue<DBTypes, Name>,
+    value: StoreValueWithOptionalKey<DBTypes, Name>,
     key?: StoreKey<DBTypes, Name> | IDBKeyRange,
   ): Promise<StoreKey<DBTypes, Name>>;
   /**
@@ -549,7 +570,7 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    */
   put<Name extends StoreNames<DBTypes>>(
     storeName: Name,
-    value: StoreValue<DBTypes, Name>,
+    value: StoreValueWithOptionalKey<DBTypes, Name>,
     key?: StoreKey<DBTypes, Name> | IDBKeyRange,
   ): Promise<StoreKey<DBTypes, Name>>;
 }
@@ -639,7 +660,7 @@ export interface IDBPObjectStore<
   add: Mode extends 'readonly'
     ? undefined
     : (
-        value: StoreValue<DBTypes, StoreName>,
+        value: StoreValueWithOptionalKey<DBTypes, StoreName>,
         key?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
       ) => Promise<StoreKey<DBTypes, StoreName>>;
   /**
@@ -750,7 +771,7 @@ export interface IDBPObjectStore<
   put: Mode extends 'readonly'
     ? undefined
     : (
-        value: StoreValue<DBTypes, StoreName>,
+        value: StoreValueWithOptionalKey<DBTypes, StoreName>,
         key?: StoreKey<DBTypes, StoreName> | IDBKeyRange,
       ) => Promise<StoreKey<DBTypes, StoreName>>;
   /**
