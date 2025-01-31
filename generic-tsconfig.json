@@ -5,8 +5,6 @@
     "module": "esnext",
     "strict": true,
     "moduleResolution": "node",
-    "outDir": "./build",
-    "tsBuildInfoFile": ".ts-tmp/.tsconfig.tsbuildinfo",
     "composite": true,
     "declaration": true,
     "allowSyntheticDefaultImports": true,
