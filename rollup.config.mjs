@@ -15,7 +15,9 @@ export default async function ({ watch }) {
 
   // Main
   builds.push({
-    plugins: [typescript()],
+    plugins: [
+      typescript({ cacheDir: '.ts-tmp', tsconfig: 'src/tsconfig.json' }),
+    ],
     input: ['src/index.ts'],
     output: [
       {
@@ -53,7 +55,7 @@ export default async function ({ watch }) {
   if (!process.env.PRODUCTION) {
     builds.push({
       plugins: [
-        typescript(),
+        typescript({ cacheDir: '.ts-tmp', tsconfig: 'test/tsconfig.json' }),
         resolve(),
         commonjs(),
         {
