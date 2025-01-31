@@ -209,7 +209,7 @@ export type StoreKey<
 export type IndexNames<
   DBTypes extends DBSchema | unknown,
   StoreName extends StoreNames<DBTypes>,
-> = DBTypes extends DBSchema ? keyof DBTypes[StoreName]['indexes'] : string;
+> = DBTypes extends DBSchema ? keyof DBTypes[StoreName]['indexes'] & string : string;
 
 /**
  * Extract the types of indexes in certain object stores from the DB schema type.
