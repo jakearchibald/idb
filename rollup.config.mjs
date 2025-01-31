@@ -4,10 +4,9 @@ import { basename } from 'path';
 import terser from '@rollup/plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import typescript from '@rollup/plugin-typescript';
 import { deleteAsync } from 'del';
 import { glob } from 'glob';
-
-import simpleTS from './lib/simple-ts.js';
 
 export default async function ({ watch }) {
   await deleteAsync(['.ts-tmp', 'build', 'tmp']);
@@ -16,7 +15,7 @@ export default async function ({ watch }) {
 
   // Main
   builds.push({
-    plugins: [simpleTS('test', { watch })],
+    plugins: [typescript()],
     input: ['src/index.ts'],
     output: [
       {
@@ -54,7 +53,7 @@ export default async function ({ watch }) {
   if (!process.env.PRODUCTION) {
     builds.push({
       plugins: [
-        simpleTS('test', { noBuild: true }),
+        typescript(),
         resolve(),
         commonjs(),
         {
