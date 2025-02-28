@@ -76,19 +76,23 @@ function cacheDonePromiseForTransaction(tx: IDBTransaction): void {
     const unlisten = () => {
       tx.removeEventListener('complete', complete);
       tx.removeEventListener('error', error);
-      tx.removeEventListener('abort', error);
+      tx.removeEventListener('abort', abort);
     };
     const complete = () => {
       resolve();
       unlisten();
     };
-    const error = () => {
-      reject(tx.error || new DOMException('AbortError', 'AbortError'));
+    const error = (ev: Event) => {
+      reject(tx.error ?? (ev.target as unknown as IDBRequest).error);
+      unlisten();
+    };
+    const abort = () => {
+      reject(new DOMException('A request was aborted.', 'AbortError'));
       unlisten();
     };
     tx.addEventListener('complete', complete);
     tx.addEventListener('error', error);
-    tx.addEventListener('abort', error);
+    tx.addEventListener('abort', abort);
   });
 
   // Cache it for later retrieval.
