@@ -22,7 +22,7 @@
   ],
   "type": "module",
   "scripts": {
-    "build": "PRODUCTION=1 rollup -c && node --experimental-modules lib/size-report.mjs",
+    "build": "cross-env PRODUCTION=1 rollup -c && node --experimental-modules lib/size-report.mjs",
     "dev": "rollup -c --watch",
     "prepack": "npm run build"
   },
@@ -43,6 +43,7 @@
     "@types/node": "^22.12.0",
     "chai": "^5.1.2",
     "conditional-type-checks": "^1.0.6",
+    "cross-env": "^7.0.3",
     "del": "^8.0.0",
     "filesize": "^10.1.6",
     "glob": "^11.0.1",

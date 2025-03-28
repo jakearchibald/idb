@@ -2,3 +2,5 @@ node_modules
 .ts-tmp
 build
 tmp
+.idea
+.vscode
