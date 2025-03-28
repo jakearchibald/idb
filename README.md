@@ -242,11 +242,17 @@ Transactions have a `.done` promise which resolves when the transaction complete
 
 ```js
 const tx = db.transaction(storeName, 'readwrite');
-await Promise.all([
-  tx.store.put('bar', 'foo'),
-  tx.store.put('world', 'hello'),
-  tx.done,
-]);
+
+try {
+  await Promise.all([
+    tx.store.put('bar', 'foo'),
+    tx.store.put('world', 'hello'),
+    tx.done,
+  ]);
+} catch (e) {
+  tx.abort(); // rollback
+  throw e;
+}
 ```
 
 If you're writing to the database, `tx.done` is the signal that everything was successfully committed to the database. However, it's still beneficial to await the individual operations, as you'll see the error that caused the transaction to fail.
