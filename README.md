@@ -335,7 +335,7 @@ export async function keys() {
 ## Article store
 
 ```js
-import { openDB } from 'idb/with-async-ittr.js';
+import { openDB } from 'idb';
 
 async function demo() {
   const db = await openDB('Articles', 1, {
