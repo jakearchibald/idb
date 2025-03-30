@@ -251,6 +251,8 @@ type IDBPDatabaseExtends = Omit<
   'createObjectStore' | 'deleteObjectStore' | 'transaction' | 'objectStoreNames'
 >;
 
+export type DOMStringListSymbolIteratorType = DOMStringList extends { [Symbol.iterator](): infer R } ? R : IterableIterator<string>;
+
 /**
  * A variation of DOMStringList with precise string types
  */
@@ -258,7 +260,12 @@ export interface TypedDOMStringList<T extends string> extends DOMStringList {
   contains(string: T): boolean;
   item(index: number): T | null;
   [index: number]: T;
-  [Symbol.iterator](): IterableIterator<T>;
+
+  /**
+   * To resolve https://github.com/jakearchibald/idb/issues/327,
+   * and for compatibility with TypeScript >= 5.6 with ArrayIterator.
+   */
+  [Symbol.iterator](): IterableIterator<string> extends DOMStringListSymbolIteratorType ? IterableIterator<T> : DOMStringListSymbolIteratorType & Iterator<T>;
 }
 
 interface IDBTransactionOptions {
