@@ -87,7 +87,9 @@ suite('IDBPDatabase', () => {
     typeAssert<
       IsExact<
         Parameters<typeof schemaDB.transaction>[0],
-        ArrayLike<'key-val-store' | 'object-store'>
+        | 'key-val-store'
+        | 'object-store'
+        | ArrayLike<'key-val-store' | 'object-store'>
       >
     >(true);
 
