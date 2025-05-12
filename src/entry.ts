@@ -314,21 +314,21 @@ export interface IDBPDatabase<DBTypes extends DBSchema | unknown = unknown>
    * @param options
    */
   transaction<
-    Name extends StoreNames<DBTypes>,
-    Mode extends IDBTransactionMode = 'readonly',
-  >(
-    storeNames: Name,
-    mode?: Mode,
-    options?: IDBTransactionOptions,
-  ): IDBPTransaction<DBTypes, [Name], Mode>;
-  transaction<
-    Names extends ArrayLike<StoreNames<DBTypes>>,
+    Names extends StoreNames<DBTypes> | ArrayLike<StoreNames<DBTypes>>,
     Mode extends IDBTransactionMode = 'readonly',
   >(
     storeNames: Names,
     mode?: Mode,
     options?: IDBTransactionOptions,
-  ): IDBPTransaction<DBTypes, Names, Mode>;
+  ): IDBPTransaction<
+    DBTypes,
+    Names extends StoreNames<DBTypes>
+      ? [Names]
+      : Names extends ArrayLike<StoreNames<DBTypes>>
+        ? Names
+        : never,
+    Mode
+  >;
 
   // Shortcut methods
 
