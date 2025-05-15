@@ -55,7 +55,7 @@ function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
       unlisten();
     };
     const error = () => {
-      reject(request.error);
+      new Error('IDBRequest error', {cause: request!.error}));
       unlisten();
     };
     request.addEventListener('success', success);
@@ -83,7 +83,9 @@ function cacheDonePromiseForTransaction(tx: IDBTransaction): void {
       unlisten();
     };
     const error = () => {
-      reject(tx.error || new DOMException('AbortError', 'AbortError'));
+      reject(new Error(
+          'IDBTransaction Error',
+          {cause: tx.error || new DOMException('AbortError', 'AbortError')}));
       unlisten();
     };
     tx.addEventListener('complete', complete);
