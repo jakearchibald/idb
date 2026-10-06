@@ -16,10 +16,10 @@ function getIdbProxyableTypes(): Constructor[] {
   return (
     idbProxyableTypes ||
     (idbProxyableTypes = [
-      IDBDatabase,
-      IDBObjectStore,
       IDBIndex,
+      IDBObjectStore,
       IDBCursor,
+      IDBDatabase,
       IDBTransaction,
     ])
   );
@@ -29,11 +29,9 @@ function getIdbProxyableTypes(): Constructor[] {
 function getCursorAdvanceMethods(): Func[] {
   return (
     cursorAdvanceMethods ||
-    (cursorAdvanceMethods = [
-      IDBCursor.prototype.advance,
-      IDBCursor.prototype.continue,
-      IDBCursor.prototype.continuePrimaryKey,
-    ])
+    (cursorAdvanceMethods = ['advance', 'continue', 'continuePrimaryKey'].map(
+      (method) => (IDBCursor.prototype as any)[method],
+    ))
   );
 }
 

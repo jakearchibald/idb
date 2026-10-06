@@ -2,7 +2,7 @@ import { instanceOfAny, Func } from './util.js';
 import { replaceTraps, reverseTransformCache, unwrap } from './wrap-idb-value.js';
 import { IDBPObjectStore, IDBPIndex, IDBPCursor } from './entry.js';
 
-const advanceMethodProps = ['continue', 'continuePrimaryKey', 'advance'];
+const advanceMethodProps = ['advance', 'continue', 'continuePrimaryKey'];
 const methodMap: { [s: string]: Func } = {};
 const advanceResults = new WeakMap<IDBPCursor, Promise<IDBPCursor | null>>();
 const ittrProxiedCursorToOriginalProxy = new WeakMap<IDBPCursor, IDBPCursor>();

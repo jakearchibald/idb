@@ -4,7 +4,7 @@ import { IDBPDatabase, IDBPIndex } from './entry.js';
 
 const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
 const writeMethods = ['put', 'add', 'delete', 'clear'];
-const cachedMethods = new Map<string, Func>();
+const cachedMethods: { [s: string]: Func } = {};
 
 function getMethod(
   target: any,
@@ -20,7 +20,7 @@ function getMethod(
     return;
   }
 
-  if (cachedMethods.get(prop)) return cachedMethods.get(prop);
+  if (cachedMethods[prop]) return cachedMethods[prop];
 
   const targetFuncName: string = prop.replace(/FromIndex$/, '');
   const useIndex = prop !== targetFuncName;
@@ -60,8 +60,7 @@ function getMethod(
     )[0];
   };
 
-  cachedMethods.set(prop, method);
-  return method;
+  return (cachedMethods[prop] = method);
 }
 
 replaceTraps((oldTraps) => ({
