@@ -195,7 +195,7 @@ export function wrap(value: any): any {
 
   // Not all types are transformed.
   // These may be primitive types, so they can't be WeakMap keys.
-  if (newValue !== value) {
+  if (!Object.is(newValue, value)) {
     transformCache.set(value, newValue);
     reverseTransformCache.set(newValue, value);
   }

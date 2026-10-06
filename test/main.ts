@@ -144,6 +144,15 @@ suite('IDBPDatabase', () => {
     assert.strictEqual(val2, 456, 'Correct value from store');
   });
 
+  test('get - NaN', async () => {
+    const schemaDB = await openDBWithSchema();
+    db = schemaDB as IDBPDatabase;
+
+    await schemaDB.put('key-val-store', NaN, 'nan');
+
+    assert.isNaN(await schemaDB.get('key-val-store', 'nan'));
+  });
+
   test('getFromIndex', async () => {
     const schemaDB = await openDBWithData();
     db = schemaDB as IDBPDatabase;
@@ -2421,6 +2430,34 @@ suite('IDBPCursorWithValue', () => {
         unwrappedCursor.update(unwrappedCursor.value),
         IDBRequest,
       );
+    }
+  });
+});
+
+suite('wrap', () => {
+  test('leaves non-IDB values unchanged', () => {
+    const values: any[] = [
+      undefined,
+      null,
+      true,
+      false,
+      0,
+      -0,
+      123,
+      Infinity,
+      -Infinity,
+      NaN,
+      '',
+      'hello',
+      BigInt(1),
+      Symbol(),
+      {},
+      [],
+      new Date(),
+    ];
+
+    for (const value of values) {
+      assert.isTrue(Object.is(wrap(value), value));
     }
   });
 });
