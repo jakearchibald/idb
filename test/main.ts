@@ -274,6 +274,15 @@ suite('IDBPDatabase', () => {
     typeAssert<IsExact<typeof val2, any[]>>(true);
 
     assert.deepStrictEqual(val2, [456, 123, 789], 'Correct values from store');
+
+    if ('getAllRecords' in schemaDB.transaction('key-val-store').store) {
+      const val3 = await schemaDB.getAll('key-val-store', {
+        direction: 'prev',
+        count: 2,
+      });
+      typeAssert<IsExact<typeof val3, number[]>>(true);
+      assert.deepStrictEqual(val3, [789, 123], 'Correct values from store');
+    }
   });
 
   test('getAllFromIndex', async function () {
@@ -343,6 +352,22 @@ suite('IDBPDatabase', () => {
       ],
       'Correct values from store',
     );
+
+    if ('getAllRecords' in schemaDB.transaction('object-store').store) {
+      const val3 = await schemaDB.getAllFromIndex('object-store', 'date', {
+        direction: 'prev',
+        count: 2,
+      });
+      typeAssert<IsExact<typeof val3, ObjectStoreValue[]>>(true);
+      assert.deepStrictEqual(
+        val3,
+        [
+          { id: 1, title: 'Article 1', date: new Date('2019-01-04') },
+          { id: 2, title: 'Article 2', date: new Date('2019-01-03') },
+        ],
+        'Correct values from store',
+      );
+    }
   });
 
   test('getAllKeys', async function () {
@@ -378,6 +403,19 @@ suite('IDBPDatabase', () => {
       ['bar', 'foo', 'hello'],
       'Correct values from store',
     );
+
+    if ('getAllRecords' in schemaDB.transaction('key-val-store').store) {
+      const val3 = await schemaDB.getAllKeys('key-val-store', {
+        direction: 'prev',
+        count: 2,
+      });
+      typeAssert<IsExact<typeof val3, string[]>>(true);
+      assert.deepStrictEqual(
+        val3,
+        ['hello', 'foo'],
+        'Correct values from store',
+      );
+    }
   });
 
   test('getAllKeysFromIndex', async function () {
@@ -397,6 +435,15 @@ suite('IDBPDatabase', () => {
     typeAssert<IsExact<typeof val2, IDBValidKey[]>>(true);
 
     assert.deepStrictEqual(val2, [1, 2, 3, 4], 'Correct values from store');
+
+    if ('getAllRecords' in schemaDB.transaction('object-store').store) {
+      const val3 = await schemaDB.getAllKeysFromIndex('object-store', 'date', {
+        direction: 'prev',
+        count: 2,
+      });
+      typeAssert<IsExact<typeof val3, number[]>>(true);
+      assert.deepStrictEqual(val3, [1, 2], 'Correct values from store');
+    }
   });
 
   test('count', async () => {
@@ -1233,6 +1280,13 @@ suite('IDBPObjectStore', () => {
     typeAssert<IsExact<typeof val2, any[]>>(true);
 
     assert.deepStrictEqual(val2, [456, 123, 789], 'Correct values from store');
+
+    const store3 = schemaDB.transaction('key-val-store').store;
+    if ('getAllRecords' in store3) {
+      const val3 = await store3.getAll({ direction: 'prev', count: 2 });
+      typeAssert<IsExact<typeof val3, number[]>>(true);
+      assert.deepStrictEqual(val3, [789, 123], 'Correct values from store');
+    }
   });
 
   test('getAllKeys', async function () {
@@ -1277,6 +1331,17 @@ suite('IDBPObjectStore', () => {
       ['bar', 'foo', 'hello'],
       'Correct values from store',
     );
+
+    const store3 = schemaDB.transaction('key-val-store').store;
+    if ('getAllRecords' in store3) {
+      const val3 = await store3.getAllKeys({ direction: 'prev', count: 2 });
+      typeAssert<IsExact<typeof val3, string[]>>(true);
+      assert.deepStrictEqual(
+        val3,
+        ['hello', 'foo'],
+        'Correct values from store',
+      );
+    }
   });
 
   test('getKey', async function () {
@@ -1774,6 +1839,23 @@ suite('IDBPIndex', () => {
         'Correct values from store',
       );
     }
+
+    {
+      const store3 = schemaDB.transaction('object-store').store;
+      if ('getAllRecords' in store3) {
+        const index = store3.index('date');
+        const val3 = await index.getAll({ direction: 'prev', count: 2 });
+        typeAssert<IsExact<typeof val3, ObjectStoreValue[]>>(true);
+        assert.deepStrictEqual(
+          val3,
+          [
+            { id: 1, title: 'Article 1', date: new Date('2019-01-04') },
+            { id: 2, title: 'Article 2', date: new Date('2019-01-03') },
+          ],
+          'Correct values from store',
+        );
+      }
+    }
   });
 
   test('getAllKeys', async function () {
@@ -1813,6 +1895,16 @@ suite('IDBPIndex', () => {
       typeAssert<IsExact<typeof val, IDBValidKey[]>>(true);
 
       assert.deepStrictEqual(val, [1, 2, 3, 4], 'Correct values from store');
+    }
+
+    {
+      const store3 = schemaDB.transaction('object-store').store;
+      if ('getAllRecords' in store3) {
+        const index = store3.index('date');
+        const val3 = await index.getAllKeys({ direction: 'prev', count: 2 });
+        typeAssert<IsExact<typeof val3, number[]>>(true);
+        assert.deepStrictEqual(val3, [1, 2], 'Correct values from store');
+      }
     }
   });
 
