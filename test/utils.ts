@@ -22,6 +22,20 @@ export interface TestDBSchema extends DBSchema {
     key: number;
     indexes: { date: Date; title: string };
   };
+  'auto-increment': {
+    value: ObjectStoreValue;
+    key: number;
+    autoIncrementKeyPath: "id";
+  };
+  'auto-increment-nested': {
+    value: ObjectStoreValue & {
+      nested: {
+        id: number;
+      }
+    };
+    key: number;
+    autoIncrementKeyPath: "nested.id";
+  };
 }
 
 export const dbName = 'test-db';
@@ -43,6 +57,14 @@ export function openDBWithSchema(): Promise<IDBPDatabase<TestDBSchema>> {
       const store = db.createObjectStore('object-store', { keyPath: 'id' });
       store.createIndex('date', 'date');
       store.createIndex('title', 'title');
+      db.createObjectStore('auto-increment', {
+        keyPath: "id",
+        autoIncrement: true,
+      });
+      db.createObjectStore('auto-increment-nested', {
+        keyPath: "nested.id",
+        autoIncrement: true,
+      });
     },
   });
 }
