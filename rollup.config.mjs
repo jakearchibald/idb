@@ -17,6 +17,16 @@ export default async function ({ watch }) {
   builds.push({
     plugins: [
       typescript({ cacheDir: '.ts-tmp', tsconfig: 'src/tsconfig.json' }),
+      {
+        async closeBundle() {
+          const declarations = await glob('build/*.d.ts');
+          await Promise.all(
+            declarations.map((path) =>
+              fsp.copyFile(path, path.replace(/\.d\.ts$/, '.d.cts')),
+            ),
+          );
+        },
+      },
     ],
     input: ['src/index.ts'],
     output: [

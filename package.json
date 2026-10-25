@@ -7,9 +7,15 @@
   "types": "./build/index.d.ts",
   "exports": {
     ".": {
-      "types": "./build/index.d.ts",
       "module": "./build/index.js",
-      "import": "./build/index.js",
+      "import": {
+        "types": "./build/index.d.ts",
+        "default": "./build/index.js"
+      },
+      "require": {
+        "types": "./build/index.d.cts",
+        "default": "./build/index.cjs"
+      },
       "default": "./build/index.cjs"
     },
     "./build/*": "./build/*",
@@ -24,6 +30,7 @@
   "scripts": {
     "build": "cross-env PRODUCTION=1 rollup -c && node --experimental-modules lib/size-report.mjs",
     "dev": "rollup -c --watch",
+    "test:package-types": "npm run build && node lib/check-cjs-types.mjs",
     "prepack": "npm run build"
   },
   "repository": {
