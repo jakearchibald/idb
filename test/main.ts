@@ -12,6 +12,8 @@ import {
   TypedDOMStringList,
   openDB,
   DBSchema,
+  IndexNames,
+  IndexKey,
 } from '../src';
 import { assert as typeAssert, IsExact } from 'conditional-type-checks';
 import {
@@ -1585,6 +1587,54 @@ suite('IDBPIndex', () => {
         IDBPObjectStore<unknown, ['object-store'], 'object-store'>
       >
     >(true);
+  });
+
+  test('index with types generic over a union of store names', async () => {
+    interface MultiStoreSchema extends DBSchema {
+      summary: {
+        key: string;
+        value: number;
+        indexes: { byTitle: string };
+      };
+      events: {
+        key: number;
+        value: number;
+        indexes: { byDate: Date };
+      };
+    }
+
+    typeAssert<
+      IsExact<
+        IndexNames<MultiStoreSchema, 'summary' | 'events'>,
+        'byTitle' | 'byDate'
+      >
+    >(true);
+
+    typeAssert<
+      IsExact<
+        IndexKey<MultiStoreSchema, 'summary' | 'events', 'byTitle'>,
+        string
+      >
+    >(true);
+
+    typeAssert<
+      IsExact<IndexKey<MultiStoreSchema, 'summary' | 'events', 'byDate'>, Date>
+    >(true);
+
+    // From https://github.com/jakearchibald/idb/issues/346 - this used to
+    // error with 'not assignable to parameter of type never', because the
+    // index names of a union of stores collapsed to their intersection.
+    async function getKeys<Name extends 'summary' | 'events'>(
+      database: IDBPDatabase<MultiStoreSchema>,
+      storeName: Name,
+      indexName: IndexNames<MultiStoreSchema, Name>,
+    ) {
+      const store = database.transaction(storeName).objectStore(storeName);
+      const index = store.index(indexName);
+      return index.getAllKeys();
+    }
+
+    assert.strictEqual(typeof getKeys, 'function');
   });
 
   test('set name', async () => {
