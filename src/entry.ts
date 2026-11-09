@@ -209,7 +209,11 @@ export type StoreKey<
 export type IndexNames<
   DBTypes extends DBSchema | unknown,
   StoreName extends StoreNames<DBTypes>,
-> = DBTypes extends DBSchema ? keyof DBTypes[StoreName]['indexes'] & string : string;
+> = StoreName extends unknown
+  ? DBTypes extends DBSchema
+    ? keyof DBTypes[StoreName]['indexes'] & string
+    : string
+  : never;
 
 /**
  * Extract the types of indexes in certain object stores from the DB schema type.
@@ -222,11 +226,13 @@ export type IndexKey<
   DBTypes extends DBSchema | unknown,
   StoreName extends StoreNames<DBTypes>,
   IndexName extends IndexNames<DBTypes, StoreName>,
-> = DBTypes extends DBSchema
-  ? IndexName extends keyof DBTypes[StoreName]['indexes']
-    ? DBTypes[StoreName]['indexes'][IndexName]
+> = StoreName extends unknown
+  ? DBTypes extends DBSchema
+    ? IndexName extends keyof DBTypes[StoreName]['indexes']
+      ? DBTypes[StoreName]['indexes'][IndexName]
+      : never
     : IDBValidKey
-  : IDBValidKey;
+  : never;
 
 type CursorSource<
   DBTypes extends DBSchema | unknown,
